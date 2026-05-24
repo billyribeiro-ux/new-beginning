@@ -51,10 +51,7 @@
 							Pre-market notes for serious operators — included with the Day Trading subscription.
 						</p>
 					</a>
-					<a
-						class="next-card"
-						href={resolve('/indicators/[slug]', { slug: 'revolution-ranger' })}
-					>
+					<a class="next-card" href={resolve('/indicators/[slug]', { slug: 'revolution-ranger' })}>
 						<div class="ic"><IconBookmark size={20} /></div>
 						<h3>Revolution Ranger</h3>
 						<p>The compression-to-expansion engine our desk runs every session.</p>

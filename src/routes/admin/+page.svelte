@@ -161,7 +161,8 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconShoppingBag size={16} />Top products (this month)</h3>
-			<a class="more" href={resolve('/admin/products')}>All products <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/products')}>All products <IconArrowRight size={12} /></a
+			>
 		</header>
 		<table>
 			<thead>
@@ -231,7 +232,8 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconMessages size={16} />Recent messages</h3>
-			<a class="more" href={resolve('/admin/messages')}>All messages <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/messages')}>All messages <IconArrowRight size={12} /></a
+			>
 		</header>
 		{#if data.recentMessages.length === 0}
 			<EmptyState
