@@ -11,12 +11,15 @@
 	import AddToCartButton from './AddToCartButton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { discountPct } from '$lib/utils/money.js';
+	import { resolve } from '$app/paths';
 
 	type Props = { product: Product; featured?: boolean };
 	let { product, featured = false }: Props = $props();
 
 	const detailHref = $derived(
-		product.kind === 'indicator' ? `/indicators/${product.slug}` : `/courses/${product.slug}`
+		product.kind === 'indicator'
+			? resolve('/indicators/[slug]', { slug: product.slug })
+			: resolve('/courses/[slug]', { slug: product.slug })
 	);
 	const discount = $derived(
 		product.originalPriceCents ? discountPct(product.originalPriceCents, product.priceCents) : 0

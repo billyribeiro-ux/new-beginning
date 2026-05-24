@@ -18,6 +18,7 @@
 	import { DAY_TRADING_PLANS } from '$lib/data/plans.js';
 	import { formatPrice } from '$lib/utils/money.js';
 	import { toasts } from '$lib/stores/toast.svelte.js';
+	import { resolve } from '$app/paths';
 
 	let cancelOpen = $state(false);
 	let pauseOpen = $state(false);
@@ -132,7 +133,7 @@
 	<article class="card">
 		<header class="card-h">
 			<h3>Usage this month</h3>
-			<a class="more" href="/dashboard">Overview <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/dashboard')}>Overview <IconArrowRight size={12} /></a>
 		</header>
 		<div class="usage-grid">
 			{#each usageStats as u (u.label)}

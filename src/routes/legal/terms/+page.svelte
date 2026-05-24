@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import LegalPage from '$lib/components/marketing/LegalPage.svelte';
+	import { resolve } from '$app/paths';
 </script>
 
 <Seo title="Terms of Service" description="The terms that govern your use of TradeFlex Trading." />
@@ -31,7 +32,8 @@
 	<p>
 		Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore. Subscription
 		products renew automatically on the cadence selected at purchase. Indicator and course purchases
-		are eligible for a 14-day money-back guarantee. See our <a href="/legal/refund">Refund Policy</a
+		are eligible for a 14-day money-back guarantee. See our <a href={resolve('/legal/refund')}
+			>Refund Policy</a
 		> for full details.
 	</p>
 
@@ -60,6 +62,6 @@
 		Questions about these terms? Email <a href="mailto:legal@tradeflextrading.com"
 			>legal@tradeflextrading.com</a
 		>
-		or reach us via the <a href="/contact">Contact page</a>.
+		or reach us via the <a href={resolve('/contact')}>Contact page</a>.
 	</p>
 </LegalPage>

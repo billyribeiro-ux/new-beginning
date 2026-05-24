@@ -16,6 +16,7 @@
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import { cart } from '$lib/stores/cart.svelte.js';
 	import { formatPrice } from '$lib/utils/money.js';
+	import { resolve } from '$app/paths';
 
 	let promoCode = $state('');
 	let promoFeedback = $state('');
@@ -132,7 +133,7 @@
 					</table>
 
 					<div class="cart-actions">
-						<a class="continue" href="/indicators">← Continue shopping</a>
+						<a class="continue" href={resolve('/indicators')}>← Continue shopping</a>
 						<button type="button" class="clear" onclick={() => cart.clear()}>Empty cart</button>
 					</div>
 				</section>

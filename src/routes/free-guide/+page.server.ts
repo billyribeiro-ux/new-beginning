@@ -2,14 +2,11 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { db, schema } from '$lib/server/db/client.js';
 import { leadCaptureSchema } from '$lib/utils/validators.js';
-
-function randomId() {
-	return 'lead_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
+import { checkRateLimit, getClientKey } from '$lib/server/rateLimit';
 
 async function persist(email: string, source: string) {
 	await db.insert(schema.leads).values({
-		id: randomId(),
+		id: `lead_${crypto.randomUUID()}`,
 		email: email.toLowerCase(),
 		source
 	});
@@ -17,7 +14,14 @@ async function persist(email: string, source: string) {
 
 export const actions: Actions = {
 	// Free guide form on /free-guide → redirect to success page
-	capture: async ({ request }) => {
+	capture: async (event) => {
+		const rl = checkRateLimit(`lead:${getClientKey(event)}`, { limit: 5, windowMs: 60_000 });
+		if (!rl.ok)
+			return fail(429, {
+				error: `Too many requests. Try again in ${Math.ceil(rl.retryAfterMs / 1000)}s.`
+			});
+
+		const { request } = event;
 		const formData = await request.formData();
 		const parsed = leadCaptureSchema.safeParse({
 			email: formData.get('email')?.toString() ?? '',
@@ -42,7 +46,14 @@ export const actions: Actions = {
 	},
 
 	// Generic newsletter capture used from anywhere (home, footer) — returns success only
-	subscribe: async ({ request }) => {
+	subscribe: async (event) => {
+		const rl = checkRateLimit(`lead:${getClientKey(event)}`, { limit: 5, windowMs: 60_000 });
+		if (!rl.ok)
+			return fail(429, {
+				error: `Too many requests. Try again in ${Math.ceil(rl.retryAfterMs / 1000)}s.`
+			});
+
+		const { request } = event;
 		const formData = await request.formData();
 		const parsed = leadCaptureSchema.safeParse({
 			email: formData.get('email')?.toString() ?? '',

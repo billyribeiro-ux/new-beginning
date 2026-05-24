@@ -8,6 +8,7 @@
 	} from '@tabler/icons-svelte';
 	import LogoWordmark from '$lib/components/media/LogoWordmark.svelte';
 	import { FOOTER_NAV } from '$lib/data/navigation.js';
+	import { resolve } from '$app/paths';
 
 	const year = new Date().getFullYear();
 </script>
@@ -15,7 +16,7 @@
 <footer class="footer">
 	<div class="footer-top">
 		<div class="brand-col">
-			<LogoWordmark href="/" size={40} tagline />
+			<LogoWordmark size={40} tagline />
 			<p class="brand-copy">
 				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Engineered tooling and education
 				for traders who demand process, precision, and patience.
@@ -45,7 +46,7 @@
 					<h4>{section.heading}</h4>
 					<ul>
 						{#each section.items as item (item.href)}
-							<li><a href={item.href}>{item.label}</a></li>
+							<li><a href={resolve(item.href as unknown as '/')}>{item.label}</a></li>
 						{/each}
 					</ul>
 				</div>
@@ -56,7 +57,7 @@
 			<p class="eyebrow">Free download</p>
 			<h4>Options Greeks Guide</h4>
 			<p>The 24-page PDF we wish we had on day one — delta, gamma, theta, vega, demystified.</p>
-			<a href="/free-guide" class="cta">
+			<a href={resolve('/free-guide')} class="cta">
 				Get the guide
 				<IconArrowRight size={16} />
 			</a>

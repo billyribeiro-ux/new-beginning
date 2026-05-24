@@ -1,58 +1,44 @@
 <script lang="ts">
-	import LogoMark from './LogoMark.svelte';
+	import { resolve } from '$app/paths';
 
 	type Props = { href?: string; size?: number; tagline?: boolean };
-	let { href = '/', size = 36, tagline = false }: Props = $props();
+	let { href, size = 36, tagline = false }: Props = $props();
+
+	const intrinsicW = 3163;
+	const intrinsicH = 835;
+	let displayWidth = $derived(Math.round((size * intrinsicW) / intrinsicH));
 </script>
 
-<a class="logo" {href} aria-label="TradeFlex Trading — home">
-	<LogoMark {size} />
-	<span class="text">
-		<span class="word">
-			Trade<span class="flex">Flex</span>
-		</span>
-		{#if tagline}<span class="tag">Trading · Est. 2026</span>{/if}
-	</span>
+<a
+	class="logo"
+	href={resolve((href ?? '/') as unknown as '/')}
+	aria-label="Revolution Trading Pros — home"
+>
+	<img
+		src="/revolution-trading-pros-logo.png"
+		alt="Revolution Trading Pros"
+		width={displayWidth}
+		height={size}
+		style:height="{size}px"
+		style:width="auto"
+		decoding="async"
+		fetchpriority={tagline ? 'low' : 'high'}
+	/>
 </a>
 
 <style>
 	.logo {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--space-3);
 		text-decoration: none;
-		color: var(--ink-100);
-		font-family: var(--font-display);
-		font-weight: var(--weight-semibold);
-		letter-spacing: var(--tracking-tight);
 		transition: transform var(--dur-base) var(--ease-out);
 	}
 	.logo:hover {
 		transform: translateY(-1px);
 	}
-	.text {
-		display: inline-flex;
-		flex-direction: column;
-		line-height: 1;
-	}
-	.word {
-		font-size: var(--text-xl);
-		letter-spacing: -0.01em;
-	}
-	.flex {
-		background: var(--gradient-text-gold);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
-	}
-	.tag {
-		margin-top: 4px;
-		font-family: var(--font-body);
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-widest);
-		color: var(--ink-400);
-		font-weight: var(--weight-regular);
+	.logo img {
+		display: block;
+		max-width: 100%;
+		object-fit: contain;
 	}
 </style>

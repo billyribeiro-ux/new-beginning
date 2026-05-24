@@ -16,6 +16,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { stagger } from '$lib/animations/attachments.js';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 
@@ -98,12 +99,12 @@
 	<section class="card">
 		<header class="card-h">
 			<h3>Continue learning</h3>
-			<a class="more" href="/dashboard/courses">View all <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/dashboard/courses')}>View all <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="learn-list">
 			{#each continueLearning as l (l.href)}
 				<li>
-					<a href={l.href} class="learn-row">
+					<a href={resolve(l.href as unknown as '/')} class="learn-row">
 						<span class="learn-ic"><IconPlayerPlay size={14} /></span>
 						<div class="learn-body">
 							<p class="lt">{l.title}</p>
@@ -120,7 +121,7 @@
 	<section class="card">
 		<header class="card-h">
 			<h3>Upcoming charges</h3>
-			<a class="more" href="/dashboard/billing">Billing <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/dashboard/billing')}>Billing <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="charges">
 			{#each upcomingCharges as c (c.label)}
@@ -140,7 +141,9 @@
 <section class="card">
 	<header class="card-h">
 		<h3>Recent downloads</h3>
-		<a class="more" href="/dashboard/downloads">All downloads <IconArrowRight size={12} /></a>
+		<a class="more" href={resolve('/dashboard/downloads')}
+			>All downloads <IconArrowRight size={12} /></a
+		>
 	</header>
 	<table class="dl-table">
 		<thead>

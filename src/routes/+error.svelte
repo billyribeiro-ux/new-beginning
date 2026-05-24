@@ -3,6 +3,7 @@
 	import { IconHomeQuestion, IconArrowLeft } from '@tabler/icons-svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Seo from '$lib/components/seo/Seo.svelte';
+	import { resolve } from '$app/paths';
 </script>
 
 <Seo title={`${page.status} · Page not found`} noindex />
@@ -25,10 +26,10 @@
 				<Button variant="gold-outline" size="lg" href="/contact">Contact support</Button>
 			</div>
 			<div class="links">
-				<a href="/subscription">Subscription</a>
-				<a href="/indicators">Indicators</a>
-				<a href="/courses">Courses</a>
-				<a href="/free-guide">Free Greeks Guide</a>
+				<a href={resolve('/subscription')}>Subscription</a>
+				<a href={resolve('/indicators')}>Indicators</a>
+				<a href={resolve('/courses')}>Courses</a>
+				<a href={resolve('/free-guide')}>Free Greeks Guide</a>
 			</div>
 		</div>
 	</div>

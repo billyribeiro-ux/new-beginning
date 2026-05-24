@@ -1,15 +1,19 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 
 /* ─────────────── Leads (email captures) ─────────────── */
-export const leads = sqliteTable('leads', {
-	id: text('id').primaryKey(),
-	email: text('email').notNull(),
-	source: text('source').notNull().default('free-guide'),
-	createdAt: integer('created_at', { mode: 'timestamp_ms' })
-		.notNull()
-		.default(sql`(unixepoch() * 1000)`)
-});
+export const leads = sqliteTable(
+	'leads',
+	{
+		id: text('id').primaryKey(),
+		email: text('email').notNull(),
+		source: text('source').notNull().default('free-guide'),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.notNull()
+			.default(sql`(unixepoch() * 1000)`)
+	},
+	(t) => [index('leads_created_at_idx').on(t.createdAt)]
+);
 
 /* ─────────────── Users (schema-only stub) ─────────────── */
 export const users = sqliteTable('users', {
@@ -72,16 +76,20 @@ export const cartItems = sqliteTable('cart_items', {
 });
 
 /* ─────────────── Contact form messages ─────────────── */
-export const contactMessages = sqliteTable('contact_messages', {
-	id: text('id').primaryKey(),
-	name: text('name').notNull(),
-	email: text('email').notNull(),
-	subject: text('subject').notNull(),
-	body: text('body').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp_ms' })
-		.notNull()
-		.default(sql`(unixepoch() * 1000)`)
-});
+export const contactMessages = sqliteTable(
+	'contact_messages',
+	{
+		id: text('id').primaryKey(),
+		name: text('name').notNull(),
+		email: text('email').notNull(),
+		subject: text('subject').notNull(),
+		body: text('body').notNull(),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.notNull()
+			.default(sql`(unixepoch() * 1000)`)
+	},
+	(t) => [index('contact_messages_created_at_idx').on(t.createdAt)]
+);
 
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;

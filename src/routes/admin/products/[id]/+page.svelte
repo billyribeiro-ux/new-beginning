@@ -10,6 +10,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { toasts } from '$lib/stores/toast.svelte.js';
 	import { untrack } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 	const p = $derived(data.product);
@@ -30,7 +31,7 @@
 <Seo title="Admin · {p.name}" noindex />
 
 <header class="ph">
-	<a class="back" href="/admin/products"><IconArrowLeft size={14} />Back to products</a>
+	<a class="back" href={resolve('/admin/products')}><IconArrowLeft size={14} />Back to products</a>
 	<div class="ph-row">
 		<div>
 			<p class="eyebrow">Catalog · Edit</p>

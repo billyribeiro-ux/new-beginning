@@ -2,6 +2,7 @@
 	import { IconBell, IconPlus, IconChevronDown } from '@tabler/icons-svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 
 	type Props = { user: NonNullable<App.Locals['user']>; title?: string };
 	let { user, title }: Props = $props();
@@ -69,10 +70,10 @@
 	></button>
 	<div class="menu" role="menu">
 		<p class="m-email">{user.email}</p>
-		<a href="/dashboard" role="menuitem">Switch to member view</a>
-		<a href="/admin/settings" role="menuitem">Site settings</a>
+		<a href={resolve('/dashboard')} role="menuitem">Switch to member view</a>
+		<a href={resolve('/admin/settings')} role="menuitem">Site settings</a>
 		<div class="m-divider"></div>
-		<a href="/login" role="menuitem">Sign out</a>
+		<a href={resolve('/login')} role="menuitem">Sign out</a>
 	</div>
 {/if}
 

@@ -2,6 +2,7 @@
 	import { IconChevronRight } from '@tabler/icons-svelte';
 	import JsonLd from './JsonLd.svelte';
 	import { breadcrumbLd } from '$lib/utils/jsonld.js';
+	import { resolve } from '$app/paths';
 
 	type Crumb = { label: string; href: string };
 	type Props = { items: Crumb[] };
@@ -15,7 +16,7 @@
 				{#if i === items.length - 1}
 					<span aria-current="page">{crumb.label}</span>
 				{:else}
-					<a href={crumb.href}>{crumb.label}</a>
+					<a href={resolve(crumb.href as unknown as '/')}>{crumb.label}</a>
 					<IconChevronRight size={12} class="sep" />
 				{/if}
 			</li>

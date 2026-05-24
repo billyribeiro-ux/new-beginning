@@ -1,4 +1,6 @@
-import { z } from 'zod';
+import { z, config } from 'zod';
+
+config({ jitless: true });
 
 export const emailSchema = z
 	.string()

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { IconSparkles, IconArrowNarrowRight } from '@tabler/icons-svelte';
+	import { resolve } from '$app/paths';
 </script>
 
 <div class="announcement" role="region" aria-label="Site announcement">
@@ -8,7 +9,7 @@
 		<p>
 			<strong>New cohort just opened</strong> · Options 101 spring intake — limited seats
 		</p>
-		<a class="cta" href="/courses/options-101">
+		<a class="cta" href={resolve('/courses/[slug]', { slug: 'options-101' })}>
 			Reserve a spot
 			<IconArrowNarrowRight size={14} />
 		</a>

@@ -1,16 +1,10 @@
-import { browser } from '$app/environment';
+import { MediaQuery } from 'svelte/reactivity';
 
 class MotionStore {
-	reduced = $state(false);
+	#mq = new MediaQuery('prefers-reduced-motion: reduce', false);
 
-	constructor() {
-		if (!browser) return;
-		const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-		this.reduced = mq.matches;
-		const handler = (e: MediaQueryListEvent) => {
-			this.reduced = e.matches;
-		};
-		mq.addEventListener('change', handler);
+	get reduced(): boolean {
+		return this.#mq.current;
 	}
 }
 

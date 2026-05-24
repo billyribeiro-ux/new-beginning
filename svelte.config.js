@@ -1,6 +1,8 @@
 import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	preprocess: vitePreprocess(),
@@ -10,6 +12,23 @@ const config = {
 			$lib: 'src/lib',
 			'$lib/*': 'src/lib/*'
 		},
+		...(isProd && {
+			csp: {
+				mode: 'auto',
+				directives: {
+					'default-src': ['self'],
+					'script-src': ['self'],
+					'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
+					'img-src': ['self', 'data:', 'https:'],
+					'font-src': ['self', 'data:', 'https://fonts.gstatic.com'],
+					'connect-src': ['self'],
+					'frame-ancestors': ['self'],
+					'base-uri': ['self'],
+					'form-action': ['self'],
+					'object-src': ['none']
+				}
+			}
+		}),
 		typescript: {
 			config: (cfg) => {
 				cfg.include = [...(cfg.include ?? []), '../drizzle.config.ts'];

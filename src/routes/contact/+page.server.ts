@@ -2,13 +2,20 @@ import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { db, schema } from '$lib/server/db/client.js';
 import { contactSchema } from '$lib/utils/validators.js';
-
-function randomId() {
-	return 'msg_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
+import { checkRateLimit, getClientKey } from '$lib/server/rateLimit';
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async (event) => {
+		const rl = checkRateLimit(`contact:${getClientKey(event)}`, {
+			limit: 3,
+			windowMs: 60_000
+		});
+		if (!rl.ok)
+			return fail(429, {
+				error: `Too many requests. Try again in ${Math.ceil(rl.retryAfterMs / 1000)}s.`
+			});
+
+		const { request } = event;
 		const formData = await request.formData();
 		const data = {
 			name: formData.get('name')?.toString() ?? '',
@@ -28,7 +35,7 @@ export const actions: Actions = {
 
 		try {
 			await db.insert(schema.contactMessages).values({
-				id: randomId(),
+				id: `msg_${crypto.randomUUID()}`,
 				name: parsed.data.name,
 				email: parsed.data.email.toLowerCase(),
 				subject: parsed.data.subject,
