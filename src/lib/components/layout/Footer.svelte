@@ -40,11 +40,11 @@
 		</div>
 
 		<div class="links">
-			{#each FOOTER_NAV as section}
+			{#each FOOTER_NAV as section (section.heading)}
 				<div class="link-col">
 					<h4>{section.heading}</h4>
 					<ul>
-						{#each section.items as item}
+						{#each section.items as item (item.href)}
 							<li><a href={item.href}>{item.label}</a></li>
 						{/each}
 					</ul>

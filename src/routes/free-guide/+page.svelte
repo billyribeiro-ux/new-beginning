@@ -52,9 +52,9 @@
 
 		<div class="hero-grid">
 			<div class="left" {@attach fadeUp({ y: 20 })}>
-				<Badge variant="gold"
-					>{#snippet children()}<IconStarFilled size={12} />Free · 24-page PDF{/snippet}</Badge
-				>
+				<Badge variant="gold">
+					<IconStarFilled size={12} />Free · 24-page PDF
+				</Badge>
 				<h1>The Options Greeks Guide we wish we had on day one.</h1>
 				<p class="lead">
 					Lorem ipsum dolor sit amet, consectetur adipiscing elit. A visual-first treatment of the
@@ -125,7 +125,7 @@
 				</p>
 			</div>
 			<ol class="toc">
-				{#each chapters as ch}
+				{#each chapters as ch (ch.n)}
 					<li>
 						<span class="n">{ch.n}</span>
 						<span class="t">{ch.t}</span>

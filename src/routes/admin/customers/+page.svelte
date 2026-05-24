@@ -133,7 +133,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each filtered as c}
+			{#each filtered as c (c.id)}
 				<tr>
 					<td>
 						<div class="row">

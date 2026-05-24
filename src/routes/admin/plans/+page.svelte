@@ -25,14 +25,16 @@
 </header>
 
 <div class="grid">
-	{#each enrichedPlans as p}
+	{#each enrichedPlans as p (p.id)}
 		<article class="plan-card" class:is-featured={p.featured}>
 			<header class="ph-card">
 				<div class="row-between">
 					<h3>{p.name}</h3>
-					{#if p.featured}<Badge variant="gold" size="sm"
-							>{#snippet children()}<IconStarFilled size={10} />Featured{/snippet}</Badge
-						>{:else}<Badge variant="outline" size="sm">{p.cadence}</Badge>{/if}
+					{#if p.featured}
+						<Badge variant="gold" size="sm"><IconStarFilled size={10} />Featured</Badge>
+					{:else}
+						<Badge variant="outline" size="sm">{p.cadence}</Badge>
+					{/if}
 				</div>
 				<p class="muted">{p.tagline}</p>
 			</header>

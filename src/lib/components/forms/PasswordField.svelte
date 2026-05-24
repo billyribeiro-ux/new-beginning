@@ -51,7 +51,7 @@
 	{#if score && value.length > 0}
 		<div class="meter" aria-label="Password strength: {score.label}">
 			<div class="meter-bars" data-score={score.score}>
-				{#each Array(4) as _, i}
+				{#each Array(4) as _, i (i)}
 					<span class="bar" class:active={i < score.score}></span>
 				{/each}
 			</div>

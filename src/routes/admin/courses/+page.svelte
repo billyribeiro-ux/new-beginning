@@ -36,7 +36,7 @@
 </header>
 
 <div class="grid">
-	{#each rows as c}
+	{#each rows as c (c.id)}
 		<article class="course-card">
 			<div class="cover" style:background={c.media.posterColor}>
 				<span class="kc"><IconBook2 size={14} />Course</span>

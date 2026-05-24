@@ -69,7 +69,7 @@
 		<div class="hero-grid">
 			<div class="left" {@attach fadeUp({ y: 20 })}>
 				<div class="meta-row">
-					<Badge variant="gold">{#snippet children()}<IconBook2 size={12} />Course{/snippet}</Badge>
+					<Badge variant="gold"><IconBook2 size={12} />Course</Badge>
 					{#if p.badge}<Badge variant="outline">{p.badge}</Badge>{/if}
 					<div class="rating">
 						<IconStarFilled size={14} />
@@ -146,7 +146,7 @@
 		/>
 
 		<ol class="curriculum" {@attach stagger({ stagger: 0.04, y: 14 })}>
-			{#each curriculum as m, i}
+			{#each curriculum as m, i (m.module)}
 				<li class="cu-row" class:is-locked={i > 1}>
 					<span class="cu-num">{m.module}</span>
 					<div class="cu-body">
@@ -170,7 +170,7 @@
 	<div class="container">
 		<SectionHeading eyebrow="Outcomes" title="What graduates take away." align="center" />
 		<div class="outcomes" {@attach stagger({ stagger: 0.08, y: 18 })}>
-			{#each p.deliverables ?? [] as d}
+			{#each p.deliverables ?? [] as d (d)}
 				<div class="outcome">
 					<span class="ck"><IconCheck size={14} stroke={3} /></span>
 					<p>{d}</p>

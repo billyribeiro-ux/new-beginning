@@ -27,7 +27,7 @@
 		<p class="eyebrow center">Built for the platforms you already trust</p>
 		<div class="marquee" aria-hidden="true">
 			<div class="track">
-				{#each [...items, ...items] as item}
+				{#each [...items, ...items] as item, i (i)}
 					<div class="chip">
 						<span class="i"><item.icon size={20} /></span>
 						<span class="t">{item.label}</span>

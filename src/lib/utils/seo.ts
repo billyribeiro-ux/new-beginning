@@ -13,7 +13,7 @@ export function absoluteUrl(pathname: string): string {
 }
 
 export function defaultOgImage(): string {
-	return absoluteUrl('/og/default.png');
+	return absoluteUrl('/og/default.svg');
 }
 
 export type SeoMeta = {

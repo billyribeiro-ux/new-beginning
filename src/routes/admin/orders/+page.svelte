@@ -117,7 +117,7 @@
 		/>
 	</div>
 	<div class="filters">
-		{#each ['all', 'paid', 'pending', 'refunded'] as s}
+		{#each ['all', 'paid', 'pending', 'refunded'] as s (s)}
 			<button
 				class="chip"
 				class:is-active={statusFilter === s}
@@ -144,7 +144,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each filtered as o}
+			{#each filtered as o (o.id)}
 				<tr>
 					<td class="mono">{o.id}</td>
 					<td>

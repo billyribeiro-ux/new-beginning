@@ -60,9 +60,9 @@
 		<div class="hero-grid">
 			<div class="left" {@attach fadeUp({ y: 20 })}>
 				<div class="meta-row">
-					<Badge variant="gold"
-						>{#snippet children()}<IconChartCandle size={12} />Indicator{/snippet}</Badge
-					>
+					<Badge variant="gold">
+						<IconChartCandle size={12} />Indicator
+					</Badge>
 					{#if p.badge}<Badge variant="outline">{p.badge}</Badge>{/if}
 					<div class="rating">
 						<IconStarFilled size={14} />
@@ -75,7 +75,7 @@
 				<p class="desc">{p.description}</p>
 
 				<ul class="highlights" {@attach stagger({ stagger: 0.05, y: 12 })}>
-					{#each p.highlights as h}
+					{#each p.highlights as h (h)}
 						<li><span class="ck"><IconCheck size={12} stroke={3} /></span>{h}</li>
 					{/each}
 				</ul>
@@ -144,7 +144,7 @@
 				<p class="lead">Lorem ipsum dolor sit amet. The technical surface area, written plainly.</p>
 			</div>
 			<dl class="specs">
-				{#each p.specs ?? [] as s}
+				{#each p.specs ?? [] as s (s.label)}
 					<div class="spec-row">
 						<dt>{s.label}</dt>
 						<dd>{s.value}</dd>
@@ -162,7 +162,7 @@
 				<p class="eyebrow">In the box</p>
 				<h3>What ships when you buy.</h3>
 				<ul class="ck-list">
-					{#each p.deliverables ?? [] as d}
+					{#each p.deliverables ?? [] as d (d)}
 						<li><span class="ck"><IconCheck size={12} stroke={3} /></span>{d}</li>
 					{/each}
 				</ul>
@@ -171,7 +171,7 @@
 				<p class="eyebrow">Requirements</p>
 				<h3>Before you install.</h3>
 				<ul class="ck-list">
-					{#each p.requirements ?? [] as r}
+					{#each p.requirements ?? [] as r (r)}
 						<li><span class="ck"><IconCheck size={12} stroke={3} /></span>{r}</li>
 					{/each}
 				</ul>

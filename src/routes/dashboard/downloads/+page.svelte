@@ -79,7 +79,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each files as f}
+				{#each files as f (f.name)}
 					<tr>
 						<td class="name-cell">
 							<span class="ic">

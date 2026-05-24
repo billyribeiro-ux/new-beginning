@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { untrack } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { IconPlus } from '@tabler/icons-svelte';
 	import { slide } from 'svelte/transition';
 
@@ -21,16 +22,17 @@
 		titleSnippet,
 		contentSnippet
 	}: Props = $props();
-	let openIds = $state<Set<string>>(untrack(() => new Set(defaultOpenId ? [defaultOpenId] : [])));
+	const openIds = untrack(
+		() => new SvelteSet<string>(defaultOpenId ? [defaultOpenId] : [])
+	);
 
 	function toggle(id: string) {
-		const next = new Set(allowMultiple ? openIds : []);
 		if (openIds.has(id)) {
-			next.delete(id);
+			openIds.delete(id);
 		} else {
-			next.add(id);
+			if (!allowMultiple) openIds.clear();
+			openIds.add(id);
 		}
-		openIds = next;
 	}
 </script>
 

@@ -167,7 +167,7 @@
 				<tr><th>Product</th><th class="right">Sales</th><th class="right">Revenue</th></tr>
 			</thead>
 			<tbody>
-				{#each topProducts as p}
+				{#each topProducts as p (p.name)}
 					<tr>
 						<td>{p.name}</td>
 						<td class="right">{p.sales}</td>
@@ -184,7 +184,7 @@
 			<a class="more" href="/admin/orders">All orders <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="orders">
-			{#each recentOrders as o}
+			{#each recentOrders as o (o.id)}
 				<li>
 					<div>
 						<p class="ot">{o.cust}</p>
@@ -213,7 +213,7 @@
 			/>
 		{:else}
 			<ul class="leads">
-				{#each data.recentLeads as l}
+				{#each data.recentLeads as l (l.id)}
 					<li>
 						<span class="lic">{l.email[0]?.toUpperCase()}</span>
 						<div>
@@ -239,7 +239,7 @@
 			/>
 		{:else}
 			<ul class="leads">
-				{#each data.recentMessages as m}
+				{#each data.recentMessages as m (m.id)}
 					<li>
 						<span class="lic">{m.name[0]?.toUpperCase()}</span>
 						<div>

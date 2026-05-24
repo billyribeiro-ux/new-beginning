@@ -10,7 +10,7 @@
 
 <nav class="breadcrumbs" aria-label="Breadcrumb">
 	<ol>
-		{#each items as crumb, i}
+		{#each items as crumb, i (crumb.href)}
 			<li>
 				{#if i === items.length - 1}
 					<span aria-current="page">{crumb.label}</span>

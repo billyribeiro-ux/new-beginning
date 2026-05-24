@@ -144,7 +144,7 @@
 			align="center"
 		/>
 		<div class="principles" {@attach stagger({ stagger: 0.06, y: 18 })}>
-			{#each principles as p}
+			{#each principles as p (p.title)}
 				<article class="principle">
 					<span class="ic"><p.icon size={22} /></span>
 					<h3>{p.title}</h3>
@@ -159,7 +159,7 @@
 	<div class="container">
 		<SectionHeading eyebrow="The desk" title="People behind the playbook." align="center" />
 		<div class="team-grid" {@attach stagger({ stagger: 0.1, y: 20 })}>
-			{#each team as t}
+			{#each team as t (t.name)}
 				<article class="team-card">
 					<div class="avatar">{t.initials}</div>
 					<h3>{t.name}</h3>
@@ -179,7 +179,7 @@
 	<div class="container">
 		<SectionHeading eyebrow="Timeline" title="How we got here." align="center" />
 		<ol class="timeline" {@attach stagger({ stagger: 0.08, y: 18 })}>
-			{#each milestones as m}
+			{#each milestones as m (m.title)}
 				<li>
 					<span class="year">{m.year}</span>
 					<div class="dot"></div>

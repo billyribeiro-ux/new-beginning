@@ -66,7 +66,7 @@
 		<p class="tagline">{product.tagline}</p>
 
 		<ul class="highlights">
-			{#each product.highlights.slice(0, 3) as h}
+			{#each product.highlights.slice(0, 3) as h (h)}
 				<li>{h}</li>
 			{/each}
 		</ul>

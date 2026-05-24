@@ -105,7 +105,7 @@
 		<div class="card">
 			<h3>Highlights</h3>
 			<ul class="hl">
-				{#each p.highlights as h, i}
+				{#each p.highlights as h, i (h)}
 					<li><strong>0{i + 1}</strong>{h}</li>
 				{/each}
 			</ul>

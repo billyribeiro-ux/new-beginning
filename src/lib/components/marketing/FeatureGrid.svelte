@@ -15,7 +15,7 @@
 </script>
 
 <div class="grid cols-{columns} {className ?? ''}" {@attach stagger({ stagger: 0.06 })}>
-	{#each features as f}
+	{#each features as f (f.title)}
 		{@const Icon = iconOf(f.icon)}
 		<article class="card">
 			<div class="icon-wrap">

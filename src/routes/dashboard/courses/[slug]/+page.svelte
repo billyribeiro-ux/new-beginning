@@ -77,11 +77,11 @@
 			<ProgressBar value={progress} label="Course progress" />
 		</header>
 		<nav class="modules">
-			{#each modules as m}
+			{#each modules as m (m.id)}
 				<div class="module">
 					<h3>Module {m.id} · {m.title}</h3>
 					<ul>
-						{#each m.lessons as l}
+						{#each m.lessons as l (l.id)}
 							{@const locked = 'locked' in l && l.locked}
 							{@const isCurrent = 'current' in l && l.current}
 							<li class:done={l.done} class:current={isCurrent} class:locked>

@@ -24,7 +24,7 @@
 			<article class="card">
 				<div class="quote-mark" aria-hidden="true"><IconQuote size={28} /></div>
 				<div class="rating" aria-label="{t.rating} out of 5">
-					{#each Array(t.rating) as _}
+					{#each Array(t.rating) as _, i (i)}
 						<IconStarFilled size={14} />
 					{/each}
 				</div>

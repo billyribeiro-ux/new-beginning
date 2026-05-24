@@ -37,11 +37,11 @@
 	</div>
 
 	<nav class="nav">
-		{#each ADMIN_NAV as section}
+		{#each ADMIN_NAV as section (section.heading)}
 			<div class="section">
 				{#if !ui.sidebarCollapsed}<p class="heading">{section.heading}</p>{/if}
 				<ul>
-					{#each section.items as item}
+					{#each section.items as item (item.href)}
 						{@const Icon = iconOf(item.icon)}
 						<li>
 							<a

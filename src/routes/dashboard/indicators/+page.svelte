@@ -66,7 +66,7 @@
 	</div>
 </header>
 
-{#each owned as ind}
+{#each owned as ind (ind.id)}
 	<article class="ind-card">
 		<header class="ind-h">
 			<div class="ind-thumb" style:background={ind.media.posterColor}>
@@ -75,9 +75,7 @@
 			<div class="ind-meta">
 				<div class="ind-titles">
 					<h3>{ind.name}</h3>
-					<Badge variant="success" size="sm"
-						>{#snippet children()}<IconCheck size={10} />Active{/snippet}</Badge
-					>
+					<Badge variant="success" size="sm"><IconCheck size={10} />Active</Badge>
 				</div>
 				<p class="muted">{ind.tagline}</p>
 			</div>
@@ -105,7 +103,7 @@
 					<tr><th>Platform</th><th>Version</th><th>Released</th><th>Size</th><th></th></tr>
 				</thead>
 				<tbody>
-					{#each ind.downloads as d}
+					{#each ind.downloads as d (d.platform)}
 						<tr>
 							<td class="strong">{d.platform}</td>
 							<td class="mono">{d.version}</td>

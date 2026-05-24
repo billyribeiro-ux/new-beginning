@@ -48,7 +48,7 @@
 	});
 </script>
 
-<svelte:window on:keydown={onKey} />
+<svelte:window onkeydown={onKey} />
 
 {#if open}
 	<div class="overlay" transition:fade={{ duration: 180 }}>

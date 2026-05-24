@@ -110,9 +110,7 @@
 					</div>
 					<div class="card-actions">
 						{#if c.default}
-							<Badge variant="gold" size="sm"
-								>{#snippet children()}<IconStarFilled size={10} />Default{/snippet}</Badge
-							>
+							<Badge variant="gold" size="sm"><IconStarFilled size={10} />Default</Badge>
 						{:else}
 							<button class="link" type="button" onclick={() => setDefault(c.id)}
 								>Set default</button
@@ -178,7 +176,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each invoices as inv}
+					{#each invoices as inv (inv.id)}
 						<tr>
 							<td class="mono">{inv.id}</td>
 							<td>{inv.date}</td>

@@ -22,10 +22,8 @@
 	{#if plan.badge}
 		<div class="badge-row">
 			<Badge variant={plan.featured ? 'gold' : 'outline'} size="sm">
-				{#snippet children()}
-					{#if plan.featured}<IconSparkles size={11} />{/if}
-					{plan.badge}
-				{/snippet}
+				{#if plan.featured}<IconSparkles size={11} />{/if}
+				{plan.badge}
 			</Badge>
 		</div>
 	{/if}
@@ -46,7 +44,7 @@
 	</div>
 
 	<ul class="features">
-		{#each plan.highlights as h}
+		{#each plan.highlights as h (h)}
 			<li>
 				<span class="check"><IconCheck size={14} stroke={3} /></span>
 				<span>{h}</span>

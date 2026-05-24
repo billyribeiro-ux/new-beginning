@@ -145,7 +145,7 @@
 		<div class="featured-grid" {@attach stagger({ stagger: 0.1, y: 28 })}>
 			<ProductCard product={featuredIndicator} />
 			<div class="featured-plan-card">
-				{#each DAY_TRADING_PLANS.filter((p) => p.featured) as plan}
+				{#each DAY_TRADING_PLANS.filter((p) => p.featured) as plan (plan.id)}
 					<PricingCard {plan} />
 				{/each}
 			</div>
@@ -191,7 +191,7 @@
 			</div>
 
 			<ol class="steps" {@attach stagger({ stagger: 0.1, y: 24 })}>
-				{#each playbookSteps as s}
+				{#each playbookSteps as s (s.n)}
 					<li class="step">
 						<span class="num">{s.n}</span>
 						<div>
@@ -211,7 +211,7 @@
 		<div class="lm-grid" {@attach fadeUp({ y: 24 })}>
 			<div class="lm-copy">
 				<Badge variant="gold">
-					{#snippet children()}<IconStarFilled size={12} />Free · 24 pages{/snippet}
+					<IconStarFilled size={12} />Free · 24 pages
 				</Badge>
 				<h2 class="text-balance">The Options Greeks Guide we wish we had on day one.</h2>
 				<p class="text-pretty">

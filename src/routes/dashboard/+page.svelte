@@ -101,7 +101,7 @@
 			<a class="more" href="/dashboard/courses">View all <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="learn-list">
-			{#each continueLearning as l}
+			{#each continueLearning as l (l.href)}
 				<li>
 					<a href={l.href} class="learn-row">
 						<span class="learn-ic"><IconPlayerPlay size={14} /></span>
@@ -123,7 +123,7 @@
 			<a class="more" href="/dashboard/billing">Billing <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="charges">
-			{#each upcomingCharges as c}
+			{#each upcomingCharges as c (c.label)}
 				<li>
 					<div>
 						<p class="ct">{c.label}</p>
@@ -147,7 +147,7 @@
 			<tr><th>File</th><th>Type</th><th>Size</th><th class="right">Date</th><th></th></tr>
 		</thead>
 		<tbody>
-			{#each recentDownloads as d}
+			{#each recentDownloads as d (d.name)}
 				<tr>
 					<td class="dl-name">{d.name}</td>
 					<td><Badge variant="outline" size="sm">{d.kind}</Badge></td>

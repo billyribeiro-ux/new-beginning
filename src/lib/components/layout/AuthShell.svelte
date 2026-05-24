@@ -22,7 +22,7 @@
 
 		<div class="quote">
 			<div class="rating">
-				{#each Array(5) as _}<IconStarFilled size={14} />{/each}
+				{#each Array(5) as _, i (i)}<IconStarFilled size={14} />{/each}
 			</div>
 			<p>“{testimonial.quote}”</p>
 			<footer>

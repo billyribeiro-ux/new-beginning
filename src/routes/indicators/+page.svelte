@@ -27,7 +27,7 @@
 		<div class="hero-grid" {@attach fadeUp({ y: 20 })}>
 			<div>
 				<Badge variant="gold">
-					{#snippet children()}<IconChartCandle size={12} />Indicator store{/snippet}
+					<IconChartCandle size={12} />Indicator store
 				</Badge>
 				<h1>Indicators built for traders who measure the tape.</h1>
 				<p>
@@ -59,7 +59,7 @@
 		/>
 
 		<div class="grid" {@attach stagger({ stagger: 0.1, y: 24 })}>
-			{#each INDICATORS as p}
+			{#each INDICATORS as p (p.id)}
 				<ProductCard product={p} featured />
 			{/each}
 			<article class="coming-soon">

@@ -17,7 +17,7 @@
 	{#if label}<label for={reactiveId}>{label}</label>{/if}
 	<div class="wrap">
 		<select id={reactiveId} bind:value {...rest}>
-			{#each options as opt}
+			{#each options as opt (opt.value)}
 				<option value={opt.value}>{opt.label}</option>
 			{/each}
 		</select>

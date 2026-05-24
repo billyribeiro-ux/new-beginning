@@ -22,7 +22,7 @@
 </script>
 
 <div class="stats" {@attach stagger({ stagger: 0.08, y: 18 })}>
-	{#each stats as s}
+	{#each stats as s (s.label)}
 		<div class="stat">
 			<p class="value" {@attach numberTicker({ to: s.value, format: fmt(s) })}>0</p>
 			<p class="label">{s.label}</p>

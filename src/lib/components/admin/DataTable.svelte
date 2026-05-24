@@ -109,7 +109,7 @@
 			<table>
 				<thead>
 					<tr>
-						{#each columns as col}
+						{#each columns as col (col.key)}
 							<th style:width={col.width} style:text-align={col.align ?? 'left'}>
 								{#if col.sortable}
 									<button
@@ -137,7 +137,7 @@
 				<tbody>
 					{#each visible as row (rowKey(row))}
 						<tr>
-							{#each columns as col}
+							{#each columns as col (col.key)}
 								<td style:text-align={col.align ?? 'left'}>
 									{#if col.render}
 										{@render col.render(row)}

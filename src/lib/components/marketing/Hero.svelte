@@ -28,10 +28,8 @@
 		<div class="hero-content">
 			<div class="trust-row" {@attach fadeUp({ y: 16, delay: 0 })}>
 				<Badge variant="gold">
-					{#snippet children()}
-						<IconStarFilled size={12} />
-						Trusted by 14,200+ traders
-					{/snippet}
+					<IconStarFilled size={12} />
+					Trusted by 14,200+ traders
 				</Badge>
 				<span class="trust-note">Verified setups · Live trading room · 14-day guarantee</span>
 			</div>
@@ -81,7 +79,7 @@
 				</div>
 				<div class="chart-body">
 					<div class="candles" aria-hidden="true">
-						{#each Array(28) as _, i}
+						{#each Array(28) as _, i (i)}
 							{@const up = [0, 1, 4, 5, 6, 9, 10, 13, 14, 16, 18, 20, 22, 24, 25, 27].includes(i)}
 							{@const ht = 18 + ((i * 13) % 70)}
 							{@const top = 10 + ((i * 7) % 30)}

@@ -34,7 +34,7 @@
 </header>
 
 <section class="cards-grid">
-	{#each enrollments as e}
+	{#each enrollments as e (e.slug)}
 		{@const course = COURSES.find((c) => c.slug === e.slug)}
 		{#if course}
 			<article class="course-card">
@@ -65,7 +65,7 @@
 	<section class="suggest">
 		<header><h3>Explore other courses</h3></header>
 		<div class="suggest-grid">
-			{#each wishlist as c}
+			{#each wishlist as c (c.id)}
 				<article class="sg-card">
 					<div class="sg-thumb" style:background={c.media.posterColor}>
 						<IconBookmark size={20} />

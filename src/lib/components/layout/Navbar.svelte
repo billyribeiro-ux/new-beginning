@@ -46,7 +46,7 @@
 
 		<nav class="main-nav" aria-label="Primary">
 			<ul>
-				{#each MAIN_NAV as item}
+				{#each MAIN_NAV as item (item.href)}
 					<li>
 						<a href={item.href} class:is-active={isActive(item.href)}>{item.label}</a>
 					</li>
@@ -87,7 +87,7 @@
 	<div class="mobile-overlay" transition:fly={{ y: -8, duration: 220, easing: cubicOut }}>
 		<nav aria-label="Mobile primary">
 			<ul>
-				{#each MAIN_NAV as item}
+				{#each MAIN_NAV as item (item.href)}
 					<li>
 						<a
 							href={item.href}

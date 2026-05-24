@@ -96,7 +96,7 @@
 					</a>
 				</header>
 				<div class="body">
-					{#each active.body.split('\n').filter(Boolean) as para}
+					{#each active.body.split('\n').filter(Boolean) as para, i (i)}
 						<p>{para}</p>
 					{/each}
 				</div>

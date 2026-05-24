@@ -170,7 +170,7 @@
 		<article class="card">
 			<h3><IconPlug size={16} />Integrations</h3>
 			<ul class="ints">
-				{#each integrations as i}
+				{#each integrations as i (i.id)}
 					<li>
 						<span class="i-mark" style:background={i.color}></span>
 						<div class="i-body">

@@ -57,9 +57,9 @@
 		/>
 		<div class="hero-grid" {@attach fadeUp({ y: 20 })}>
 			<div>
-				<Badge variant="gold"
-					>{#snippet children()}<IconStarFilled size={12} />Day Trading desk{/snippet}</Badge
-				>
+				<Badge variant="gold">
+					<IconStarFilled size={12} />Day Trading desk
+				</Badge>
 				<h1>The desk you would build, if you had the time.</h1>
 				<p class="lead">
 					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pre-market briefings, a live
@@ -86,7 +86,7 @@
 <section class="section">
 	<div class="container">
 		<div class="pricing-grid" {@attach stagger({ stagger: 0.12, y: 28 })}>
-			{#each DAY_TRADING_PLANS as plan}
+			{#each DAY_TRADING_PLANS as plan (plan.id)}
 				<PricingCard {plan} />
 			{/each}
 		</div>
@@ -115,7 +115,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each compareRows as row}
+					{#each compareRows as row (row.feature)}
 						<tr>
 							<td class="feature-cell">{row.feature}</td>
 							<td

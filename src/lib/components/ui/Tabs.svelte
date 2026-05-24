@@ -22,7 +22,7 @@
 
 <div class="tabs">
 	<div class="tablist" role="tablist">
-		{#each tabs as t}
+		{#each tabs as t (t.id)}
 			<button
 				type="button"
 				role="tab"
