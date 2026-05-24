@@ -1,15 +1,25 @@
 <script lang="ts">
-	type Props = {
+	import type { HTMLInputAttributes } from 'svelte/elements';
+
+	type Props = Omit<HTMLInputAttributes, 'type' | 'checked'> & {
 		checked?: boolean;
 		label?: string;
 		description?: string;
-		disabled?: boolean;
 	};
-	let { checked = $bindable(false), label, description, disabled = false }: Props = $props();
+	let {
+		checked = $bindable(false),
+		label,
+		description,
+		disabled = false,
+		id,
+		name,
+		...rest
+	}: Props = $props();
+	const reactiveId = $derived(id ?? `sw-${Math.random().toString(36).slice(2, 9)}`);
 </script>
 
-<label class="switch" class:is-disabled={disabled}>
-	<input type="checkbox" bind:checked {disabled} />
+<label class="switch" class:is-disabled={disabled} for={reactiveId}>
+	<input id={reactiveId} {name} type="checkbox" bind:checked {disabled} {...rest} />
 	<span class="track" aria-hidden="true">
 		<span class="thumb"></span>
 	</span>
