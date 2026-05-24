@@ -51,10 +51,7 @@
 			<ul>
 				{#each MAIN_NAV as item (item.href)}
 					<li>
-						<a
-							href={resolveDynamic(item.href)}
-							class:is-active={isActive(item.href)}
-						>
+						<a href={resolveDynamic(item.href)} class:is-active={isActive(item.href)}>
 							{item.label}
 						</a>
 					</li>
@@ -97,7 +94,7 @@
 			<ul>
 				{#each MAIN_NAV as item (item.href)}
 					<li>
-							<a
+						<a
 							href={resolveDynamic(item.href)}
 							onclick={() => ui.closeMobileNav()}
 							class:is-active={isActive(item.href)}

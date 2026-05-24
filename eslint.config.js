@@ -69,11 +69,11 @@ export default ts.config(
 		}
 	},
 	{
-		// JsonLd injects a JSON-LD <script> via {@html}; the literal `<script>` inside the template
-		// string trips the svelte ESLint parser. The runtime output is correct and HTML-escapes `<`.
+		// JsonLd injects a JSON-LD <script> via {@html}; input is JSON.stringify() output with
+		// `<` escaped to `<`, which is provably XSS-safe.
 		files: ['src/lib/components/seo/JsonLd.svelte'],
 		rules: {
-			'svelte/valid-compile': 'off'
+			'svelte/no-at-html-tags': 'off'
 		}
 	},
 	{
