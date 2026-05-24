@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { IconBell, IconSearch, IconChevronDown } from '@tabler/icons-svelte';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 
 	type Props = { user: NonNullable<App.Locals['user']>; title?: string };
 	let { user, title }: Props = $props();
@@ -70,12 +71,12 @@
 	></button>
 	<div class="menu" role="menu">
 		<p class="m-email">{user.email}</p>
-		<a href="/dashboard/profile" role="menuitem">Profile settings</a>
-		<a href="/dashboard/subscription" role="menuitem">Manage subscription</a>
-		<a href="/dashboard/billing" role="menuitem">Billing</a>
+		<a href={resolve('/dashboard/profile')} role="menuitem">Profile settings</a>
+		<a href={resolve('/dashboard/subscription')} role="menuitem">Manage subscription</a>
+		<a href={resolve('/dashboard/billing')} role="menuitem">Billing</a>
 		<div class="m-divider"></div>
-		<a href="/" role="menuitem">Back to site</a>
-		<a href="/login" role="menuitem">Sign out</a>
+		<a href={resolve('/')} role="menuitem">Back to site</a>
+		<a href={resolve('/login')} role="menuitem">Sign out</a>
 	</div>
 {/if}
 

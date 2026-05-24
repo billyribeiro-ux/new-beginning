@@ -8,6 +8,7 @@
 	import { fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 
 	let scrolled = $state(false);
 
@@ -48,14 +49,16 @@
 			<ul>
 				{#each MAIN_NAV as item (item.href)}
 					<li>
-						<a href={item.href} class:is-active={isActive(item.href)}>{item.label}</a>
+						<a href={resolve(item.href)} class:is-active={isActive(item.href)}
+						>{item.label}</a
+					>
 					</li>
 				{/each}
 			</ul>
 		</nav>
 
 		<div class="actions">
-			<a class="action-btn" href="/login" aria-label="Sign in or open account">
+			<a class="action-btn" href={resolve('/login')} aria-label="Sign in or open account">
 				<IconUser size={18} />
 				<span class="hide-md">Account</span>
 			</a>
@@ -90,7 +93,7 @@
 				{#each MAIN_NAV as item (item.href)}
 					<li>
 						<a
-							href={item.href}
+							href={resolve(item.href)}
 							onclick={() => ui.closeMobileNav()}
 							class:is-active={isActive(item.href)}
 						>
@@ -99,10 +102,10 @@
 					</li>
 				{/each}
 				<li class="divider-row"></li>
-				<li><a href="/login" onclick={() => ui.closeMobileNav()}>Sign in</a></li>
-				<li><a href="/signup" onclick={() => ui.closeMobileNav()}>Sign up</a></li>
+				<li><a href={resolve('/login')} onclick={() => ui.closeMobileNav()}>Sign in</a></li>
+				<li><a href={resolve('/signup')} onclick={() => ui.closeMobileNav()}>Sign up</a></li>
 				<li>
-					<a href="/free-guide" onclick={() => ui.closeMobileNav()} class="cta-link"
+					<a href={resolve('/free-guide')} onclick={() => ui.closeMobileNav()} class="cta-link"
 						>Get the Free Greeks Guide</a
 					>
 				</li>

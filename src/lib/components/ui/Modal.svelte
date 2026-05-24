@@ -3,6 +3,7 @@
 	import { IconX } from '@tabler/icons-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import { focusTrap } from '$lib/utils/focusTrap.js';
 
 	type Props = {
 		open: boolean;
@@ -24,8 +25,6 @@
 		footer
 	}: Props = $props();
 
-	let dialogEl: HTMLDivElement | undefined = $state();
-
 	function close() {
 		open = false;
 		onclose?.();
@@ -38,7 +37,6 @@
 	$effect(() => {
 		if (open) {
 			document.body.style.overflow = 'hidden';
-			queueMicrotask(() => dialogEl?.focus());
 		} else {
 			document.body.style.overflow = '';
 		}
@@ -54,13 +52,13 @@
 	<div class="overlay" transition:fade={{ duration: 180 }}>
 		<button class="backdrop" aria-label="Close dialog" onclick={close}></button>
 		<div
-			bind:this={dialogEl}
 			class="dialog dialog-{size}"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={title ? 'modal-title' : undefined}
 			tabindex="-1"
 			transition:scale={{ duration: 220, start: 0.96, easing: cubicOut }}
+			{@attach focusTrap}
 		>
 			<header class="dialog-header">
 				<div>

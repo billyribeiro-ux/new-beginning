@@ -14,6 +14,7 @@
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import { fly, fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import { focusTrap } from '$lib/utils/focusTrap.js';
 
 	function onKey(e: KeyboardEvent) {
 		if (e.key === 'Escape' && cart.isOpen) cart.close();
@@ -31,7 +32,7 @@
 	});
 </script>
 
-<svelte:window on:keydown={onKey} />
+<svelte:window onkeydown={onKey} />
 
 {#if cart.isOpen}
 	<div class="cart-overlay">
@@ -47,7 +48,9 @@
 			role="dialog"
 			aria-modal="true"
 			aria-label="Shopping cart"
+			tabindex="-1"
 			transition:fly={{ x: 480, duration: 320, easing: cubicOut }}
+			{@attach focusTrap}
 		>
 			<header class="drawer-header">
 				<div>

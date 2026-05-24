@@ -11,6 +11,8 @@
 	import LogoMark from '$lib/components/media/LogoMark.svelte';
 	import { DASHBOARD_NAV } from '$lib/data/navigation.js';
 	import { ui } from '$lib/stores/ui.svelte.js';
+	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 
 	function iconOf(name: string): Component {
 		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
@@ -25,7 +27,7 @@
 
 <aside class="sidebar" class:is-collapsed={ui.sidebarCollapsed} aria-label="Dashboard navigation">
 	<div class="brand">
-		<a href="/" class="brand-link" aria-label="Home">
+		<a href={resolve('/')} class="brand-link" aria-label="Home">
 			<LogoMark size={32} />
 			{#if !ui.sidebarCollapsed}
 				<span class="brand-text">
@@ -41,6 +43,7 @@
 			{#each DASHBOARD_NAV as item}
 				{@const Icon = iconOf(item.icon)}
 				<li>
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data uses resolved literal paths; no base path is configured (kit.paths.base is unset) -->
 					<a
 						href={item.href}
 						class="nav-link"
@@ -67,7 +70,7 @@
 				/>{:else}<IconLayoutSidebarLeftCollapse size={18} />{/if}
 			{#if !ui.sidebarCollapsed}<span>Collapse</span>{/if}
 		</button>
-		<a class="logout" href="/login">
+		<a class="logout" href={resolve('/login')}>
 			<IconLogout size={18} />
 			{#if !ui.sidebarCollapsed}<span>Sign out</span>{/if}
 		</a>

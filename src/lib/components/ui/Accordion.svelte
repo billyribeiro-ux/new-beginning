@@ -22,9 +22,7 @@
 		titleSnippet,
 		contentSnippet
 	}: Props = $props();
-	const openIds = untrack(
-		() => new SvelteSet<string>(defaultOpenId ? [defaultOpenId] : [])
-	);
+	const openIds = untrack(() => new SvelteSet<string>(defaultOpenId ? [defaultOpenId] : []));
 
 	function toggle(id: string) {
 		if (openIds.has(id)) {

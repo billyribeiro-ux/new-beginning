@@ -147,7 +147,11 @@
 	</header>
 	<table class="dl-table">
 		<thead>
-			<tr><th>File</th><th>Type</th><th>Size</th><th class="right">Date</th><th></th></tr>
+			<tr
+				><th>File</th><th>Type</th><th>Size</th><th class="right">Date</th><th
+					><span class="sr-only">Actions</span></th
+				></tr
+			>
 		</thead>
 		<tbody>
 			{#each recentDownloads as d (d.name)}

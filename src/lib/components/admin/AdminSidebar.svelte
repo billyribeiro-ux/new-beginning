@@ -11,6 +11,7 @@
 	import LogoMark from '$lib/components/media/LogoMark.svelte';
 	import { ADMIN_NAV } from '$lib/data/navigation.js';
 	import { ui } from '$lib/stores/ui.svelte.js';
+	import { resolve } from '$app/paths';
 
 	function iconOf(name: string): Component {
 		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
@@ -25,7 +26,7 @@
 
 <aside class="sidebar" class:is-collapsed={ui.sidebarCollapsed} aria-label="Admin navigation">
 	<div class="brand">
-		<a href="/" class="brand-link" aria-label="Home">
+		<a href={resolve('/')} class="brand-link" aria-label="Home">
 			<LogoMark size={32} />
 			{#if !ui.sidebarCollapsed}
 				<span class="brand-text">
@@ -45,7 +46,7 @@
 						{@const Icon = iconOf(item.icon)}
 						<li>
 							<a
-								href={item.href}
+								href={resolve(item.href)}
 								class="nav-link"
 								class:is-active={isActive(item.href)}
 								aria-current={isActive(item.href) ? 'page' : undefined}
@@ -72,7 +73,7 @@
 				/>{:else}<IconLayoutSidebarLeftCollapse size={18} />{/if}
 			{#if !ui.sidebarCollapsed}<span>Collapse</span>{/if}
 		</button>
-		<a class="logout" href="/login">
+		<a class="logout" href={resolve('/login')}>
 			<IconLogout size={18} />
 			{#if !ui.sidebarCollapsed}<span>Sign out</span>{/if}
 		</a>

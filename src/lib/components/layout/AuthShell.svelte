@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import LogoWordmark from '$lib/components/media/LogoWordmark.svelte';
 	import { IconArrowLeft, IconStarFilled } from '@tabler/icons-svelte';
+	import { resolve } from '$app/paths';
 
 	type Props = { children: Snippet; testimonial?: { quote: string; name: string; role: string } };
 	let {
@@ -17,7 +18,7 @@
 
 <div class="auth-shell">
 	<aside class="brand-side">
-		<a class="back" href="/"><IconArrowLeft size={14} />Back to site</a>
+		<a class="back" href={resolve('/')}><IconArrowLeft size={14} />Back to site</a>
 		<LogoWordmark href="/" size={44} tagline />
 
 		<div class="quote">

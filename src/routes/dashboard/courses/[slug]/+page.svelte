@@ -13,6 +13,7 @@
 	} from '@tabler/icons-svelte';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import { resolve } from '$app/paths';
 	import ProgressBar from '$lib/components/dashboard/ProgressBar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -70,7 +71,9 @@
 
 <div class="layout">
 	<aside class="sidebar">
-		<a class="back" href="/dashboard/courses"><IconChevronLeft size={14} />Back to courses</a>
+		<a class="back" href={resolve('/dashboard/courses')}
+			><IconChevronLeft size={14} />Back to courses</a
+		>
 		<header class="ch">
 			<h2>{c.name}</h2>
 			<p class="muted">{c.tagline}</p>
@@ -127,7 +130,7 @@
 		<div class="lesson-meta">
 			<div>
 				<p class="eyebrow">Module 2 · Lesson 3</p>
-				<h1>{current?.title ?? 'Lesson title'}</h1>
+				<h2>{current?.title ?? 'Lesson title'}</h2>
 				<p class="muted">14 min · published May 1, 2026</p>
 			</div>
 			<div class="lesson-actions">
@@ -443,7 +446,7 @@
 		gap: var(--space-4);
 		flex-wrap: wrap;
 	}
-	.lesson-meta h1 {
+	.lesson-meta h2 {
 		font-family: var(--font-display);
 		font-size: var(--text-2xl);
 		margin: var(--space-2) 0;

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { cx } from '$lib/utils/classes.js';
+	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 
 	type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'gold-outline';
 	type Size = 'sm' | 'md' | 'lg' | 'xl';
@@ -51,10 +53,24 @@
 			className
 		)
 	);
+
+	const resolvedHref = $derived.by(() => {
+		if (!href) return undefined;
+		return href.startsWith('/') ? resolve(href as Pathname) : href;
+	});
 </script>
 
 {#if href}
-	<a {href} {target} {rel} class={classes} aria-busy={loading} aria-label={ariaLabel} {onclick}>
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is pre-resolved by `resolvedHref`; Button accepts internal, hash, and external hrefs. -->
+	<a
+		href={resolvedHref}
+		{target}
+		{rel}
+		class={classes}
+		aria-busy={loading}
+		aria-label={ariaLabel}
+		{onclick}
+	>
 		{#if iconLeft}<span class="icon">{@render iconLeft()}</span>{/if}
 		<span class="label">{@render children?.()}</span>
 		{#if iconRight}<span class="icon">{@render iconRight()}</span>{/if}

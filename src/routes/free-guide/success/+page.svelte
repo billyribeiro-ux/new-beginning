@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 	import {
 		IconCircleCheckFilled,
 		IconDownload,
@@ -43,19 +44,22 @@
 			<div class="next">
 				<h2>While you are here…</h2>
 				<div class="next-grid">
-					<a class="next-card" href="/subscription">
+					<a class="next-card" href={resolve('/subscription')}>
 						<div class="ic"><IconMail size={20} /></div>
 						<h3>Get the daily briefing</h3>
 						<p>
 							Pre-market notes for serious operators — included with the Day Trading subscription.
 						</p>
 					</a>
-					<a class="next-card" href="/indicators/revolution-ranger">
+					<a
+						class="next-card"
+						href={resolve('/indicators/[slug]', { slug: 'revolution-ranger' })}
+					>
 						<div class="ic"><IconBookmark size={20} /></div>
 						<h3>Revolution Ranger</h3>
 						<p>The compression-to-expansion engine our desk runs every session.</p>
 					</a>
-					<a class="next-card" href="/courses/options-101">
+					<a class="next-card" href={resolve('/courses/[slug]', { slug: 'options-101' })}>
 						<div class="ic"><IconBookmark size={20} /></div>
 						<h3>Options 101</h3>
 						<p>Twelve modules from greeks to verticals to butterflies — exam included.</p>

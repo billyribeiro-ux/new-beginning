@@ -10,6 +10,7 @@
 		IconStarFilled,
 		IconCheck
 	} from '@tabler/icons-svelte';
+	import { resolve } from '$app/paths';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Hero from '$lib/components/marketing/Hero.svelte';
 	import TrustBar from '$lib/components/marketing/TrustBar.svelte';
@@ -246,7 +247,7 @@
 						successMessage="Sent. Open your inbox — the PDF link is inside."
 					/>
 					<p class="fineprint">
-						By subscribing you accept our <a href="/legal/privacy">Privacy Policy</a>.
+						By subscribing you accept our <a href={resolve('/legal/privacy')}>Privacy Policy</a>.
 					</p>
 				</div>
 			</div>

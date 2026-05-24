@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 	import {
 		IconCash,
 		IconUsers,
@@ -160,7 +161,7 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconShoppingBag size={16} />Top products (this month)</h3>
-			<a class="more" href="/admin/products">All products <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/products')}>All products <IconArrowRight size={12} /></a>
 		</header>
 		<table>
 			<thead>
@@ -181,7 +182,7 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconCalendarStats size={16} />Recent orders</h3>
-			<a class="more" href="/admin/orders">All orders <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/orders')}>All orders <IconArrowRight size={12} /></a>
 		</header>
 		<ul class="orders">
 			{#each recentOrders as o (o.id)}
@@ -204,7 +205,7 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconUserPlus size={16} />Recent leads (live from DB)</h3>
-			<a class="more" href="/admin/leads">All leads <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/leads')}>All leads <IconArrowRight size={12} /></a>
 		</header>
 		{#if data.recentLeads.length === 0}
 			<EmptyState
@@ -230,7 +231,7 @@
 	<section class="card">
 		<header class="card-h">
 			<h3><IconMessages size={16} />Recent messages</h3>
-			<a class="more" href="/admin/messages">All messages <IconArrowRight size={12} /></a>
+			<a class="more" href={resolve('/admin/messages')}>All messages <IconArrowRight size={12} /></a>
 		</header>
 		{#if data.recentMessages.length === 0}
 			<EmptyState

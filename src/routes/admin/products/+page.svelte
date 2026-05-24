@@ -11,6 +11,7 @@
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { resolve } from '$app/paths';
 	import { getAllProducts } from '$lib/data/products.js';
 	import { formatPrice } from '$lib/utils/money.js';
 
@@ -84,7 +85,7 @@
 									/>{/if}
 							</span>
 							<div>
-								<a href="/admin/products/{r.id}" class="pn">{r.name}</a>
+								<a href={resolve('/admin/products/[id]', { id: r.id })} class="pn">{r.name}</a>
 								<p class="ps">{r.slug}</p>
 							</div>
 						</div>
@@ -95,7 +96,7 @@
 					<td class="right muted">{r.updated}</td>
 					<td class="right">
 						<div class="row-actions">
-							<a class="ra" href="/admin/products/{r.id}" aria-label="Edit"
+							<a class="ra" href={resolve('/admin/products/[id]', { id: r.id })} aria-label="Edit"
 								><IconEdit size={14} /></a
 							>
 							<button class="ra" type="button" aria-label="Duplicate"><IconCopy size={14} /></button

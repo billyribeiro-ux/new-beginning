@@ -61,7 +61,7 @@
 								<th colspan="2">Item</th>
 								<th class="hide-sm">Qty</th>
 								<th class="right">Total</th>
-								<th></th>
+								<th><span class="sr-only">Actions</span></th>
 							</tr>
 						</thead>
 						<tbody>

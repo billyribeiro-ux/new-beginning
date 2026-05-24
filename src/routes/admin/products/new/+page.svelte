@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { resolve } from '$app/paths';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -28,7 +29,7 @@
 <Seo title="Admin · New product" noindex />
 
 <header class="ph">
-	<a class="back" href="/admin/products"><IconArrowLeft size={14} />Back to products</a>
+	<a class="back" href={resolve('/admin/products')}><IconArrowLeft size={14} />Back to products</a>
 	<div class="ph-row">
 		<div>
 			<p class="eyebrow">Catalog · Create</p>

@@ -3,15 +3,14 @@
 		IconBrandGoogleFilled,
 		IconBrandApple,
 		IconBrandGithub,
-		IconMail,
-		IconArrowRight,
-		IconUser
+		IconArrowRight
 	} from '@tabler/icons-svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import PasswordField from './PasswordField.svelte';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	type Mode = 'login' | 'signup' | 'forgot' | 'reset';
@@ -129,7 +128,7 @@
 			<PasswordField name="password" bind:value={password} autocomplete="current-password" />
 			<div class="row-between">
 				<Checkbox label="Remember me" bind:checked={remember} />
-				<a class="link" href="/forgot-password">Forgot password?</a>
+				<a class="link" href={resolve('/forgot-password')}>Forgot password?</a>
 			</div>
 		{/if}
 
@@ -147,8 +146,8 @@
 				label="Confirm password"
 			/>
 			<Checkbox bind:checked={terms} name="terms">
-				I agree to the <a href="/legal/terms">Terms</a> and
-				<a href="/legal/privacy">Privacy Policy</a>.
+				I agree to the <a href={resolve('/legal/terms')}>Terms</a> and
+				<a href={resolve('/legal/privacy')}>Privacy Policy</a>.
 			</Checkbox>
 		{/if}
 
@@ -180,11 +179,11 @@
 
 	<footer class="alt-link">
 		{#if mode === 'login'}
-			<p>New here? <a href="/signup">Create an account</a></p>
+			<p>New here? <a href={resolve('/signup')}>Create an account</a></p>
 		{:else if mode === 'signup'}
-			<p>Already have an account? <a href="/login">Sign in</a></p>
+			<p>Already have an account? <a href={resolve('/login')}>Sign in</a></p>
 		{:else}
-			<p>Remembered it? <a href="/login">Back to sign in</a></p>
+			<p>Remembered it? <a href={resolve('/login')}>Back to sign in</a></p>
 		{/if}
 	</footer>
 </div>

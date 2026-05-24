@@ -66,10 +66,10 @@
 
 	{#if sparkPath.length > 1}
 		<div class="spark" aria-hidden="true">
-			{#each sparkPath as p}
+			{#each sparkPath as p, i (i)}
 				<span class="dot" style:left="{p.left}%" style:top="{p.top}%"></span>
 			{/each}
-			{#each sparkPath.slice(1) as p, i}
+			{#each sparkPath.slice(1) as p, i (i)}
 				{@const prev = sparkPath[i]}
 				{#if prev}
 					{@const dx = p.left - prev.left}
