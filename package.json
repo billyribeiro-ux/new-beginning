@@ -3,6 +3,10 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
+	"packageManager": "pnpm@11.3.0",
+	"engines": {
+		"node": ">=20"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -20,7 +24,7 @@
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.61.1",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"@types/node": "^22.10.0",
+		"@types/node": "^25.9.1",
 		"drizzle-kit": "^0.31.10",
 		"eslint": "^10.4.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -30,7 +34,7 @@
 		"prettier-plugin-svelte": "^4.0.1",
 		"svelte": "^5.55.9",
 		"svelte-check": "^4.4.8",
-		"tsx": "^4.19.2",
+		"tsx": "^4.22.3",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.59.4",
 		"vite": "^8.0.14"
