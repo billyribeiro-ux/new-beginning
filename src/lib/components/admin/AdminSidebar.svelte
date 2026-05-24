@@ -45,8 +45,9 @@
 					{#each section.items as item (item.href)}
 						{@const Icon = iconOf(item.icon)}
 						<li>
+							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data uses resolved literal paths; no base path is configured -->
 							<a
-								href={resolve(item.href)}
+								href={item.href}
 								class="nav-link"
 								class:is-active={isActive(item.href)}
 								aria-current={isActive(item.href) ? 'page' : undefined}

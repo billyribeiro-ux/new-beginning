@@ -12,7 +12,6 @@
 	import { DASHBOARD_NAV } from '$lib/data/navigation.js';
 	import { ui } from '$lib/stores/ui.svelte.js';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 
 	function iconOf(name: string): Component {
 		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
