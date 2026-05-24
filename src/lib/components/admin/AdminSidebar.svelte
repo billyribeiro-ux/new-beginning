@@ -1,4 +1,3 @@
-<!-- eslint-disable svelte/no-navigation-without-resolve -- sidebar links are sourced from typed nav data (`$lib/data/navigation`); kit.paths.base is unset, so resolve() is a no-op -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as TablerIcons from '@tabler/icons-svelte';
@@ -13,6 +12,8 @@
 	import { ADMIN_NAV } from '$lib/data/navigation.js';
 	import { ui } from '$lib/stores/ui.svelte.js';
 	import { resolve } from '$app/paths';
+
+	const resolveDynamic = resolve as (href: string) => string;
 
 	function iconOf(name: string): Component {
 		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
@@ -46,9 +47,8 @@
 					{#each section.items as item (item.href)}
 						{@const Icon = iconOf(item.icon)}
 						<li>
-							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data is pre-resolved; no base path is configured -->
 							<a
-								href={item.href}
+								href={resolveDynamic(item.href)}
 								class="nav-link"
 								class:is-active={isActive(item.href)}
 								aria-current={isActive(item.href) ? 'page' : undefined}

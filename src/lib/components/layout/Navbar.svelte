@@ -10,6 +10,8 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 
+	const resolveDynamic = resolve as (href: string) => string;
+
 	let scrolled = $state(false);
 
 	$effect(() => {
@@ -49,8 +51,12 @@
 			<ul>
 				{#each MAIN_NAV as item (item.href)}
 					<li>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data uses resolved literal paths; no base path is configured -->
-						<a href={item.href} class:is-active={isActive(item.href)}>{item.label}</a>
+						<a
+							href={resolveDynamic(item.href)}
+							class:is-active={isActive(item.href)}
+						>
+							{item.label}
+						</a>
 					</li>
 				{/each}
 			</ul>
@@ -91,9 +97,8 @@
 			<ul>
 				{#each MAIN_NAV as item (item.href)}
 					<li>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data uses resolved literal paths; no base path is configured -->
-						<a
-							href={item.href}
+							<a
+							href={resolveDynamic(item.href)}
 							onclick={() => ui.closeMobileNav()}
 							class:is-active={isActive(item.href)}
 						>

@@ -47,6 +47,28 @@ export default ts.config(
 		}
 	},
 	{
+		// Nav components consume hand-curated route data from $lib/data/navigation; resolve() is
+		// called via a typed wrapper to satisfy the (literal-only) overload while keeping the
+		// dynamic-string call site clean. The lint rule pattern-matches on `resolve()` calls and
+		// cannot see through the wrapper.
+		files: [
+			'src/lib/components/admin/AdminSidebar.svelte',
+			'src/lib/components/dashboard/DashboardSidebar.svelte',
+			'src/lib/components/layout/Navbar.svelte'
+		],
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
+		}
+	},
+	{
+		// Button.svelte intentionally accepts polymorphic href values (internal absolute paths,
+		// hash anchors, external URLs). Callers pre-resolve internal paths; Button passes through.
+		files: ['src/lib/components/ui/Button.svelte'],
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
+		}
+	},
+	{
 		ignores: [
 			'build/',
 			'.svelte-kit/',

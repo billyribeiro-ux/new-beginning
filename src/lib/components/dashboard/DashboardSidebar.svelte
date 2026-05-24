@@ -13,6 +13,10 @@
 	import { ui } from '$lib/stores/ui.svelte.js';
 	import { resolve } from '$app/paths';
 
+	// resolve() is typed for literal-string args; this wrapper commits to the no-params overload
+	// for dynamic nav data. Safe: $lib/data/navigation is hand-curated to real routes.
+	const resolveDynamic = resolve as (href: string) => string;
+
 	function iconOf(name: string): Component {
 		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
 		return dict[name] ?? (IconCircleDot as unknown as Component);
@@ -42,9 +46,8 @@
 			{#each DASHBOARD_NAV as item (item.href)}
 				{@const Icon = iconOf(item.icon)}
 				<li>
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data is pre-resolved; no base path is configured -->
 					<a
-						href={item.href}
+						href={resolveDynamic(item.href)}
 						class="nav-link"
 						class:is-active={isActive(item.href)}
 						aria-current={isActive(item.href) ? 'page' : undefined}
