@@ -39,10 +39,10 @@
 
 	<nav class="nav">
 		<ul>
-			{#each DASHBOARD_NAV as item}
+			{#each DASHBOARD_NAV as item (item.href)}
 				{@const Icon = iconOf(item.icon)}
 				<li>
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data uses resolved literal paths; no base path is configured (kit.paths.base is unset) -->
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- nav data is pre-resolved; no base path is configured -->
 					<a
 						href={item.href}
 						class="nav-link"
