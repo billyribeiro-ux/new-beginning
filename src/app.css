@@ -1,0 +1,6 @@
+/* TradeFlex Trading — global stylesheet entry */
+@import '$lib/styles/tokens.css';
+@import '$lib/styles/reset.css';
+@import '$lib/styles/typography.css';
+@import '$lib/styles/utilities.css';
+@import '$lib/styles/animations.css';
