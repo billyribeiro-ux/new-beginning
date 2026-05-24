@@ -69,6 +69,14 @@ export default ts.config(
 		}
 	},
 	{
+		// JsonLd injects a JSON-LD <script> via {@html}; the literal `<script>` inside the template
+		// string trips the svelte ESLint parser. The runtime output is correct and HTML-escapes `<`.
+		files: ['src/lib/components/seo/JsonLd.svelte'],
+		rules: {
+			'svelte/valid-compile': 'off'
+		}
+	},
+	{
 		ignores: [
 			'build/',
 			'.svelte-kit/',

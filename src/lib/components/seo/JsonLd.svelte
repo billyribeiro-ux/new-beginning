@@ -6,5 +6,5 @@
 </script>
 
 <svelte:head>
-	{@html `<script type="application/ld+json">${json.replace(/</g, '\\u003c')}</script>`}
+	{@html `<script type="application/ld+json">${json.replace(/</g, '\\u003c')}<` + `/script>`}
 </svelte:head>
