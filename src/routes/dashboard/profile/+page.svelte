@@ -253,9 +253,7 @@
 						<p class="sm">{s.location} · {s.last}</p>
 					</div>
 					{#if s.current}
-						<Badge variant="success" size="sm"
-							>{#snippet children()}<IconCheck size={10} />This device{/snippet}</Badge
-						>
+						<Badge variant="success" size="sm"><IconCheck size={10} />This device</Badge>
 					{:else}
 						<Button variant="ghost" size="sm" onclick={() => revokeSession(s.id)}>Revoke</Button>
 					{/if}

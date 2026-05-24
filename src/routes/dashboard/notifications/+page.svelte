@@ -101,7 +101,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each categories as cat}
+				{#each categories as cat (cat.key)}
 					<tr>
 						<td>
 							<p class="pl">{cat.label}</p>
@@ -135,7 +135,7 @@
 			<button class="link" type="button" onclick={markAllRead}>Mark all read</button>
 		</header>
 		<ul class="feed">
-			{#each feed as n}
+			{#each feed as n (n.id)}
 				<li class:unread={!n.read}>
 					<span class="dot" aria-hidden="true"></span>
 					<div>

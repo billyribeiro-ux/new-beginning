@@ -135,7 +135,7 @@
 			<a class="more" href="/dashboard">Overview <IconArrowRight size={12} /></a>
 		</header>
 		<div class="usage-grid">
-			{#each usageStats as u}
+			{#each usageStats as u (u.label)}
 				<div class="usage">
 					<p class="ul">{u.label}</p>
 					<p class="uv">{u.value}</p>
@@ -152,7 +152,7 @@
 			<Badge variant="gold">Quarterly</Badge>
 		</header>
 		<ul class="benefits">
-			{#each currentPlan.highlights as h}
+			{#each currentPlan.highlights as h (h)}
 				<li><span class="ck"><IconCheck size={12} stroke={3} /></span>{h}</li>
 			{/each}
 		</ul>
@@ -167,7 +167,7 @@
 	size="lg"
 >
 	<div class="change-grid">
-		{#each DAY_TRADING_PLANS as plan}
+		{#each DAY_TRADING_PLANS as plan (plan.id)}
 			<button
 				type="button"
 				class="change-card"
@@ -225,7 +225,7 @@
 	{#if cancelStep === 'reason'}
 		<p class="muted-p">Help us improve — what is the main reason for cancelling?</p>
 		<div class="reasons">
-			{#each reasons as r}
+			{#each reasons as r (r)}
 				<label class="reason">
 					<input type="radio" name="reason" value={r} bind:group={cancelReason} />
 					<span>{r}</span>
