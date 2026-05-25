@@ -2084,6 +2084,181 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 12 ============================ -->
+    <section id="ch-12">
+      <p class="eyebrow">Chapter 12</p>
+      <h2>Performance levers · <code>content-visibility</code>, <code>contain</code>, <code>will-change</code></h2>
+      <p class="lede">Three CSS properties shipped in the last five years that can measurably improve rendering performance. The project uses <strong>none of them</strong>. This chapter explains what each lever does, where it would help if applied, why the project hasn't shipped them yet, and — crucially — when the answer to "should I add <code>will-change</code> here?" is almost always <em>no</em>. The performance gains are real; so is the way each property goes wrong if misapplied. Same honest deferral framing as Ch 10's user-preference queries.</p>
+
+      <h3>The current state · grep audit</h3>
+      <p>One sentence of evidence sets the scope of this chapter:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — perf property usage in src/</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">for prop in content-visibility "contain:" will-change contain-intrinsic-size; do</span>
+<span class="prompt">&gt;</span> <span class="cmd">  echo "$prop: $(grep -rh "$prop" src/ | wc -l) sites"</span>
+<span class="prompt">&gt;</span> <span class="cmd">done</span>
+<span class="out">content-visibility: 0 sites</span>
+<span class="out">contain:            0 sites</span>
+<span class="out">will-change:        0 sites</span>
+<span class="out">contain-intrinsic-size: 0 sites</span></pre></div>
+
+      <p>Zero across the board. The project's only containment hint is the <code>isolation: isolate</code> in <code>reset.css</code> (which creates a stacking context to prevent z-index leaks — adjacent to containment but not the same property family).</p>
+
+      <p>That's not a finding the project is proud of, but it isn't a finding the project loses sleep over either. The reasoning, made explicit at the end of the chapter, is the same as Ch 10's: <strong>the baseline is fast enough that none of these levers shows measurable wins on the current pages</strong>, and the engineering time is better spent on shipping product. But that calculus could flip the moment the project adds a long catalog, an admin table with thousands of rows, or a complex dashboard. So the inventory is worth keeping.</p>
+
+      <h3>Lever 1 · <code>content-visibility: auto</code> · skip rendering for off-screen content</h3>
+      <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · content-visibility</div>
+        <p>"<code>content-visibility</code> controls whether or not an element renders its contents at all, along with forcing a strong set of containments, allowing user agents to potentially omit large swathes of layout and rendering work until it becomes needed."</p>
+        <p>On the <code>auto</code> value: "The element turns on layout containment, style containment, and paint containment. If the element is not relevant to the user, it also skips its contents. Unlike <code>hidden</code>, the skipped contents must still be available as normal to user-agent features such as find-in-page, tab order navigation, etc."</p>
+      </div>
+
+      <p>The shipping promise: an off-screen <code>&lt;article&gt;</code> that's marked <code>content-visibility: auto</code> isn't laid out or painted by the browser until it scrolls into the viewport. For a long page with many independent sections, this is a measurable first-paint improvement — the browser does the work for the visible content immediately and defers the rest.</p>
+
+      <h4>Where it would help in this codebase</h4>
+      <p>Two real surfaces are obvious candidates:</p>
+
+      <ol>
+        <li><strong>The FAQ accordion</strong> on the home page and subscription page. Each FAQ item is an independent <code>&lt;details&gt;</code> block; the page typically renders 10-20 of them. Most are below the fold. Marking each item <code>content-visibility: auto</code> means the browser only fully renders the items the user can see; the rest cost almost nothing until scrolled into view.</li>
+        <li><strong>The admin <code>DataTable</code></strong> — currently has 6 <code>&lt;tr&gt;</code> elements (mock data), so the lever is invisible at this scale. But the table is meant to handle hundreds of rows in Phase 2. At 500 rows, <code>content-visibility: auto</code> on each row could turn a 200ms first-paint into a 50ms one, because the browser only paints the rows the user can see.</li>
+      </ol>
+
+      <h4>The required companion · <code>contain-intrinsic-size</code></h4>
+      <p>Per the MDN reference again: <em>"The <code>contain-intrinsic-size</code> property is included to represent the content size. This helps to reduce layout shift when content is hidden."</em></p>
+
+      <p>The problem: when <code>content-visibility: auto</code> skips rendering off-screen content, the browser doesn't know how tall the skipped content <em>would be</em>. So the scrollbar reflects only the visible content — making the page look much shorter than it actually is. As the user scrolls and new content gets rendered, the scrollbar resizes mid-scroll, producing a "jumpy scrollbar" effect that's worse than the original first-paint cost.</p>
+
+      <p>The fix is to estimate the height of the skipped content via <code>contain-intrinsic-size</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · FAQ item with content-visibility</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">faq-item</span> {</span><span class="ln">  <span class="tk-prop">content-visibility</span>: auto;</span><span class="ln">  <span class="tk-prop">contain-intrinsic-size</span>: <span class="tk-num">0 200px</span>;  <span class="tk-com">/* width auto, height 200px */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>The <code>0 200px</code> means: <em>"if you skip this element, treat it as 0px wide × 200px tall for layout purposes."</em> The width <code>0</code> means the element's width is determined naturally by its container (which is usually the right behavior); the height <code>200px</code> is a designer estimate of how tall the FAQ item typically renders. The scrollbar pre-sizes to <code>200px × n_items</code>; as items scroll into view and their real heights replace the estimate, the scrollbar adjusts slightly but stays stable.</p>
+
+      <p>Get the estimate wrong by a lot and the scrollbar still jumps — overshooting (estimate too tall) leaves dead space when items render shorter; undershooting (estimate too short) produces growth as items render. The 200px above is rough; a real estimate would come from measuring the typical FAQ item height in production data. The win is real; the tuning is per-component.</p>
+
+      <h3>Lever 2 · <code>contain</code> · scope layout/style/paint independence</h3>
+      <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · contain</div>
+        <p>"<strong>Layout containment</strong>: The internal layout of the element is isolated from the rest of the page. This means nothing outside the element affects its internal layout, and vice versa."</p>
+        <p>"<strong>Paint containment</strong>: Descendants of the element don't display outside its bounds. If the containing box is offscreen, the browser does not need to paint its contained elements."</p>
+        <p>"When the browser recalculates the containing element's subtree, only that element is recalculated. Nothing outside of the contained element needs to be recalculated."</p>
+      </div>
+
+      <p>Four containment types: <strong>layout</strong>, <strong>style</strong>, <strong>paint</strong>, <strong>size</strong>. Each tells the browser <em>"changes inside this element cannot affect anything outside it"</em> for that particular concern. The browser uses the hint to skip unnecessary recalculation when something changes inside the contained subtree.</p>
+
+      <h4>Where it would help · cards with hover states</h4>
+      <p>A <code>ProductCard</code> that lifts on hover (<code>transform: translateY(-4px)</code>) and grows its shadow triggers a paint operation. Without containment, the browser may also recalculate the layout of the surrounding grid (because, for all it knows, the card's hover state could cause it to overflow and affect neighbors). With <code>contain: layout paint</code>, the browser knows definitively that the card's internal changes cannot escape its bounds — the recalc is scoped to the card only.</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · ProductCard with containment</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">product-card</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;  <span class="tk-com">/* existing — for Ch 6's @container queries */</span></span><span class="ln">  <span class="tk-prop">contain</span>: layout paint;        <span class="tk-com">/* new — hover repaints stay local */</span></span><span class="ln">  <span class="tk-com">/* ... rest of card ... */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>The cost: <strong>essentially free</strong>. Containment is a one-time declaration; the browser uses the hint or ignores it based on what it determined was actually true. The win on cold render: maybe 5-10% paint-time reduction on a page with many cards. The win on hover/interaction: more pronounced — eliminates jank when many cards are visible and the user moves the cursor across them quickly.</p>
+
+      <p>The reason the project doesn't have this yet: nobody measured a problem. <code>ProductCard</code> hover feels fine on modern hardware. If the project ever ships to a market segment with lower-end devices (Chromebooks in educational deployments, older Android tablets in trading-floor setups), this would be the first place to add containment.</p>
+
+      <h4>The implicit relationship · <code>container-type</code> already includes some containment</h4>
+      <p>Worth flagging because it overlaps with Ch 6: <code>container-type: inline-size</code> (which the project uses on <code>ProductCard</code>, <code>StatCard</code>, <code>DataTable</code>, <code>.compare-wrap</code>, and the dead-but-still-declared containers on <code>PricingCard</code> and <code>RoadmapCard</code>) implies <strong>style and inline-size containment</strong>. The full <code>contain</code> property would add <strong>layout</strong> and <strong>paint</strong> containment on top. The four-component containers from Ch 6 already get some of the perf wins discussed here; full <code>contain: layout paint</code> would extend them.</p>
+
+      <h4>The <code>isolation: isolate</code> connection</h4>
+      <p>The project's reset already includes <code>#app, #__root { isolation: isolate }</code>. This creates a new <em>stacking context</em>, which is conceptually related but functionally distinct from containment. Stacking-context isolation prevents <code>z-index</code> leaks between the app root and any portaled content; containment prevents layout/style/paint recalculation propagation. The two often pair well together but they're solving different problems.</p>
+
+      <h3>Lever 3 · <code>will-change</code> · the Schrödinger's optimization</h3>
+      <p>This is the lever the project most explicitly avoids — for good reason. Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · will-change · warning</div>
+        <p>"<code>will-change</code> is intended to be used as a last resort, in order to try to deal with <strong>existing</strong> performance problems. It should not be used to anticipate performance problems."</p>
+        <p>"Excessive use of <code>will-change</code> will result in excessive memory use and will cause more complex rendering to occur as the browser attempts to prepare for the possible change. <strong>This will lead to worse performance.</strong>"</p>
+        <p>"The normal behavior for optimizations that the browser make is to remove the optimizations as soon as it can and revert back to normal. But adding <code>will-change</code> directly in a stylesheet implies that the targeted elements are always a few moments away from changing and the browser will keep the optimizations for much longer time than it would have otherwise."</p>
+      </div>
+
+      <p>The MDN docs are explicit: <strong><code>will-change</code> in a stylesheet is almost always wrong</strong>. The browser is forced to maintain the optimization indefinitely (a separate compositor layer, GPU memory allocation, etc.), and the optimization is only useful for the brief window when the element is actually changing. Most stylesheet uses of <code>will-change</code> pay the cost continuously to get the benefit occasionally.</p>
+
+      <h4>The correct pattern · toggle via JavaScript</h4>
+      <p>The L7 use of <code>will-change</code> looks like this:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">conceptual · will-change toggled via JS</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* On user interaction (hover, focus, drag start) — RIGHT BEFORE animating: */</span></span><span class="ln"><span class="tk-var">element</span>.<span class="tk-prop">style</span>.<span class="tk-prop">willChange</span> = <span class="tk-str">'transform'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-com">/* When the animation completes — IMMEDIATELY AFTER: */</span></span><span class="ln"><span class="tk-var">element</span>.<span class="tk-prop">addEventListener</span>(<span class="tk-str">'transitionend'</span>, () =&gt; {</span><span class="ln">  <span class="tk-var">element</span>.<span class="tk-prop">style</span>.<span class="tk-prop">willChange</span> = <span class="tk-str">'auto'</span>;</span><span class="ln">}, { <span class="tk-prop">once</span>: <span class="tk-bool">true</span> });</span></code></pre></div>
+
+      <p>The browser gets the optimization hint only during the brief window when the animation is actually happening. After the animation ends, the hint is removed and the browser releases the optimization resources. This is the pattern that produces measurable gains; the stylesheet pattern produces measurable losses.</p>
+
+      <p>The project doesn't use <code>will-change</code> anywhere — neither correctly nor incorrectly. The animations it does (Ch 9's keyframes, GSAP attachments) rely on the <code>translate3d</code> trick instead, which provides similar GPU promotion without the indefinite memory cost. <code>translate3d(0, 16px, 0)</code> is a 2D translation expressed in 3D form; the browser typically promotes such elements to their own compositor layer because the math involves the 3D pipeline. The win is the same; the cost is paid only while the animation is running because the transform itself is what triggers the promotion, not a persistent hint.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the <code>translate3d</code> trick is the L7 default</div>
+        <p>If you find yourself reaching for <code>will-change: transform</code> in a stylesheet, ask first: <em>"could I use <code>translate3d</code> instead?"</em> Almost always, yes. The animation gets GPU promotion, the cost is paid during the animation only, and there's no decision about when to remove the hint. The handful of cases where <code>will-change</code> wins (e.g., a draggable element where the position is constantly changing and the GPU layer should persist) are exactly the cases where the JavaScript-toggled pattern above is correct. <code>will-change</code> in a stylesheet is almost never the right answer.</p>
+      </div>
+
+      <h3>Two other 2026-era performance properties worth knowing</h3>
+
+      <h4><code>scrollbar-gutter: stable</code></h4>
+      <p>Reserves space for the scrollbar even when content doesn't overflow. Without it, when a long page first loads the scrollbar appears mid-render and the layout shifts by however wide the scrollbar is (typically ~17px on Windows, ~0px on Mac/mobile). The shift counts against Core Web Vitals' CLS metric. One declaration in the reset would fix it project-wide:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · prevent scrollbar-induced CLS</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-var">html</span> { <span class="tk-prop">scrollbar-gutter</span>: stable; }</span></code></pre></div>
+
+      <p>The project doesn't have it. Adding it is a single line; the only argument against is that on macOS (where scrollbars overlay rather than displace content) the gutter is visible empty space. The project's design uses a custom scrollbar already (the reset configures <code>scrollbar-width: thin; scrollbar-color: ...</code>), so the visual mismatch on Mac is minor.</p>
+
+      <h4><code>overscroll-behavior: contain</code></h4>
+      <p>Prevents scroll-chaining — when a user reaches the bottom of a scrollable container (modal, drawer, nested list), the scroll doesn't escape and start scrolling the page body. Critical for modals where the user expects the body to stay in place. The project's <code>Modal</code> component uses a JavaScript scroll-lock on body when the modal is open, which works but is heavier than the one-line CSS fix:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · Modal with overscroll containment</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">modal-body</span> {</span><span class="ln">  <span class="tk-prop">overflow-y</span>: auto;</span><span class="ln">  <span class="tk-prop">overscroll-behavior</span>: contain;  <span class="tk-com">/* stop scroll-chaining to body */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>Could replace the JS scroll-lock. The CSS approach is simpler, doesn't fight the user's expected scroll behavior, and has been stable in browsers since 2020. Worth migrating to.</p>
+
+      <h3>The deferral calculus · why none of this is shipped</h3>
+      <p>Three reasons, ranked by honesty:</p>
+
+      <ol>
+        <li><strong>The current pages don't show measurable problems.</strong> First Contentful Paint on the home page (production preview) is under 300ms on a fast connection. Cumulative Layout Shift is below 0.05. The pages aren't slow. Adding perf levers to fast pages doesn't make them faster in any way users notice.</li>
+        <li><strong>Each lever has a per-component cost.</strong> <code>content-visibility: auto</code> + <code>contain-intrinsic-size</code> needs a per-component height estimate. <code>contain: layout paint</code> needs verification that the component truly is self-contained (the moment one of its children uses absolute positioning to escape, the containment breaks visually). Even when the levers are right, applying them is per-component review work.</li>
+        <li><strong>The wins compound with scale.</strong> A 5% paint-time improvement on a 50ms first paint is invisible (2.5ms). On a 500ms first paint with hundreds of cards, it's 25ms — visible. The levers earn their keep at the scale that triggers them; the project's current scale doesn't trigger them yet.</li>
+      </ol>
+
+      <p>The honest "when this becomes a shipping requirement" is the same as Ch 10's: when a specific page exceeds a budget. Two budget triggers the team should adopt:</p>
+
+      <ul>
+        <li>First Contentful Paint exceeds <strong>400ms</strong> on the project's production-preview baseline → audit for <code>content-visibility</code> opportunities on below-the-fold sections.</li>
+        <li>A page has <strong>100+ repeating elements</strong> (cards, table rows, list items) → audit for <code>content-visibility</code> + <code>contain</code> on the repeating unit.</li>
+      </ul>
+
+      <p>Neither has happened. When they do, the work plan is in this chapter.</p>
+
+      <h3>The principle · measure before optimizing, optimize per-component</h3>
+      <p>The CSS performance levers in this chapter share a structural feature with the user-preference media queries in Ch 10: <strong>they're cheap to add and easy to over-add</strong>. <code>will-change</code> on every animated element makes the page slower, not faster. <code>content-visibility: auto</code> on every section without an intrinsic-size estimate creates a jumpy scrollbar that's worse than no optimization. <code>contain: layout paint</code> on a card whose child uses <code>position: absolute</code> with negative offsets visually clips content.</p>
+
+      <p>The discipline: <strong>find the slow page first</strong> (measure FCP / LCP / CLS / INP). Identify the bottleneck (rendering? layout? long task?). Apply the lever that specifically addresses the bottleneck. Re-measure. <em>Don't</em> apply the lever speculatively to everything in case it might help — speculative perf optimization makes more things worse than better, especially with these three properties.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · the speculative-perf trap</div>
+        <p>A common pattern: a developer reads an article about <code>content-visibility: auto</code>, applies it to every <code>&lt;section&gt;</code> in the codebase, ships it, and the scrollbar starts jumping on every page that has sections of varying heights. The next sprint, they spend hours adding <code>contain-intrinsic-size</code> overrides per page. By the end they've added more CSS than they would have written for the original "just measure if it's actually slow" approach, and the perf improvement is debatable. The speculative-perf trap is real; <code>content-visibility</code> and <code>will-change</code> are the two properties most likely to trigger it.</p>
+      </div>
+
+      <h3>Summary · what to remember</h3>
+      <ul>
+        <li><strong><code>content-visibility: auto</code> + <code>contain-intrinsic-size</code></strong> — defer rendering of off-screen content. The companion property is required to prevent scrollbar jumping. High-leverage for long lists and tables at scale.</li>
+        <li><strong><code>contain: layout paint</code></strong> — scope recalculation to within an element's subtree. Cheap, near-free at the property level; pairs well with cards that have hover states.</li>
+        <li><strong><code>will-change</code></strong> — almost always wrong in a stylesheet per MDN's own warning. Use JavaScript to toggle it on right before animation and off immediately after, OR use <code>translate3d</code> for the same GPU-promotion effect without the indefinite cost.</li>
+        <li><strong><code>scrollbar-gutter: stable</code></strong> — one-line CLS fix for scrollbar-induced layout shift. Trivial migration.</li>
+        <li><strong><code>overscroll-behavior: contain</code></strong> — replaces JS-side scroll-locks in modals with a one-line CSS rule. Worth migrating the project's Modal component.</li>
+        <li><strong>The project uses none of these yet</strong>. Two budget triggers (FCP &gt;400ms; 100+ repeating elements per page) define when they should be adopted. Neither has fired.</li>
+        <li><strong>Measure first, optimize per-component, re-measure.</strong> Speculative perf optimization makes things worse more often than better.</li>
+      </ul>
+
+      <p>The next chapter is the volume's biggest performance win — the case study where a real measurement found 471 KB of gzipped JavaScript shipping to every page that nothing in the codebase used. <code>@tabler/icons-svelte</code> was the culprit; the migration that fixed it took a small architectural refactor and a regex sweep across 64 files. Total client JS dropped from 12 MB to 2.8 MB.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-11"><div class="dir">← Prev</div><div class="ttl">Build pipeline</div></a>
+        <a class="next" href="#ch-13"><div class="dir">Next →</div><div class="ttl">Tabler tree-shake</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
