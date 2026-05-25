@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Frontend Engineering · Vol 4 — Routes, Data &amp; Production</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+:root{
+  --surface-0:#0a0a0b;--surface-1:#111114;--surface-2:#17171c;--surface-3:#1f1f26;--surface-4:#2a2a33;
+  --gold-200:#f8e1a8;--gold-300:#f5d08a;--gold-400:#e8b660;--gold-500:#d4a24c;--gold-600:#b0832f;
+  --ink-100:#f8f6f1;--ink-200:#d8d3c6;--ink-300:#a39e8f;--ink-400:#74705f;
+  --border-default:rgba(248,246,241,.1);--border-strong:rgba(248,246,241,.18);--border-gold:rgba(212,162,76,.32);
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',Menlo,monospace;
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;
+  --sidebar-w:320px;
+}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+body{font-family:var(--font-body);font-size:16px;line-height:1.65;color:var(--ink-200);background:var(--surface-0);-webkit-font-smoothing:antialiased;min-height:100dvh}
+::selection{background:var(--gold-500);color:var(--surface-0)}
+*{scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+a{color:var(--gold-300);text-decoration:none}
+a:hover{color:var(--gold-200)}
+:focus-visible{outline:2px solid var(--gold-400);outline-offset:2px;border-radius:4px}
+.skip-link{position:fixed;top:-100px;left:16px;z-index:9999;padding:12px 20px;background:var(--gold-500);color:var(--surface-0);border-radius:8px;font-weight:600;transition:top .2s}
+.skip-link:focus{top:16px}
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100dvh}
+@media (max-width:1024px){.shell{grid-template-columns:1fr}.sidebar{display:none}}
+.sidebar{position:sticky;top:0;height:100dvh;overflow-y:auto;border-right:1px solid var(--border-default);background:linear-gradient(180deg,var(--surface-1),var(--surface-0));padding:24px 20px}
+.sidebar .brand{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--ink-100);letter-spacing:-.01em;margin-bottom:4px}
+.sidebar .brand .accent{background:linear-gradient(135deg,#f5d08a,#e8b660 50%,#d4a24c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.sidebar .vol{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:600;margin-bottom:24px}
+.sidebar nav ol{list-style:none;counter-reset:chap;display:flex;flex-direction:column;gap:2px}
+.sidebar nav a{display:block;padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;color:var(--ink-300);counter-increment:chap;position:relative;line-height:1.4;transition:background .15s,color .15s}
+.sidebar nav a::before{content:counter(chap,decimal-leading-zero);font-family:var(--font-mono);font-size:11px;color:var(--ink-400);margin-right:10px;font-weight:500}
+.sidebar nav a:hover{background:var(--surface-2);color:var(--ink-100)}
+.sidebar nav a.active{background:var(--surface-2);color:var(--gold-300);box-shadow:inset 2px 0 0 var(--gold-500)}
+.sidebar .series{margin-top:32px;padding-top:24px;border-top:1px solid var(--border-default)}
+.sidebar .series h4{font-family:var(--font-body);font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);margin-bottom:12px}
+.sidebar .series ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.sidebar .series li{font-size:13px;color:var(--ink-300);padding:6px 12px;border-radius:var(--radius-sm)}
+.sidebar .series li.done{color:var(--ink-300)}
+.sidebar .series li.done::after{content:' ✓';color:var(--gold-400)}
+.sidebar .series li.current{background:rgba(212,162,76,.08);color:var(--gold-300);border:1px solid var(--border-gold)}
+.sidebar .series li.future{color:var(--ink-400)}
+main{padding:48px clamp(20px,5vw,72px) 120px;max-width:920px;margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid var(--border-default)}
+.topbar .crumbs{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);font-weight:600}
+.topbar .crumbs .sep{margin:0 8px;color:var(--ink-400)}
+.topbar .crumbs .gold{color:var(--gold-400)}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;color:var(--ink-100);line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(2.25rem,1.85rem + 1.6vw,3.25rem);margin-bottom:24px}
+h2{font-size:clamp(1.75rem,1.4rem + 1vw,2.25rem);margin-top:64px;margin-bottom:20px;padding-top:8px}
+h3{font-size:1.4rem;margin-top:40px;margin-bottom:14px;color:var(--gold-300)}
+h4{font-size:1.1rem;margin-top:28px;margin-bottom:10px;color:var(--ink-100)}
+p{margin-bottom:16px;color:var(--ink-200);text-wrap:pretty}
+strong{color:var(--ink-100);font-weight:600}
+em{color:var(--gold-200);font-style:italic}
+ul,ol{margin:0 0 20px 24px}
+li{margin-bottom:8px;color:var(--ink-200)}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:600;margin-bottom:12px}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--gold-500)}
+.lede{font-size:1.15rem;line-height:1.65;color:var(--ink-200);margin-bottom:28px;border-left:2px solid var(--gold-500);padding-left:20px}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);color:var(--gold-200);padding:2px 6px;border-radius:4px;border:1px solid var(--border-default)}
+.code{position:relative;margin:20px 0 28px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default);background:var(--surface-1);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.code .head{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:8px 14px;border-bottom:1px solid var(--border-default);font-family:var(--font-mono);font-size:11px;color:var(--ink-300)}
+.code .head .lang{color:var(--gold-400);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.code .head .path{color:var(--ink-300);font-size:11px}
+.code .copy{background:none;border:1px solid var(--border-default);color:var(--ink-300);font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.code .copy:hover{background:var(--surface-3);color:var(--gold-300);border-color:var(--border-gold)}
+.code .copy.copied{color:var(--gold-300);border-color:var(--border-gold)}
+.code pre{margin:0;padding:18px 0;overflow-x:auto;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--ink-100);background:var(--surface-1);counter-reset:line}
+.code pre code{display:block;background:none;border:none;padding:0;color:inherit;font-size:inherit}
+.code .ln{display:block;padding:0 18px 0 60px;position:relative;white-space:pre}
+.code .ln::before{counter-increment:line;content:counter(line);position:absolute;left:0;width:46px;text-align:right;color:var(--ink-400);font-size:11px;font-weight:500;user-select:none}
+.code .ln:hover{background:rgba(212,162,76,.04)}
+.tk-kw{color:#e8b660}.tk-str{color:#9bd1a4}.tk-num{color:#d6a86e}.tk-com{color:#74705f;font-style:italic}.tk-fn{color:#f5d08a}.tk-typ{color:#a3c7e8}.tk-prop{color:#d8d3c6}.tk-tag{color:#e8b660}.tk-attr{color:#9bd1a4}.tk-punct{color:#a39e8f}.tk-var{color:#f8f6f1}.tk-bool{color:#d6a86e}.tk-rune{color:#e8b660;font-weight:600}
+.callout{margin:24px 0;padding:18px 22px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--surface-1);position:relative;border-left:3px solid var(--gold-500)}
+.callout .label{display:inline-flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:700;margin-bottom:10px}
+.callout p:last-child{margin-bottom:0}
+.callout.why{border-left-color:var(--gold-500)}
+.callout.pitfall{border-left-color:#d96868}
+.callout.pitfall .label{color:#d96868}
+.callout.ts{border-left-color:#6ea8d6}
+.callout.ts .label{color:#6ea8d6}
+.callout.term{border-left-color:#a3c7e8}
+.callout.term .label{color:#a3c7e8}
+.callout.rune{border-left-color:var(--gold-400);background:linear-gradient(135deg,rgba(245,208,138,.04),transparent)}
+.callout.rune .label{color:var(--gold-300)}
+.term{margin:20px 0 28px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default);background:#000;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.term .head{display:flex;align-items:center;gap:6px;background:#1a1a1a;padding:8px 14px;border-bottom:1px solid var(--border-default)}
+.term .head .dot{width:11px;height:11px;border-radius:50%;background:#444}
+.term .head .label{margin-left:12px;font-family:var(--font-mono);font-size:11px;color:#888}
+.term pre{margin:0;padding:18px 22px;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:#cfcfcf;overflow-x:auto}
+.term .prompt{color:var(--gold-400);font-weight:600;user-select:none}
+.term .cmd{color:#fff}
+.term .out{color:#888}
+.term .ok{color:#5dbb78}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14px;background:var(--surface-1);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default)}
+th{text-align:left;padding:12px 14px;background:var(--surface-2);color:var(--gold-300);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border-default)}
+td{padding:12px 14px;border-bottom:1px solid var(--border-default);color:var(--ink-200);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td code{font-size:.85em}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:80px;padding-top:32px;border-top:1px solid var(--border-default)}
+.pager a{display:block;padding:18px 22px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--surface-1);transition:all .2s;color:var(--ink-200)}
+.pager a:hover{background:var(--surface-2);border-color:var(--border-gold);transform:translateY(-2px)}
+.pager .dir{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);font-weight:600;margin-bottom:6px}
+.pager .ttl{font-family:var(--font-display);font-size:16px;color:var(--gold-300);font-weight:600}
+.pager .prev{text-align:left}
+.pager .next{text-align:right}
+.pager .disabled{opacity:.35;pointer-events:none}
+.vol-end{margin-top:80px;padding:40px;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(245,208,138,.08),rgba(176,131,47,.02));border:1px solid var(--border-gold);text-align:center}
+.vol-end h3{font-family:var(--font-display);font-size:1.6rem;color:var(--gold-300);margin-top:0}
+.vol-end .next-vol{display:inline-block;margin-top:20px;padding:14px 28px;background:linear-gradient(135deg,#f5d08a,#e8b660 50%,#d4a24c);color:#1a1206;border-radius:999px;font-weight:600;font-size:14px;letter-spacing:.02em}
+.vol-end .next-vol:hover{color:#1a1206;box-shadow:0 14px 36px rgba(232,182,96,.4)}
+.series-toc{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.series-toc .card{padding:18px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--surface-1)}
+.series-toc .card.done{opacity:.7}
+.series-toc .card.current{border-color:var(--gold-500);background:rgba(212,162,76,.06)}
+.series-toc .card.future{opacity:.55}
+.series-toc .num{font-family:var(--font-mono);font-size:11px;color:var(--gold-400);font-weight:600;letter-spacing:.1em}
+.series-toc .name{font-family:var(--font-display);font-size:16px;color:var(--ink-100);margin-top:4px;font-weight:600}
+.series-toc .status{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);margin-top:8px;font-weight:600}
+.series-toc .card.current .status{color:var(--gold-300)}
+.series-toc .card.done .status{color:var(--gold-400)}
+section{scroll-margin-top:24px}
+.hero{margin-bottom:48px}
+.hero .eyebrow{font-size:13px}
+.hero h1{font-size:clamp(2.5rem,2rem + 2.2vw,3.75rem)}
+dl{margin:18px 0 24px;padding:18px 22px;background:var(--surface-1);border-radius:var(--radius-md);border:1px solid var(--border-default)}
+dt{font-family:var(--font-mono);font-size:13px;color:var(--gold-300);font-weight:600;margin-bottom:4px;margin-top:14px}
+dt:first-child{margin-top:0}
+dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
+.diagram{margin:24px 0;padding:24px;background:var(--surface-1);border-radius:var(--radius-md);border:1px solid var(--border-default);font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--ink-200);overflow-x:auto;white-space:pre}
+.hl{background:rgba(232,182,96,.16);color:var(--gold-200);padding:1px 4px;border-radius:3px}
+.tag-new{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--gold-500);color:#1a1206;padding:2px 6px;border-radius:3px;margin-left:8px;vertical-align:middle}
+.rune-card{margin:24px 0;padding:20px 24px;border-radius:var(--radius-md);background:linear-gradient(135deg,rgba(245,208,138,.06),rgba(212,162,76,.02));border:1px solid var(--border-gold);position:relative}
+.rune-card .runename{font-family:var(--font-mono);font-size:18px;color:var(--gold-300);font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+.rune-card .tagline{font-size:14px;color:var(--ink-200);font-style:italic}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0 28px}
+@media (max-width:768px){.split{grid-template-columns:1fr}}
+.split .col{padding:16px 18px;border-radius:var(--radius-md);background:var(--surface-1);border:1px solid var(--border-default)}
+.split .col h5{font-family:var(--font-display);font-size:14px;color:var(--gold-300);margin-bottom:8px}
+.split .col p{font-size:13px;margin-bottom:8px}
+.split .col code{font-size:.85em}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="shell">
+  <aside class="sidebar" aria-label="Chapter navigation">
+    <div class="brand"><span class="accent">Frontend</span> Engineering</div>
+    <div class="vol">Volume 4 · Routes &amp; Data</div>
+    <nav aria-label="Chapters">
+      <ol>
+        <li><a href="#ch-1" class="ch-link">The SvelteKit Routing Mental Model</a></li>
+        <li><a href="#ch-2" class="ch-link">The Real Root Layout</a></li>
+        <li><a href="#ch-3" class="ch-link"><code>+layout.ts</code> &amp; <code>+layout.server.ts</code></a></li>
+        <li><a href="#ch-4" class="ch-link">Marketing routes &amp; the home page</a></li>
+        <li><a href="#ch-5" class="ch-link">Catalog: indicators &amp; courses</a></li>
+        <li><a href="#ch-6" class="ch-link">The cart route</a></li>
+        <li><a href="#ch-7" class="ch-link">Lead capture · form actions to DB</a></li>
+        <li><a href="#ch-8" class="ch-link">Contact form · the same pattern</a></li>
+        <li><a href="#ch-9" class="ch-link">Auth stubs (login, signup, reset)</a></li>
+        <li><a href="#ch-10" class="ch-link">Dashboard layout &amp; overview</a></li>
+        <li><a href="#ch-11" class="ch-link">Dashboard · courses, indicators, billing</a></li>
+        <li><a href="#ch-12" class="ch-link">Dashboard · profile, notifications, downloads</a></li>
+        <li><a href="#ch-13" class="ch-link">Admin layout &amp; overview</a></li>
+        <li><a href="#ch-14" class="ch-link">Admin write surfaces</a></li>
+        <li><a href="#ch-15" class="ch-link">Admin live-DB reads</a></li>
+        <li><a href="#ch-16" class="ch-link">SEO endpoints · sitemap &amp; robots</a></li>
+        <li><a href="#ch-17" class="ch-link">Drizzle · schema, client, seed</a></li>
+        <li><a href="#ch-18" class="ch-link">Production · adapters &amp; deploy</a></li>
+      </ol>
+    </nav>
+    <div class="series">
+      <h4>The Series</h4>
+      <ul>
+        <li class="done">Vol 1 · Foundations</li>
+        <li class="done">Vol 2 · Reactivity</li>
+        <li class="done">Vol 3 · Components</li>
+        <li class="current">Vol 4 · Routes &amp; Data</li>
+      </ul>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div class="topbar">
+      <div class="crumbs"><span class="gold">Frontend Engineering</span><span class="sep">/</span>Volume 4<span class="sep">/</span>Routes, Data &amp; Production</div>
+      <div class="crumbs">18 chapters · final volume</div>
+    </div>
+
+    <header class="hero">
+      <div class="eyebrow">Volume 4 of 4 · Final</div>
+      <h1>Routes, Data &amp; Production</h1>
+      <p class="lede">Volumes 1–3 gave you the toolbox: configs, runes, stores, utilities, and the entire component library. Volume 4 is where the application <em>becomes a website</em> — file-based routes, universal vs server load functions, progressive-enhancement form actions, a real database behind the contact form and lead capture, protected member areas, an admin console, an SEO sitemap that ships from the build, and the production deploy story.</p>
+      <p>Eighteen chapters. Every route in the repo. Every server-only file. Every page option that affects how the build ships. By the end you can ship the site to Vercel or a Node host with confidence about exactly which bytes leave the server and which run in the browser.</p>
+    </header>
+
+    <!-- CHAPTER 1 -->
+    <section id="ch-1">
+      <p class="eyebrow">Chapter 01</p>
+      <h2>The SvelteKit Routing Mental Model</h2>
+      <p>Volumes 1–3 built a workshop. We poured the foundation in Vol 1, hand-tuned the tools in Vol 2, and forged every component in Vol 3. None of it was a <em>website</em> yet. A website needs URLs that map to pages, a way to load data, a way to handle form submissions, and a way to separate code that may run on the client from code that must only run on the server. SvelteKit's answer to all four is a single mechanism: <strong>file-based routes built from a small alphabet of special files</strong>.</p>
+
+      <p>That alphabet is the first thing a Principal-L7 reader needs etched in memory before reading a single page of this volume. Get this right and every other chapter is a footnote.</p>
+
+      <h3>The five file types you will see in every route folder</h3>
+      <dl>
+        <dt>+page.svelte</dt>
+        <dd>The component that renders for this URL. Receives a <code>data</code> prop typed by <code>./$types</code>. Runs on the server during SSR, then hydrates in the browser. This is the only file in the alphabet that is allowed to contain markup.</dd>
+        <dt>+page.ts</dt>
+        <dd>A <em>universal</em> load function. Runs on the server during SSR <strong>and</strong> in the browser during client-side navigation. Whatever it returns becomes <code>data</code> in <code>+page.svelte</code>. Universal load is for data that's safe to compute anywhere — module imports, URL params, fetch with no secret.</dd>
+        <dt>+page.server.ts</dt>
+        <dd>A <em>server-only</em> load function. <strong>Never</strong> shipped to the browser. Same return value contract as <code>+page.ts</code> but you can touch <code>$env/dynamic/private</code>, the database, cookies, sessions, and anything else the public internet must not see. Also where <code>actions</code> live — the named handlers that respond to form POSTs.</dd>
+        <dt>+layout.svelte / +layout.ts / +layout.server.ts</dt>
+        <dd>Same three roles but for a <em>persistent wrapper</em> shared by every nested route. The layout renders once, its <code>children</code> snippet renders the matched page, and crucially layouts don't unmount as you navigate between sibling pages — that's why navbars, cart drawers, and toast queues live there.</dd>
+        <dt>+server.ts</dt>
+        <dd>An HTTP endpoint. Exports <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>, <code>OPTIONS</code>, or <code>HEAD</code> as functions returning <code>Response</code>. This is how <code>/sitemap.xml</code> and <code>/robots.txt</code> exist as URLs without a Svelte component.</dd>
+      </dl>
+
+      <p>Plus one error handler:</p>
+      <dl>
+        <dt>+error.svelte</dt>
+        <dd>Rendered when a load function or action throws. The nearest <code>+error.svelte</code> wins, walking up the directory tree. We have one at the root of <code>src/routes/</code> — that's our project-wide 404.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the split</div>
+        <p>The single most important architectural distinction in SvelteKit is <strong>universal vs server</strong>. <code>+page.ts</code> is "this can run anywhere". <code>+page.server.ts</code> is "this is server-only — the file is never even bundled for the browser." If you import a database client into a <code>.ts</code> file, your build either fails or — worse — leaks credentials into the client bundle. The <code>$lib/server/*</code> convention plus the <code>.server.ts</code> filename suffix are SvelteKit's two enforcement mechanisms. We use both throughout this volume.</p>
+      </div>
+
+      <h3>How a URL becomes a render</h3>
+      <p>The lifecycle of a request to <code>/indicators/revolution-ranger</code> looks like this:</p>
+
+      <div class="diagram">REQUEST  GET /indicators/revolution-ranger
+       │
+       ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │ src/hooks.server.ts → handle({ event, resolve })         │
+  │   • parse cookies, populate event.locals.user            │
+  └──────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │ Layout loads (root → /indicators → /indicators/[slug])   │
+  │   • +layout.server.ts (server-only, sequential)          │
+  │   • +layout.ts        (universal, in parallel)           │
+  └──────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │ Page load                                                │
+  │   • +page.server.ts  (server-only, sees locals)          │
+  │   • +page.ts         (universal, runs on server here)    │
+  │     → returns { product }                                │
+  └──────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │ Render: layout(s) → +page.svelte                         │
+  │   • props: { data: { product } }                         │
+  │   • produces HTML for the wire                           │
+  │   • bundles client JS for hydration                      │
+  └──────────────────────────────────────────────────────────┘
+       │
+       ▼
+RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
+
+      <p>Then the client takes over. On a subsequent navigation — say the user clicks a link to <code>/courses/options-101</code> — SvelteKit does <strong>not</strong> reload the page. Instead it re-runs the load functions in the browser, mounts the new <code>+page.svelte</code>, and the layout stays put because <code>/courses/options-101</code> shares the same root layout.</p>
+
+      <div class="callout term">
+        <div class="label">Glossary · SSR vs CSR vs SPA vs MPA</div>
+        <p><strong>SSR</strong> (server-side rendering): the first response is real HTML the browser can paint immediately. <strong>CSR</strong> (client-side rendering): JS runs on subsequent navigations and re-renders without a full page reload. <strong>SPA</strong>: a CSR-only app — no server render. <strong>MPA</strong>: every navigation is a fresh page load. SvelteKit defaults to <em>SSR + CSR</em>, the best of both: first paint is HTML, every click after is fast.</p>
+      </div>
+
+      <h3>The page-options dial</h3>
+      <p>Every route can be tuned with three module-level exports:</p>
+      <ul>
+        <li><code>export const prerender = true</code> — build the page <em>at build time</em> into static HTML, ship it from the CDN, never hit a server again.</li>
+        <li><code>export const ssr = false</code> — skip server rendering, ship an empty shell, mount in the browser. Useful for client-only pages (auth-gated dashboards where there's nothing to render until JS runs).</li>
+        <li><code>export const csr = false</code> — ship the server-rendered HTML, do <strong>not</strong> hydrate. Pages turn into pure documents. Useful for legal terms, sitemap fragments, robots.</li>
+      </ul>
+
+      <p>We use prerender for the SEO endpoints and leave SSR on for the rest. The trade-off is laid out in detail in chapters 16 and 18.</p>
+
+      <h3>The roadmap for this volume</h3>
+      <p>We move from outer shell to inner pages, then to the database, then to the production checklist:</p>
+      <ul>
+        <li>Chapters 2–3 — the root layout and the load function pair that feeds it.</li>
+        <li>Chapters 4–8 — every public marketing route, the catalog, the cart, the two form-action routes that actually write to the DB.</li>
+        <li>Chapter 9 — the four auth stubs.</li>
+        <li>Chapters 10–12 — the member dashboard tree.</li>
+        <li>Chapters 13–15 — the admin tree, including the two routes that read live from Drizzle.</li>
+        <li>Chapter 16 — the two <code>+server.ts</code> endpoints.</li>
+        <li>Chapter 17 — the database itself: schema, client, seed, migrations.</li>
+        <li>Chapter 18 — adapters, prerender vs SSR trade-offs, and the deploy checklist.</li>
+      </ul>
+
+      <div class="pager">
+        <span class="prev disabled"></span>
+        <a class="next" href="#ch-2"><div class="dir">Next →</div><div class="ttl">The Real Root Layout</div></a>
+      </div>
+    </section>
+
+    <!-- CHAPTER 2 -->
+    <section id="ch-2">
+      <p class="eyebrow">Chapter 02</p>
+      <h2>The Real Root Layout</h2>
+      <p>In Volume 1 Chapter 9 we wrote a placeholder root layout — a one-liner that did nothing but render its children. That was deliberate. We needed something compiling while we built the rest. Now we replace it with the production version: an app shell that mounts the Navbar, Footer, AnnouncementBar, CartDrawer, and Toast queue from Vol 3, with one critical twist — it has to <em>not</em> render the marketing chrome on routes that own their own chrome.</p>
+
+      <div class="code">
+        <div class="head"><span class="lang">svelte</span><span class="path">src/routes/+layout.svelte</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-tag">&lt;script</span> <span class="tk-attr">lang</span>=<span class="tk-str">"ts"</span><span class="tk-tag">&gt;</span></span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-str">'../app.css'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-kw">type</span> { <span class="tk-typ">Snippet</span> } <span class="tk-kw">from</span> <span class="tk-str">'svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { page } <span class="tk-kw">from</span> <span class="tk-str">'$app/state'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Navbar</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/layout/Navbar.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Footer</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/layout/Footer.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">AnnouncementBar</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/layout/AnnouncementBar.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">CartDrawer</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/layout/CartDrawer.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Toast</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/ui/Toast.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">JsonLd</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/seo/JsonLd.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { organizationLd, websiteLd } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/jsonld.js'</span>;</span><span class="ln"></span><span class="ln">	<span class="tk-kw">type</span> <span class="tk-typ">Props</span> = { children: <span class="tk-typ">Snippet</span> };</span><span class="ln">	<span class="tk-kw">let</span> { children }: <span class="tk-typ">Props</span> = <span class="tk-rune">$props</span>();</span><span class="ln"></span><span class="ln">	<span class="tk-com">// Hide app shell on auth + dashboard + admin routes (they have their own chrome)</span></span><span class="ln">	<span class="tk-kw">const</span> isBareRoute = <span class="tk-rune">$derived</span>(</span><span class="ln">		page.url.pathname.startsWith(<span class="tk-str">'/dashboard'</span>) ||</span><span class="ln">			page.url.pathname.startsWith(<span class="tk-str">'/admin'</span>) ||</span><span class="ln">			page.url.pathname === <span class="tk-str">'/login'</span> ||</span><span class="ln">			page.url.pathname === <span class="tk-str">'/signup'</span> ||</span><span class="ln">			page.url.pathname === <span class="tk-str">'/forgot-password'</span> ||</span><span class="ln">			page.url.pathname === <span class="tk-str">'/reset-password'</span></span><span class="ln">	);</span><span class="ln"><span class="tk-tag">&lt;/script&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;JsonLd</span> <span class="tk-attr">data</span>={[organizationLd(), websiteLd()]} <span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln">{#<span class="tk-kw">if</span> !isBareRoute}</span><span class="ln">	<span class="tk-tag">&lt;AnnouncementBar /&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;Navbar /&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;main</span> <span class="tk-attr">id</span>=<span class="tk-str">"main-content"</span><span class="tk-tag">&gt;</span></span><span class="ln">		{@render children()}</span><span class="ln">	<span class="tk-tag">&lt;/main&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;Footer /&gt;</span></span><span class="ln">{:<span class="tk-kw">else</span>}</span><span class="ln">	{@render children()}</span><span class="ln">{/<span class="tk-kw">if</span>}</span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;CartDrawer /&gt;</span></span><span class="ln"><span class="tk-tag">&lt;Toast /&gt;</span></span></code></pre>
+      </div>
+
+      <h3>What's happening, line by line</h3>
+      <dl>
+        <dt>Line 2 · <code>import '../app.css'</code></dt>
+        <dd>Pulling the global stylesheet from Vol 1 Ch 6. Importing it here, in the root layout, guarantees it ships with every page exactly once. Importing it in <code>+page.svelte</code> instead would be wrong: it would re-emit per page in dev and confuse Vite's CSS handling.</dd>
+        <dt>Line 4 · <code>import { page } from '$app/state'</code></dt>
+        <dd>SvelteKit 2.12+ runes API. <code>page.url</code>, <code>page.params</code>, <code>page.data</code>, and <code>page.status</code> are reactive — read them anywhere and your derived state updates as the user navigates. The old <code>$app/stores</code> still works but is the pre-runes API; new code uses <code>$app/state</code>.</dd>
+        <dt>Lines 5–9 · the layout-only imports</dt>
+        <dd>These five components — Navbar, Footer, AnnouncementBar, CartDrawer, Toast — are the things that need to be <em>persistent</em>. The cart drawer must keep its open/closed state as the user clicks between marketing pages; toast notifications shouldn't disappear when navigating; the navbar shouldn't re-mount and lose its scroll-lock state. SvelteKit's layout contract guarantees that: as long as the layout file boundary doesn't change, those components are not unmounted across navigations.</dd>
+        <dt>Lines 10–11 · JSON-LD imports</dt>
+        <dd>Two factories from Vol 2 Ch 12. <code>organizationLd()</code> emits Schema.org markup that tells Google "this is the TradeFlex Trading organization, here are our socials." <code>websiteLd()</code> emits the SearchAction so a Google sitelinks search box can show. Both ship from the root layout — every page inherits them automatically.</dd>
+        <dt>Lines 13–14 · the props shape</dt>
+        <dd>A layout receives a single prop: <code>children</code>, typed as <code>Snippet</code> (the rune-mode replacement for slots). We destructure it the same way every <code>$props()</code> call works.</dd>
+        <dt>Lines 16–24 · the bare-route derivation</dt>
+        <dd>This is the heart of the file. The marketing site has its own chrome. The dashboard has its own chrome. The admin has its own chrome. The auth pages are full-screen designs. If the root layout naively wrapped everything in Navbar + Footer, those would render <em>twice</em> on dashboard/admin pages. Solution: derive a boolean from <code>page.url.pathname</code>, then conditionally render the chrome. <code>$derived</code> from Vol 2 Ch 3 — it re-evaluates only when its dependencies change, and the only dependency here is the URL.</dd>
+        <dt>Line 27 · <code>&lt;JsonLd /&gt;</code></dt>
+        <dd>Pass an array of LD objects; the component renders one <code>&lt;script type="application/ld+json"&gt;</code> tag per object inside <code>&lt;svelte:head&gt;</code>. Children layouts and pages call <code>&lt;JsonLd /&gt;</code> with their own arrays — Svelte concatenates head content; nothing fights nothing.</dd>
+        <dt>Lines 29–38 · the conditional render</dt>
+        <dd>Bare routes get only <code>{@render children()}</code> — no AnnouncementBar, no Navbar, no <code>&lt;main&gt;</code> wrapper, no Footer. Their child layout (e.g. <code>/dashboard/+layout.svelte</code>) provides the chrome. Marketing routes get the full shell.</dd>
+        <dt>Lines 40–41 · CartDrawer + Toast — outside the conditional</dt>
+        <dd>This is the subtle bit. CartDrawer and Toast live <em>always</em>, on every route. If the user is on the dashboard, clicks "buy" on an upsell card, the cart drawer needs to open. If a form action throws on the admin page, the toast needs to show. They sit outside the <code>{#if}</code> for exactly that reason.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why a derived for <code>isBareRoute</code> and not just inline checks?</div>
+        <p>You could inline <code>page.url.pathname.startsWith('/dashboard')</code> in the template. It would work. We pull it into a <code>$derived</code> for two reasons: (1) reading <code>page.url.pathname</code> multiple times in the template re-runs the access tracker on each access — once via <code>$derived</code>, the dependency is observed exactly once; (2) the predicate is six lines of OR — naming it <code>isBareRoute</code> tells the next engineer what the boolean means without making them parse the disjunction.</p>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · don't put the cart inside the conditional</div>
+        <p>When this layout was first built the CartDrawer was inside the marketing branch of the <code>{#if}</code>. Result: pressing the cart button on a dashboard upsell did nothing — there was no drawer mounted to receive the open command. The fix is what you see here: cart + toast are <em>peers</em> of the branch, not <em>inside</em> it.</p>
+      </div>
+
+      <h3>The root <code>+error.svelte</code></h3>
+      <p>When any load function in the route tree throws — or any user lands on a URL that has no matching <code>+page.svelte</code> — SvelteKit walks up the directory tree looking for the nearest <code>+error.svelte</code>. Ours sits at the root and serves as both the 404 and the catch-all for runtime errors.</p>
+
+      <div class="code">
+        <div class="head"><span class="lang">svelte</span><span class="path">src/routes/+error.svelte</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-tag">&lt;script</span> <span class="tk-attr">lang</span>=<span class="tk-str">"ts"</span><span class="tk-tag">&gt;</span></span><span class="ln">	<span class="tk-kw">import</span> { page } <span class="tk-kw">from</span> <span class="tk-str">'$app/state'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { <span class="tk-typ">IconHomeQuestion</span>, <span class="tk-typ">IconArrowLeft</span> } <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Button</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/ui/Button.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Seo</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/seo/Seo.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { resolve } <span class="tk-kw">from</span> <span class="tk-str">'$app/paths'</span>;</span><span class="ln"><span class="tk-tag">&lt;/script&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;Seo</span> <span class="tk-attr">title</span>={`${page.status} · Page not found`} <span class="tk-attr">noindex</span> <span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;section</span> <span class="tk-attr">class</span>=<span class="tk-str">"err-page"</span><span class="tk-tag">&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"container"</span><span class="tk-tag">&gt;</span></span><span class="ln">		<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"inner"</span><span class="tk-tag">&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"icon-wrap"</span><span class="tk-tag">&gt;&lt;IconHomeQuestion</span> <span class="tk-attr">size</span>={<span class="tk-num">48</span>} <span class="tk-tag">/&gt;&lt;/div&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;p</span> <span class="tk-attr">class</span>=<span class="tk-str">"status"</span><span class="tk-tag">&gt;</span>Error {page.status}<span class="tk-tag">&lt;/p&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;h1&gt;</span>{page.error?.message ?? <span class="tk-str">'Something went off-script.'</span>}<span class="tk-tag">&lt;/h1&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;p</span> <span class="tk-attr">class</span>=<span class="tk-str">"copy"</span><span class="tk-tag">&gt;</span>The page you were looking for is no longer here. Try one of the routes below…<span class="tk-tag">&lt;/p&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"actions"</span><span class="tk-tag">&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;Button</span> <span class="tk-attr">variant</span>=<span class="tk-str">"primary"</span> <span class="tk-attr">size</span>=<span class="tk-str">"lg"</span> <span class="tk-attr">href</span>=<span class="tk-str">"/"</span><span class="tk-tag">&gt;</span></span><span class="ln">					{#snippet iconLeft()}<span class="tk-tag">&lt;IconArrowLeft</span> <span class="tk-attr">size</span>={<span class="tk-num">16</span>} <span class="tk-tag">/&gt;</span>{/snippet}</span><span class="ln">					Return home</span><span class="ln">				<span class="tk-tag">&lt;/Button&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;Button</span> <span class="tk-attr">variant</span>=<span class="tk-str">"gold-outline"</span> <span class="tk-attr">size</span>=<span class="tk-str">"lg"</span> <span class="tk-attr">href</span>=<span class="tk-str">"/contact"</span><span class="tk-tag">&gt;</span>Contact support<span class="tk-tag">&lt;/Button&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;/div&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"links"</span><span class="tk-tag">&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;a</span> <span class="tk-attr">href</span>={resolve(<span class="tk-str">'/subscription'</span>)}<span class="tk-tag">&gt;</span>Subscription<span class="tk-tag">&lt;/a&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;a</span> <span class="tk-attr">href</span>={resolve(<span class="tk-str">'/indicators'</span>)}<span class="tk-tag">&gt;</span>Indicators<span class="tk-tag">&lt;/a&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;a</span> <span class="tk-attr">href</span>={resolve(<span class="tk-str">'/courses'</span>)}<span class="tk-tag">&gt;</span>Courses<span class="tk-tag">&lt;/a&gt;</span></span><span class="ln">				<span class="tk-tag">&lt;a</span> <span class="tk-attr">href</span>={resolve(<span class="tk-str">'/free-guide'</span>)}<span class="tk-tag">&gt;</span>Free Greeks Guide<span class="tk-tag">&lt;/a&gt;</span></span><span class="ln">			<span class="tk-tag">&lt;/div&gt;</span></span><span class="ln">		<span class="tk-tag">&lt;/div&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;/div&gt;</span></span><span class="ln"><span class="tk-tag">&lt;/section&gt;</span></span></code></pre>
+      </div>
+
+      <p>Three details earn discussion:</p>
+
+      <ul>
+        <li><strong><code>noindex</code> on the SEO component.</strong> An error page must never enter Google's index. The <code>Seo</code> wrapper from Vol 2 Ch 12 emits <code>&lt;meta name="robots" content="noindex,follow"&gt;</code> when the prop is true.</li>
+        <li><strong><code>page.error?.message</code> with optional chaining.</strong> SvelteKit only populates <code>page.error</code> when the error has shape <code>{ message: string }</code> — anything thrown via <code>error(404, 'Indicator not found')</code> from <code>@sveltejs/kit</code> serializes that way. If something else throws (a thrown string, a raw <code>Error</code> in dev), the optional chain prevents a render-inside-error crash.</li>
+        <li><strong><code>resolve('/subscription')</code> from <code>$app/paths</code>.</strong> A typed-route helper introduced in SvelteKit 2.18 — checks at build time that the path exists. We use raw strings for <code>href</code> on the two top buttons because Vol 1's <code>Button</code> takes <code>href: string</code>; we use <code>resolve()</code> here because the link list is auto-generated and the type-check is free insurance against renaming a route and forgetting to update the error page.</li>
+      </ul>
+
+      <div class="callout ts">
+        <div class="label">TypeScript · the <code>App.PageError</code> shape</div>
+        <p>The <code>app.d.ts</code> file we wrote in Vol 1 Ch 5 declared <code>interface PageError { message: string; code?: string }</code>. That's the contract every <code>error(status, payload)</code> call in this project must honor. When the admin layout throws <code>error(403, { message: 'Admin access required.', code: 'forbidden' })</code>, the <code>code</code> field is available on <code>page.error.code</code> for the error page to inspect — though we don't currently branch on it.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-1"><div class="dir">← Prev</div><div class="ttl">The Routing Mental Model</div></a>
+        <a class="next" href="#ch-3"><div class="dir">Next →</div><div class="ttl">+layout.ts &amp; +layout.server.ts</div></a>
+      </div>
+    </section>
+
+    <!-- CHAPTER 3 -->
+    <section id="ch-3">
+      <p class="eyebrow">Chapter 03</p>
+      <h2><code>+layout.ts</code> &amp; <code>+layout.server.ts</code> — the load pair</h2>
+      <p>The root layout component is mounted. Now: where does its <code>data</code> come from? Two files. They sit beside <code>+layout.svelte</code> in <code>src/routes/</code>, they have identical signatures, and they answer two different questions.</p>
+
+      <div class="split">
+        <div class="col">
+          <h5>+layout.ts — universal load</h5>
+          <p>Runs <em>on the server</em> during SSR <em>and</em> <em>in the browser</em> during client-side navigation. Bundled for the client. No secrets allowed. Can touch <code>fetch</code>, URL params, anything that's public.</p>
+        </div>
+        <div class="col">
+          <h5>+layout.server.ts — server-only load</h5>
+          <p>Runs <em>only on the server</em>. The file is never even compiled into the client bundle. Can read <code>cookies</code>, <code>locals</code>, <code>$env/dynamic/private</code>, the database. The return value is serialized over the wire to the client.</p>
+        </div>
+      </div>
+
+      <h3>The universal load</h3>
+
+      <div class="code">
+        <div class="head"><span class="lang">ts</span><span class="path">src/routes/+layout.ts</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-kw">import</span> <span class="tk-kw">type</span> { <span class="tk-typ">LayoutLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export</span> <span class="tk-kw">const</span> prerender = <span class="tk-bool">false</span>;</span><span class="ln"><span class="tk-kw">export</span> <span class="tk-kw">const</span> ssr = <span class="tk-bool">true</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export</span> <span class="tk-kw">const</span> load: <span class="tk-typ">LayoutLoad</span> = () =&gt; {</span><span class="ln">	<span class="tk-kw">return</span> {};</span><span class="ln">};</span></code></pre>
+      </div>
+
+      <p>Eight lines, two structural decisions:</p>
+      <dl>
+        <dt>Line 3 · <code>prerender = false</code></dt>
+        <dd>The default is "inherit". We set it explicitly to <strong>false</strong> at the root so the whole app is SSR by default. Individual routes that <em>can</em> be prerendered (sitemap, robots, legal terms) opt back in by declaring <code>prerender = true</code> in their own module. Setting the default at the root means we never accidentally prerender a dynamic route — the worst kind of staleness bug.</dd>
+        <dt>Line 4 · <code>ssr = true</code></dt>
+        <dd>Also the default; we set it explicitly for documentation. The trade-off is in Ch 18.</dd>
+        <dt>Lines 6–8 · <code>load = () =&gt; ({})</code></dt>
+        <dd>An empty load. Why have one at all? Because in SvelteKit, the presence of <code>+layout.ts</code> determines a per-route caching boundary. By exporting a (no-op) load, we tell the framework "yes, run a universal load step at the root" — which means children that <code>throw redirect()</code> get to bubble through this layer, and we have a place to hang future global universal data (a feature flag, a public env var) without altering the layout component.</dd>
+      </dl>
+
+      <h3>The server load</h3>
+
+      <div class="code">
+        <div class="head"><span class="lang">ts</span><span class="path">src/routes/+layout.server.ts</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-kw">import</span> <span class="tk-kw">type</span> { <span class="tk-typ">LayoutServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export</span> <span class="tk-kw">const</span> load: <span class="tk-typ">LayoutServerLoad</span> = ({ locals, url }) =&gt; {</span><span class="ln">	<span class="tk-kw">return</span> {</span><span class="ln">		user: locals.user,</span><span class="ln">		pathname: url.pathname</span><span class="ln">	};</span><span class="ln">};</span></code></pre>
+      </div>
+
+      <p>This is small but it's doing real work. Two return fields:</p>
+      <dl>
+        <dt><code>user: locals.user</code></dt>
+        <dd><code>event.locals</code> is the per-request server context. <code>hooks.server.ts</code> from Vol 1 Ch 8 populates <code>locals.user</code> by parsing the <code>tradeflex-mock-user</code> cookie. The server load reads it and ships it to the client. From this point on, anywhere in the app, you can read <code>data.user</code> from a page's <code>data</code> prop, or <code>page.data.user</code> reactively, and know who is logged in.</dd>
+        <dt><code>pathname: url.pathname</code></dt>
+        <dd>Yes, we could read this from <code>$page.url.pathname</code> in any component — and we did in the root layout. We surface it explicitly in <code>data</code> because some child layouts use the server-rendered value to decide what to render <em>before hydration</em>. A redundancy with intent: optimize for legibility, not bytes.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why is <code>user</code> in the server load, not the universal one?</div>
+        <p><code>locals</code> only exists on the server — it's populated by the <code>handle</code> hook before any load runs. A universal load is shared across SSR and the browser; it has no <code>locals</code> binding because the browser doesn't have a hook system. The right place to surface request-scoped state is always <code>+layout.server.ts</code>. SvelteKit handles serialization: the user object is JSON-stringified, included in the initial HTML payload as a <code>&lt;script&gt;</code> tag, and rehydrated as <code>data.user</code> in the browser. We pay one trip in HTML; no <code>fetch</code> roundtrip on first paint.</p>
+      </div>
+
+      <h3>How the two loads compose</h3>
+      <p>Both layouts' loads run for every request. Universal loads execute in parallel with server loads at the same level. Their return values get <strong>merged</strong> into <code>data</code> — the server load's keys override the universal one's on collision. Then children inherit that merged data and can extend it further:</p>
+
+      <div class="diagram">request /indicators/revolution-ranger
+       │
+       ├─► +layout.server.ts (root)
+       │     returns { user, pathname }
+       │
+       ├─► +layout.ts (root) — parallel with server above
+       │     returns {}
+       │
+       ├─► (no /indicators/+layout.* — skipped)
+       │
+       ├─► +page.ts (indicators/[slug])
+       │     returns { product }
+       │
+       └─► merged: data = { user, pathname, product }
+              └─► layout.svelte sees user, pathname
+              └─► +page.svelte sees user, pathname, product</div>
+
+      <p>Note that the page-level load doesn't have to know about <code>user</code> — the layout already provided it, and the merge propagates downward. This is what makes "every page sees the logged-in user" a one-liner in the root server load and not a per-page repetition.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · don't put the database in <code>+layout.server.ts</code></div>
+        <p>It's tempting. "Just query the user's row from the DB on every request and put it in <code>locals</code>." Do not. Layout loads run on <em>every</em> page transition, including ones that have no business hitting the DB. Keep <code>locals.user</code> populated from a cheap cookie parse and let pages that actually need the row (the dashboard, the billing page) make their own targeted query. Vol 1 Ch 8's <code>hooks.server.ts</code> does it right: cookie → in-memory fake user → done.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-2"><div class="dir">← Prev</div><div class="ttl">The Real Root Layout</div></a>
+        <a class="next" href="#ch-4"><div class="dir">Next →</div><div class="ttl">Marketing routes &amp; the home page</div></a>
+      </div>
+    </section>
+
+    <!-- CHAPTER 4 -->
+    <section id="ch-4">
+      <p class="eyebrow">Chapter 04</p>
+      <h2>Marketing routes &amp; the home page</h2>
+      <p>The home page replaces Vol 1's placeholder. It is also the canonical template every other marketing route follows. Read this one closely; the others — <code>/subscription</code>, <code>/about</code>, <code>/free-guide</code>, <code>/legal/*</code> — are variations on the same composition pattern.</p>
+
+      <h3><code>/+page.svelte</code> — the home</h3>
+      <p>The home is structurally five things: SEO tags, hero, value pillars, a featured-products grid, proof stats, playbook, lead magnet, testimonials, FAQ, bottom CTA. The script block does no work beyond pulling imports and shaping data arrays. The reactivity surface is zero — this is a pure compositional page.</p>
+
+      <div class="code">
+        <div class="head"><span class="lang">svelte</span><span class="path">src/routes/+page.svelte · script block</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-tag">&lt;script</span> <span class="tk-attr">lang</span>=<span class="tk-str">"ts"</span><span class="tk-tag">&gt;</span></span><span class="ln">	<span class="tk-kw">import</span> { <span class="tk-typ">IconArrowRight</span>, <span class="tk-typ">IconBolt</span>, <span class="tk-typ">IconShieldCheck</span>, …, <span class="tk-typ">IconCheck</span> } <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { resolve } <span class="tk-kw">from</span> <span class="tk-str">'$app/paths'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Seo</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/seo/Seo.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Hero</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/Hero.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">TrustBar</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/TrustBar.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">SectionHeading</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/SectionHeading.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">FeatureGrid</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/FeatureGrid.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">StatBlock</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/StatBlock.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">TestimonialCarousel</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/TestimonialCarousel.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">FAQSection</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/FAQSection.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">CTABanner</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/marketing/CTABanner.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">ProductCard</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/commerce/ProductCard.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">PricingCard</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/commerce/PricingCard.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">EmailCaptureForm</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/forms/EmailCaptureForm.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Button</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/ui/Button.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> <span class="tk-typ">Badge</span> <span class="tk-kw">from</span> <span class="tk-str">'$lib/components/ui/Badge.svelte'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { <span class="tk-typ">INDICATORS</span>, <span class="tk-typ">COURSES</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/products.js'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { <span class="tk-typ">DAY_TRADING_PLANS</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/plans.js'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { <span class="tk-typ">GENERAL_FAQS</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/faqs.js'</span>;</span><span class="ln">	<span class="tk-kw">import</span> { fadeUp, stagger } <span class="tk-kw">from</span> <span class="tk-str">'$lib/animations/attachments.js'</span>;</span><span class="ln"></span><span class="ln">	<span class="tk-kw">const</span> featuredIndicator = <span class="tk-typ">INDICATORS</span>[<span class="tk-num">0</span>]!;</span><span class="ln">	<span class="tk-kw">const</span> featuredCourse = <span class="tk-typ">COURSES</span>[<span class="tk-num">0</span>]!;</span><span class="ln"></span><span class="ln">	<span class="tk-kw">const</span> pillarFeatures = [ <span class="tk-com">/* 6 entries — see Vol 3 Ch 14 FeatureGrid input shape */</span> ];</span><span class="ln">	<span class="tk-kw">const</span> proofStats   = [ <span class="tk-com">/* 4 entries with custom formatters */</span> ];</span><span class="ln">	<span class="tk-kw">const</span> playbookSteps= [ <span class="tk-com">/* 3 entries with n/title/body */</span> ];</span><span class="ln"><span class="tk-tag">&lt;/script&gt;</span></span></code></pre>
+      </div>
+
+      <h3>What's happening</h3>
+      <dl>
+        <dt>Every import is a Vol 2 or Vol 3 deliverable</dt>
+        <dd>Look at the list: <code>Hero</code> and <code>TrustBar</code> and <code>FeatureGrid</code> are the marketing primitives we shipped in Vol 3 Ch 14–15. <code>ProductCard</code> and <code>PricingCard</code> are from Vol 3 Ch 10–11. <code>EmailCaptureForm</code> is from Vol 3 Ch 13. <code>INDICATORS</code>, <code>COURSES</code>, <code>DAY_TRADING_PLANS</code>, <code>GENERAL_FAQS</code> are the fixtures from Vol 2 Ch 14. <code>fadeUp</code> and <code>stagger</code> are the GSAP attachments from Vol 2 Ch 13. The home page is <em>a composition</em>, not a place where new logic lives. Every line of "implementation" is somewhere else, by design.</dd>
+        <dt>The non-null assertions</dt>
+        <dd><code>INDICATORS[0]!</code> and <code>COURSES[0]!</code>. The TypeScript exclamation mark — "trust me, this is not undefined." It is a load-bearing assertion: if the array is ever emptied, the page errors. We use it because the fixtures are static; the alternative would be defensive nullable handling on the entire <code>ProductCard</code> below, which is unnecessary noise. The Vol 2 Ch 14 contract is "these arrays are non-empty."</dd>
+        <dt>Top-level <code>const</code>, no runes</dt>
+        <dd>None of these values change. No keystroke updates them. They are pure module-scope data. We do not wrap them in <code>$state</code> — that would be over-reactive (waste a proxy on an immutable array). Vol 2 Ch 2 covered this: <em>use the lightest tool that gets the job done</em>.</dd>
+      </dl>
+
+      <h3>The template, abridged</h3>
+      <p>The body is ten <code>&lt;section&gt;</code> tags, each pulling one composition from Vol 3 with its data:</p>
+
+      <div class="code">
+        <div class="head"><span class="lang">svelte</span><span class="path">src/routes/+page.svelte · template (shape)</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-tag">&lt;Seo</span> <span class="tk-attr">description</span>=<span class="tk-str">"Engineered indicators…"</span> <span class="tk-attr">keywords</span>={[…]} <span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;Hero /&gt;</span></span><span class="ln"><span class="tk-tag">&lt;TrustBar /&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;section</span> <span class="tk-attr">class</span>=<span class="tk-str">"section"</span><span class="tk-tag">&gt;</span> <span class="tk-com">&lt;!-- Value pillars --&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;SectionHeading</span> <span class="tk-attr">eyebrow</span>=<span class="tk-str">"Why TradeFlex"</span> <span class="tk-attr">title</span>=<span class="tk-str">"Engineering, not entertainment."</span> <span class="tk-tag">/&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;FeatureGrid</span> <span class="tk-attr">features</span>={pillarFeatures} <span class="tk-attr">columns</span>={<span class="tk-num">3</span>} <span class="tk-tag">/&gt;</span></span><span class="ln"><span class="tk-tag">&lt;/section&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;section</span> <span class="tk-attr">class</span>=<span class="tk-str">"section bg-dark"</span><span class="tk-tag">&gt;</span> <span class="tk-com">&lt;!-- Featured products grid --&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;div</span> <span class="tk-attr">class</span>=<span class="tk-str">"featured-grid"</span> {@attach stagger({ stagger: <span class="tk-num">0.1</span>, y: <span class="tk-num">28</span> })}<span class="tk-tag">&gt;</span></span><span class="ln">		<span class="tk-tag">&lt;ProductCard</span> <span class="tk-attr">product</span>={featuredIndicator} <span class="tk-tag">/&gt;</span></span><span class="ln">		{#each <span class="tk-typ">DAY_TRADING_PLANS</span>.filter((p) =&gt; p.featured) <span class="tk-kw">as</span> plan (plan.id)}</span><span class="ln">			<span class="tk-tag">&lt;PricingCard</span> {plan} <span class="tk-tag">/&gt;</span></span><span class="ln">		{/each}</span><span class="ln">		<span class="tk-tag">&lt;ProductCard</span> <span class="tk-attr">product</span>={featuredCourse} <span class="tk-tag">/&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;/div&gt;</span></span><span class="ln"><span class="tk-tag">&lt;/section&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;section</span> <span class="tk-attr">class</span>=<span class="tk-str">"section"</span><span class="tk-tag">&gt;</span></span><span class="ln">	<span class="tk-tag">&lt;StatBlock</span> <span class="tk-attr">stats</span>={proofStats} <span class="tk-tag">/&gt;</span></span><span class="ln"><span class="tk-tag">&lt;/section&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-com">&lt;!-- Playbook, lead magnet, testimonials, FAQ, CTABanner sections follow the same pattern --&gt;</span></span></code></pre>
+      </div>
+
+      <div class="callout why">
+        <div class="label">Why no load function?</div>
+        <p>The home page has no <code>+page.ts</code> or <code>+page.server.ts</code>. All its data is imported statically at the module level — fixtures from <code>$lib/data/*</code>. SvelteKit treats a route without an explicit load as "no data needed; just render". If we later move the indicators to a CMS, we'd add a <code>+page.ts</code> that fetches them; right now the data is build-time content, and Vite tree-shakes the array imports into the page bundle directly.</p>
+      </div>
+
+      <h3>The subscription page — same pattern, plus JSON-LD</h3>
+      <p>The subscription page is a near-twin of the home in shape: hero with breadcrumbs, then the three pricing cards from <code>DAY_TRADING_PLANS</code>, then a compare table, then testimonials and FAQ. The one structural addition is JSON-LD for the service offering:</p>
+
+      <div class="code">
+        <div class="head"><span class="lang">svelte</span><span class="path">src/routes/subscription/+page.svelte · key fragment</span><button class="copy">copy</button></div>
+        <pre><code><span class="ln"><span class="tk-tag">&lt;Seo</span></span><span class="ln">	<span class="tk-attr">title</span>=<span class="tk-str">"Day Trading Subscription"</span></span><span class="ln">	<span class="tk-attr">description</span>=<span class="tk-str">"Live day-trading desk, daily briefings, real-time alerts on ES/NQ/CL/GC."</span></span><span class="ln">	<span class="tk-attr">keywords</span>={[<span class="tk-str">'day trading subscription'</span>, <span class="tk-str">'trading desk'</span>, <span class="tk-str">'live trading room'</span>, <span class="tk-str">'TradeFlex Trading'</span>]}</span><span class="ln"><span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;JsonLd</span></span><span class="ln">	<span class="tk-attr">data</span>={serviceLd(</span><span class="ln">		<span class="tk-typ">DAY_TRADING_PLANS</span>.map((p) =&gt; ({ name: p.name, priceCents: p.priceCents, cadence: p.cadence }))</span><span class="ln">	)}</span><span class="ln"><span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln"><span class="tk-tag">&lt;Breadcrumbs</span></span><span class="ln">	<span class="tk-attr">items</span>={[</span><span class="ln">		{ label: <span class="tk-str">'Home'</span>, href: <span class="tk-str">'/'</span> },</span><span class="ln">		{ label: <span class="tk-str">'Subscription'</span>, href: <span class="tk-str">'/subscription'</span> }</span><span class="ln">	]}</span><span class="ln"><span class="tk-tag">/&gt;</span></span><span class="ln"></span><span class="ln">{#each <span class="tk-typ">DAY_TRADING_PLANS</span> <span class="tk-kw">as</span> plan (plan.id)}</span><span class="ln">	<span class="tk-tag">&lt;PricingCard</span> {plan} <span class="tk-tag">/&gt;</span></span><span class="ln">{/each}</span></code></pre>
+      </div>
+
+      <dl>
+        <dt><code>serviceLd(…)</code></dt>
+        <dd>From Vol 2 Ch 12. Maps an array of price/cadence pairs to a Schema.org <code>Service</code> object with an <code>offers</code> array. Google understands this and can show price-aware results. We <code>.map</code> the plans into the lighter shape the factory expects — the factory doesn't need the full plan object, just three fields.</dd>
+        <dt><code>Breadcrumbs</code></dt>
+        <dd>From Vol 3 Ch 18. Renders visually <em>and</em> emits Schema.org BreadcrumbList JSON-LD. The <code>items</code> array is hand-authored per page — there's no automatic derivation from <code>url.pathname</code> because the human-readable label ("Free Greeks Guide") doesn't map to the URL slug ("free-guide"). Authoring is cheap and labels are content.</dd>
+        <dt><code>{#each DAY_TRADING_PLANS as plan (plan.id)}</code></dt>
+        <dd>The keyed each from Vol 2 Ch 14. <code>(plan.id)</code> is the key — Svelte uses it to identify and reuse DOM nodes across renders. We use IDs, never indices, for the reason from Vol 2: when the array reorders, indices lie about identity and Svelte reuses the wrong components.</dd>
+      </dl>
+
+      <h3>About, legal · pure static</h3>
+      <p>The <code>/about</code>, <code>/legal/terms</code>, <code>/legal/privacy</code>, and <code>/legal/refund</code> routes follow the same template. All four are leaves: no <code>+page.ts</code>, no <code>+page.server.ts</code>, no params, no dynamic data. They could be prerendered — and in Ch 18 we discuss the trade-off — but for Phase 1 we leave them SSR-only so the build is faster and they re-fetch the (unchanging) layout chrome on demand.</p>
+
+      <p>The About page is interesting only in one respect: it emits <code>personLd()</code> for each team member, so Google's knowledge graph can connect Jordan Vega's profile to TradeFlex Trading the organization. The whole page is roughly 400 lines of markup and 200 lines of CSS — too long to reproduce here. The script block is forty lines of <code>const</code> arrays for principles, team, milestones, and stats; the rest is layout. No load function, no reactivity, no surprises.</p>
+
+      <div class="callout why">
+        <div class="label">Why bundle "legal" under one folder?</div>
+        <p>Three routes — <code>/legal/terms</code>, <code>/legal/privacy</code>, <code>/legal/refund</code> — share a logical grouping. We <em>could</em> have flattened them to <code>/terms</code>, <code>/privacy</code>, <code>/refund</code>. The nested folder costs one URL segment and buys us: (1) a single place in the file tree to grep, (2) a future <code>/legal/+layout.svelte</code> if we ever want shared chrome on legal pages, (3) the option to <code>Disallow: /legal</code> in robots.txt with a single line. Cheap insurance.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-3"><div class="dir">← Prev</div><div class="ttl">+layout.ts &amp; +layout.server.ts</div></a>
+        <a class="next" href="#ch-5"><div class="dir">Next →</div><div class="ttl">Catalog: indicators &amp; courses</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 5 ============================ -->
+    <section id="ch-5">
+      <p class="eyebrow">Chapter 05</p>
+      <h2>Catalog · indicators &amp; courses</h2>
+      <p>The catalog pages — <code>/indicators</code>, <code>/indicators/[slug]</code>, <code>/courses</code>, <code>/courses/[slug]</code> — are where SvelteKit's <strong>dynamic routes</strong> earn their keep. The square-brackets in the folder name capture a URL segment as a typed parameter. Combined with a tiny universal <code>+page.ts</code>, we get type-safe lookups and proper 404s for free.</p>
+
+      <h3>The detail-route load function · indicators</h3>
+      <p>Look at <code>src/routes/indicators/[slug]/+page.ts</code>:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/indicators/[slug]/+page.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">error</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">getProductBySlug</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/products.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageLoad</span> = ({ <span class="tk-var">params</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">product</span> = <span class="tk-fn">getProductBySlug</span>(<span class="tk-var">params</span>.<span class="tk-prop">slug</span>);</span><span class="ln">	<span class="tk-kw">if</span> (!<span class="tk-var">product</span> || <span class="tk-var">product</span>.<span class="tk-prop">kind</span> !== <span class="tk-str">'indicator'</span>) {</span><span class="ln">		<span class="tk-fn">error</span>(<span class="tk-num">404</span>, <span class="tk-str">'Indicator not found'</span>);</span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">product</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <dl>
+        <dt><code>params.slug</code></dt>
+        <dd>SvelteKit fills <code>params</code> with whatever matched the <code>[slug]</code> in the path. For <code>/indicators/revolution-ranger</code>, <code>params.slug === 'revolution-ranger'</code>. Typed: <code>PageLoad</code> from <code>./$types</code> knows the param exists.</dd>
+        <dt>The <code>kind !== 'indicator'</code> guard</dt>
+        <dd>The product catalog mixes indicators and courses. If someone hits <code>/indicators/options-101</code> (a course slug), we 404 — we don't render the course under the wrong URL prefix. Cleaner than 200ing on a mis-routed product.</dd>
+        <dt><code>error(404, …)</code></dt>
+        <dd>Throws a typed HTTPError that SvelteKit catches. Result: nearest <code>+error.svelte</code> renders, status code 404, no leaked stack traces. Always use this helper instead of <code>throw new Error(...)</code> for HTTP errors.</dd>
+        <dt>Return shape <code>{ product }</code></dt>
+        <dd>Becomes <code>data.product</code> in <code>+page.svelte</code>. Type-safe via <code>$types</code> — autocomplete works, refactors are safe.</dd>
+      </dl>
+
+      <p>The courses sibling file is identical except <code>kind !== 'course'</code>. One pattern, two routes.</p>
+
+      <h3>Why universal (<code>+page.ts</code>) not server (<code>+page.server.ts</code>)?</h3>
+      <p>Because <code>getProductBySlug</code> is a synchronous lookup against a static array. No secret, no DB. Universal load means: during SSR, the function runs on the server; during client-side navigation (e.g., user clicks from <code>/indicators</code> to a detail page), it runs in the browser and skips the server round-trip entirely. <em>This is why catalog pages feel instant</em> after first paint.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the load-where-you-can rule</div>
+        <p>Default to universal (<code>+page.ts</code>) until you can't. Switch to server-only (<code>+page.server.ts</code>) only when you need: a secret, the database, cookies, or anything else the browser must not see. Misclassifying once will eventually leak credentials. Misclassifying the other way just costs a network round-trip. Bias toward universal.</p>
+      </div>
+
+      <h3>The catalog list pages</h3>
+      <p>The listing routes (<code>src/routes/indicators/+page.svelte</code>, <code>src/routes/courses/+page.svelte</code>) have <em>no load function at all</em>. They import the data directly from <code>$lib/data/products</code> and iterate. That works because:</p>
+      <ul>
+        <li>The data is static at build time — no need for a load contract</li>
+        <li>The pages aren't dynamic — same render every time</li>
+        <li>SvelteKit will still server-render them on first visit, hydrate on the second, and use the same module-level data both times</li>
+      </ul>
+
+      <p>This is the lightest possible route: a single <code>.svelte</code> file, no <code>.ts</code> sibling. Use this pattern whenever data is module-level constants.</p>
+
+      <h3>The detail page · what it renders</h3>
+      <p><code>src/routes/indicators/[slug]/+page.svelte</code> is 505 lines, almost all of which is markup composing components from Vol 3: <code>Seo</code>, <code>JsonLd</code>, <code>Breadcrumbs</code>, <code>PriceTag</code>, <code>AddToCartButton</code>, <code>FeatureGrid</code>, <code>FAQSection</code>, <code>CTABanner</code>. The page's only logic in the script block is:</p>
+      <div class="code"><div class="head"><span class="lang">svelte</span><span class="path">excerpt · script block</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">let</span> { <span class="tk-var">data</span> } = <span class="tk-rune">$props</span>();</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">product</span> = <span class="tk-rune">$derived</span>(<span class="tk-var">data</span>.<span class="tk-prop">product</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">// Schema.org Product object for Google's rich-result card</span></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">productSchema</span> = <span class="tk-rune">$derived</span>(<span class="tk-fn">productLd</span>({</span><span class="ln">	<span class="tk-prop">name</span>: <span class="tk-var">product</span>.<span class="tk-prop">name</span>,</span><span class="ln">	<span class="tk-prop">description</span>: <span class="tk-var">product</span>.<span class="tk-prop">description</span>,</span><span class="ln">	<span class="tk-prop">priceCents</span>: <span class="tk-var">product</span>.<span class="tk-prop">priceCents</span>,</span><span class="ln">	<span class="tk-prop">slug</span>: <span class="tk-var">product</span>.<span class="tk-prop">slug</span>,</span><span class="ln">	<span class="tk-prop">rating</span>: <span class="tk-var">product</span>.<span class="tk-prop">rating</span></span><span class="ln">}));</span></code></pre></div>
+
+      <p>Three lines of logic — <code>$props</code> to get the load function's return value, <code>$derived</code> to memoize the schema object, and a render block that calls Vol 3 components. The other 495 lines are layout, hand-tuned CSS for hero gradients, and per-product feature grids.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-4"><div class="dir">← Prev</div><div class="ttl">Marketing routes</div></a>
+        <a class="next" href="#ch-6"><div class="dir">Next →</div><div class="ttl">The cart route</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 6 ============================ -->
+    <section id="ch-6">
+      <p class="eyebrow">Chapter 06</p>
+      <h2>The cart route</h2>
+      <p>The cart page is interesting because <strong>it has no server data at all</strong>. The cart store from Vol 2 Ch 8 lives in the browser (with localStorage persistence). The page just renders it. No load function, no DB query — but a lot of UI: line items, quantity steppers, subtotal math, the "Continue" button intentionally disabled with a Phase 2 tooltip.</p>
+
+      <h3>Why no load function?</h3>
+      <p>Three reasons:</p>
+      <ol>
+        <li>The cart lives in <code>localStorage</code>, which doesn't exist on the server. The server can't render the cart's contents anyway.</li>
+        <li>SSR-rendering an empty cart, then hydrating with the real cart from localStorage, would produce a visible flash of "your cart is empty" before the items appear.</li>
+        <li>The cart store imports <code>$app/environment</code> and gates its localStorage code behind <code>if (browser)</code> — so it's safe to render during SSR (it just shows empty until the browser takes over).</li>
+      </ol>
+
+      <h3>What the page does instead</h3>
+      <p><code>src/routes/cart/+page.svelte</code> imports the <code>cart</code> singleton and renders against its reactive fields:</p>
+      <div class="code"><div class="head"><span class="lang">svelte</span><span class="path">excerpt</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">cart</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/stores/cart.svelte'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">formatPrice</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/money'</span>;</span><span class="ln"></span><span class="ln">{<span class="tk-kw">#if</span> <span class="tk-var">cart</span>.<span class="tk-prop">isEmpty</span>}</span><span class="ln">	<span class="tk-tag">&lt;EmptyState</span> <span class="tk-attr">title</span>=<span class="tk-str">"Your cart is empty"</span> ... <span class="tk-tag">/&gt;</span></span><span class="ln">{<span class="tk-kw">:else</span>}</span><span class="ln">	{<span class="tk-kw">#each</span> <span class="tk-var">cart</span>.<span class="tk-prop">lines</span> <span class="tk-kw">as</span> <span class="tk-var">line</span> (<span class="tk-var">line</span>.<span class="tk-prop">id</span>)}</span><span class="ln">		<span class="tk-com">&lt;!-- line item: name, quantity stepper, remove button --&gt;</span></span><span class="ln">	{<span class="tk-kw">/each</span>}</span><span class="ln">	<span class="tk-tag">&lt;p&gt;</span>Subtotal: {<span class="tk-fn">formatPrice</span>(<span class="tk-var">cart</span>.<span class="tk-prop">subtotalCents</span>)}<span class="tk-tag">&lt;/p&gt;</span></span><span class="ln">{<span class="tk-kw">/if</span>}</span></code></pre></div>
+
+      <p>Three derived values from Vol 2 — <code>cart.isEmpty</code>, <code>cart.lines</code>, <code>cart.subtotalCents</code> — drive the entire view. Add or remove an item from anywhere else in the site, and this page updates automatically because they're the same singleton.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · stateful pages don't need a server</div>
+        <p>The cart is a perfect example of when SvelteKit's "no load function" is the <em>correct</em> answer. There's no server data, so we don't pretend to have any. The page renders the empty state during SSR (it's static HTML), then the browser hydrates and the cart store immediately replaces it with the saved cart. One flash-free transition. Anyone instinct to add a <code>+page.server.ts</code> with cookies/DB persistence should stop and ask: does this <em>need</em> server state? Often no — localStorage + a rune store is enough.</p>
+      </div>
+
+      <h3>The Phase-2 stub</h3>
+      <p>The page has a "Continue to checkout" button that is explicitly disabled. Hovering shows a tooltip "Checkout in Phase 2 — payment processor not yet integrated." This is honest engineering: instead of a button that <em>looks</em> functional but errors when clicked, we show users exactly what state the feature is in. Cheap to write, expensive to forget.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-5"><div class="dir">← Prev</div><div class="ttl">Catalog routes</div></a>
+        <a class="next" href="#ch-7"><div class="dir">Next →</div><div class="ttl">Lead capture · DB form action</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 7 ============================ -->
+    <section id="ch-7">
+      <p class="eyebrow">Chapter 07</p>
+      <h2>Lead capture · form actions to DB</h2>
+      <p>This is the chapter where the application starts <em>writing</em> to the database. The <code>/free-guide</code> page renders a one-field email form. When the user submits, a <strong>form action</strong> on the server validates with Zod, enforces a rate limit, inserts into the <code>leads</code> table, and redirects to a thank-you page. Every line earns its place.</p>
+
+      <h3>The full server file</h3>
+      <p>Open <code>src/routes/free-guide/+page.server.ts</code>:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/free-guide/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">fail</span>, <span class="tk-fn">redirect</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">Actions</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">db</span>, <span class="tk-var">schema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/db/client.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">leadCaptureSchema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/validators.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">checkRateLimit</span>, <span class="tk-fn">getClientKey</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/rateLimit'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">async function</span> <span class="tk-fn">persist</span>(<span class="tk-var">email</span>: <span class="tk-typ">string</span>, <span class="tk-var">source</span>: <span class="tk-typ">string</span>) {</span><span class="ln">	<span class="tk-kw">await</span> <span class="tk-var">db</span>.<span class="tk-fn">insert</span>(<span class="tk-var">schema</span>.<span class="tk-prop">leads</span>).<span class="tk-fn">values</span>({</span><span class="ln">		<span class="tk-prop">id</span>: <span class="tk-str">`lead_${</span><span class="tk-fn">crypto</span>.<span class="tk-fn">randomUUID</span>()<span class="tk-str">}`</span>,</span><span class="ln">		<span class="tk-prop">email</span>: <span class="tk-var">email</span>.<span class="tk-fn">toLowerCase</span>(),</span><span class="ln">		<span class="tk-var">source</span></span><span class="ln">	});</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">actions</span>: <span class="tk-typ">Actions</span> = {</span><span class="ln">	<span class="tk-com">// Free guide form on /free-guide → redirect to success page</span></span><span class="ln">	<span class="tk-fn">capture</span>: <span class="tk-kw">async</span> (<span class="tk-var">event</span>) =&gt; {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">rl</span> = <span class="tk-fn">checkRateLimit</span>(<span class="tk-str">`lead:${</span><span class="tk-fn">getClientKey</span>(<span class="tk-var">event</span>)<span class="tk-str">}`</span>, { <span class="tk-prop">limit</span>: <span class="tk-num">5</span>, <span class="tk-prop">windowMs</span>: <span class="tk-num">60_000</span> });</span><span class="ln">		<span class="tk-kw">if</span> (!<span class="tk-var">rl</span>.<span class="tk-prop">ok</span>)</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">429</span>, {</span><span class="ln">				<span class="tk-prop">error</span>: <span class="tk-str">`Too many requests. Try again in ${</span><span class="tk-typ">Math</span>.<span class="tk-fn">ceil</span>(<span class="tk-var">rl</span>.<span class="tk-prop">retryAfterMs</span> / <span class="tk-num">1000</span>)<span class="tk-str">}s.`</span></span><span class="ln">			});</span><span class="ln"></span><span class="ln">		<span class="tk-kw">const</span> { <span class="tk-var">request</span> } = <span class="tk-var">event</span>;</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">formData</span> = <span class="tk-kw">await</span> <span class="tk-var">request</span>.<span class="tk-fn">formData</span>();</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">parsed</span> = <span class="tk-var">leadCaptureSchema</span>.<span class="tk-fn">safeParse</span>({</span><span class="ln">			<span class="tk-prop">email</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'email'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">source</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'source'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">'free-guide'</span>,</span><span class="ln">			<span class="tk-prop">website</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'website'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span></span><span class="ln">		});</span><span class="ln">		<span class="tk-kw">if</span> (!<span class="tk-var">parsed</span>.<span class="tk-prop">success</span>) {</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">400</span>, {</span><span class="ln">				<span class="tk-prop">error</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">error</span>.<span class="tk-prop">issues</span>[<span class="tk-num">0</span>]?.<span class="tk-prop">message</span> ?? <span class="tk-str">'Invalid submission'</span>,</span><span class="ln">				<span class="tk-prop">email</span>: <span class="tk-typ">String</span>(<span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'email'</span>) ?? <span class="tk-str">''</span>)</span><span class="ln">			});</span><span class="ln">		}</span><span class="ln">		<span class="tk-kw">if</span> (<span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">website</span>) <span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">400</span>, { <span class="tk-prop">error</span>: <span class="tk-str">'Submission rejected'</span> });</span><span class="ln"></span><span class="ln">		<span class="tk-kw">try</span> {</span><span class="ln">			<span class="tk-kw">await</span> <span class="tk-fn">persist</span>(<span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">email</span>, <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">source</span> ?? <span class="tk-str">'free-guide'</span>);</span><span class="ln">		} <span class="tk-kw">catch</span> (<span class="tk-var">e</span>) {</span><span class="ln">			<span class="tk-fn">console</span>.<span class="tk-fn">error</span>(<span class="tk-str">'lead insert failed'</span>, <span class="tk-var">e</span>);</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">500</span>, { <span class="tk-prop">error</span>: <span class="tk-str">'Could not save your request. Please try again.'</span> });</span><span class="ln">		}</span><span class="ln">		<span class="tk-fn">redirect</span>(<span class="tk-num">303</span>, <span class="tk-str">`/free-guide/success?email=${</span><span class="tk-fn">encodeURIComponent</span>(<span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">email</span>)<span class="tk-str">}`</span>);</span><span class="ln">	},</span><span class="ln"></span><span class="ln">	<span class="tk-com">// Generic newsletter capture used from anywhere (home, footer) — returns success only</span></span><span class="ln">	<span class="tk-fn">subscribe</span>: <span class="tk-kw">async</span> (<span class="tk-var">event</span>) =&gt; { <span class="tk-com">/* same shape — different source, no redirect, returns { success: true } */</span> }</span><span class="ln">};</span></code></pre></div>
+
+      <h3>Walk-through of the <code>capture</code> action</h3>
+      <dl>
+        <dt>Named actions: <code>actions.capture</code></dt>
+        <dd>SvelteKit's form actions can be named. The form uses <code>&lt;form action="?/capture" method="POST"&gt;</code>. The same file also exports <code>subscribe</code> for the footer newsletter — different action, same DB table, different post-submit behavior.</dd>
+        <dt>Rate limit first</dt>
+        <dd>Before anything expensive (DB write), check that the client hasn't sent too many. Five per minute per IP. If exceeded, <code>fail(429, { error })</code> — SvelteKit serializes this back to the client where the form's <code>$page.form</code> data exposes it.</dd>
+        <dt><code>safeParse</code> with Zod</dt>
+        <dd>Browser-side validation (the form does it too) is for UX. <strong>Server-side Zod is the source of truth.</strong> The schema (from Vol 2 Ch 11) enforces format, length, and the honeypot rule. <code>safeParse</code> returns a discriminated union — <code>{ success: true, data }</code> or <code>{ success: false, error }</code>.</dd>
+        <dt>The honeypot check</dt>
+        <dd><code>if (parsed.data.website) return fail(400, ...)</code> — if a bot filled the hidden field, reject silently with a generic message. No "honeypot detected" reveal — that would let attackers know to skip the field.</dd>
+        <dt><code>crypto.randomUUID()</code> for IDs</dt>
+        <dd>Modern Web Crypto API. Returns a v4 UUID. The <code>lead_</code> prefix is a project convention — every ID is human-recognizable as to its kind. Helps with debugging: <code>lead_a1b2c3...</code> vs <code>msg_d4e5...</code> at a glance.</dd>
+        <dt><code>.toLowerCase()</code> on the email before insert</dt>
+        <dd>"Alex@Example.com" and "alex@example.com" are the same address. Normalize once at the boundary. Saves later deduplication migrations.</dd>
+        <dt><code>redirect(303, ...)</code></dt>
+        <dd>303 is the <em>POST/Redirect/GET</em> pattern — after a successful POST, send the browser to a new URL via GET. Prevents "are you sure you want to resubmit?" if the user reloads.</dd>
+        <dt>The success URL carries the email as a query param</dt>
+        <dd>The success page can greet the user by email without persisting any session state. The companion <code>+page.ts</code> on the success route reads it back via <code>url.searchParams</code>.</dd>
+      </dl>
+
+      <h3>Companion: the rate limiter</h3>
+      <p>The <code>checkRateLimit</code> import is from a small server-only module we added to defend the form endpoints. Here's the full file:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/rateLimit.ts (excerpt)</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">buckets</span> = <span class="tk-kw">new</span> <span class="tk-typ">Map</span>&lt;<span class="tk-typ">string</span>, <span class="tk-typ">number</span>[]&gt;();</span><span class="ln"></span><span class="ln"><span class="tk-kw">export function</span> <span class="tk-fn">checkRateLimit</span>(<span class="tk-var">key</span>: <span class="tk-typ">string</span>, <span class="tk-var">opts</span>: <span class="tk-typ">RateLimitOptions</span>): <span class="tk-typ">RateLimitResult</span> {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">now</span> = <span class="tk-typ">Date</span>.<span class="tk-fn">now</span>();</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">cutoff</span> = <span class="tk-var">now</span> - <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span>;</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">existing</span> = <span class="tk-var">buckets</span>.<span class="tk-fn">get</span>(<span class="tk-var">key</span>);</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">timestamps</span> = <span class="tk-var">existing</span> ? <span class="tk-var">existing</span>.<span class="tk-fn">filter</span>((<span class="tk-var">t</span>) =&gt; <span class="tk-var">t</span> &gt; <span class="tk-var">cutoff</span>) : [];</span><span class="ln">	<span class="tk-kw">if</span> (<span class="tk-var">timestamps</span>.<span class="tk-prop">length</span> &gt;= <span class="tk-var">opts</span>.<span class="tk-prop">limit</span>) {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">oldest</span> = <span class="tk-var">timestamps</span>[<span class="tk-num">0</span>] ?? <span class="tk-var">now</span>;</span><span class="ln">		<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">false</span>, <span class="tk-prop">retryAfterMs</span>: <span class="tk-typ">Math</span>.<span class="tk-fn">max</span>(<span class="tk-num">0</span>, <span class="tk-var">oldest</span> + <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span> - <span class="tk-var">now</span>) };</span><span class="ln">	}</span><span class="ln">	<span class="tk-var">timestamps</span>.<span class="tk-fn">push</span>(<span class="tk-var">now</span>);</span><span class="ln">	<span class="tk-var">buckets</span>.<span class="tk-fn">set</span>(<span class="tk-var">key</span>, <span class="tk-var">timestamps</span>);</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">true</span> };</span><span class="ln">}</span></code></pre></div>
+
+      <p>A sliding-window limiter backed by an in-memory <code>Map</code>. Each key (e.g., <code>'lead:1.2.3.4'</code>) holds the recent timestamps for that bucket. On every call we prune timestamps older than <code>windowMs</code>, count what's left, and either accept or return the retry-after delay until the oldest still-active timestamp expires.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · in-memory limits don't scale</div>
+        <p>This Map lives in process memory. <strong>Two server instances = two separate buckets</strong>, doubling the effective rate. Fine for a single-instance deploy (Phase 1). For multi-instance production, swap the Map for Redis (the file comment says exactly that). The interface stays identical; only the storage backend changes.</p>
+      </div>
+
+      <h3>The success page</h3>
+      <p><code>src/routes/free-guide/success/+page.ts</code>:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/free-guide/success/+page.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageLoad</span> = ({ <span class="tk-var">url</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">email</span>: <span class="tk-var">url</span>.<span class="tk-prop">searchParams</span>.<span class="tk-fn">get</span>(<span class="tk-str">'email'</span>) ?? <span class="tk-str">''</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>Five lines. Reads the email back from the query string the action set. The success page then renders "We sent the guide to {email} — check your inbox." No DB query, no session — just the URL.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-6"><div class="dir">← Prev</div><div class="ttl">The cart route</div></a>
+        <a class="next" href="#ch-8"><div class="dir">Next →</div><div class="ttl">Contact form</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 8 ============================ -->
+    <section id="ch-8">
+      <p class="eyebrow">Chapter 08</p>
+      <h2>Contact form · the same pattern</h2>
+      <p><code>src/routes/contact/+page.server.ts</code> is essentially the lead-capture file with three differences: a richer schema (name, subject, body), a different table (<code>contact_messages</code>), and no redirect (returns <code>{ success: true }</code> so the form shows an in-place confirmation).</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/contact/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">fail</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">Actions</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">db</span>, <span class="tk-var">schema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/db/client.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">contactSchema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/validators.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">checkRateLimit</span>, <span class="tk-fn">getClientKey</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/rateLimit'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">actions</span>: <span class="tk-typ">Actions</span> = {</span><span class="ln">	<span class="tk-fn">default</span>: <span class="tk-kw">async</span> (<span class="tk-var">event</span>) =&gt; {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">rl</span> = <span class="tk-fn">checkRateLimit</span>(<span class="tk-str">`contact:${</span><span class="tk-fn">getClientKey</span>(<span class="tk-var">event</span>)<span class="tk-str">}`</span>, { <span class="tk-prop">limit</span>: <span class="tk-num">3</span>, <span class="tk-prop">windowMs</span>: <span class="tk-num">60_000</span> });</span><span class="ln">		<span class="tk-kw">if</span> (!<span class="tk-var">rl</span>.<span class="tk-prop">ok</span>) <span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">429</span>, { <span class="tk-prop">error</span>: <span class="tk-str">`Too many requests. Try again in ${</span><span class="tk-typ">Math</span>.<span class="tk-fn">ceil</span>(<span class="tk-var">rl</span>.<span class="tk-prop">retryAfterMs</span> / <span class="tk-num">1000</span>)<span class="tk-str">}s.`</span> });</span><span class="ln"></span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">formData</span> = <span class="tk-kw">await</span> <span class="tk-var">event</span>.<span class="tk-prop">request</span>.<span class="tk-fn">formData</span>();</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">data</span> = {</span><span class="ln">			<span class="tk-prop">name</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'name'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">email</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'email'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">subject</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'subject'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">body</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'body'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">website</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'website'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span></span><span class="ln">		};</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">parsed</span> = <span class="tk-var">contactSchema</span>.<span class="tk-fn">safeParse</span>(<span class="tk-var">data</span>);</span><span class="ln">		<span class="tk-kw">if</span> (!<span class="tk-var">parsed</span>.<span class="tk-prop">success</span>) {</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">400</span>, {</span><span class="ln">				<span class="tk-prop">error</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">error</span>.<span class="tk-prop">issues</span>[<span class="tk-num">0</span>]?.<span class="tk-prop">message</span> ?? <span class="tk-str">'Please review the form.'</span>,</span><span class="ln">				<span class="tk-prop">values</span>: { <span class="tk-prop">name</span>: <span class="tk-var">data</span>.<span class="tk-prop">name</span>, <span class="tk-prop">email</span>: <span class="tk-var">data</span>.<span class="tk-prop">email</span>, <span class="tk-prop">subject</span>: <span class="tk-var">data</span>.<span class="tk-prop">subject</span>, <span class="tk-prop">body</span>: <span class="tk-var">data</span>.<span class="tk-prop">body</span> }</span><span class="ln">			});</span><span class="ln">		}</span><span class="ln">		<span class="tk-kw">if</span> (<span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">website</span>) <span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">400</span>, { <span class="tk-prop">error</span>: <span class="tk-str">'Submission rejected'</span> });</span><span class="ln"></span><span class="ln">		<span class="tk-kw">try</span> {</span><span class="ln">			<span class="tk-kw">await</span> <span class="tk-var">db</span>.<span class="tk-fn">insert</span>(<span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>).<span class="tk-fn">values</span>({</span><span class="ln">				<span class="tk-prop">id</span>: <span class="tk-str">`msg_${</span><span class="tk-fn">crypto</span>.<span class="tk-fn">randomUUID</span>()<span class="tk-str">}`</span>,</span><span class="ln">				<span class="tk-prop">name</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">name</span>,</span><span class="ln">				<span class="tk-prop">email</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">email</span>.<span class="tk-fn">toLowerCase</span>(),</span><span class="ln">				<span class="tk-prop">subject</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">subject</span>,</span><span class="ln">				<span class="tk-prop">body</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">body</span></span><span class="ln">			});</span><span class="ln">		} <span class="tk-kw">catch</span> (<span class="tk-var">e</span>) {</span><span class="ln">			<span class="tk-fn">console</span>.<span class="tk-fn">error</span>(<span class="tk-str">'contact insert failed'</span>, <span class="tk-var">e</span>);</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">500</span>, { <span class="tk-prop">error</span>: <span class="tk-str">'Could not send your message. Please try again.'</span> });</span><span class="ln">		}</span><span class="ln">		<span class="tk-kw">return</span> { <span class="tk-prop">success</span>: <span class="tk-bool">true</span> };</span><span class="ln">	}</span><span class="ln">};</span></code></pre></div>
+
+      <dl>
+        <dt><code>actions.default</code></dt>
+        <dd>An action named <code>default</code> answers a form posted to <code>?</code> (no name). Use default when a page has exactly one form; use named actions when it has multiple (like the lead capture's <code>capture</code> + <code>subscribe</code>).</dd>
+        <dt><code>{ values: { name, email, subject, body } }</code> on failure</dt>
+        <dd>If validation fails, we echo the raw input back in <code>values</code> so the form can repopulate. Otherwise the user would lose a paragraph of text on every typo. This is what "progressive enhancement" actually means — the form works without JavaScript because the failure path reconstructs state from the server response.</dd>
+        <dt>3 requests/minute</dt>
+        <dd>Tighter than the lead form's 5/min because the contact form has more friction (four fields) and abuse signals are clearer.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why two near-identical files instead of a shared helper?</div>
+        <p>Tempting to DRY this — a generic "form action handler" that takes a schema, a table, and a redirect URL. We didn't, because the differences will multiply. Phase 2 adds email-sending for contact, double-opt-in for leads. The first time those diverge, the abstraction either grows tentacles or gets ripped out. Two short clear files beat one clever indirection.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-7"><div class="dir">← Prev</div><div class="ttl">Lead capture</div></a>
+        <a class="next" href="#ch-9"><div class="dir">Next →</div><div class="ttl">Auth stubs</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 9 ============================ -->
+    <section id="ch-9">
+      <p class="eyebrow">Chapter 09</p>
+      <h2>Auth stubs · login, signup, reset</h2>
+      <p>Real authentication — password hashing, session tokens, email verification, CSRF — is several volumes of work. Phase 1 ships <strong>auth stubs</strong>: the full UI flow works, but instead of validating credentials we set the mock-user cookie that <code>hooks.server.ts</code> from Vol 1 reads. This unblocks the dashboard and admin without committing to an auth scheme yet.</p>
+
+      <h3><code>src/routes/login/+page.server.ts</code></h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/login/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">fail</span>, <span class="tk-fn">redirect</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">Actions</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">loginSchema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/validators.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">actions</span>: <span class="tk-typ">Actions</span> = {</span><span class="ln">	<span class="tk-fn">default</span>: <span class="tk-kw">async</span> ({ <span class="tk-var">request</span>, <span class="tk-var">cookies</span> }) =&gt; {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">formData</span> = <span class="tk-kw">await</span> <span class="tk-var">request</span>.<span class="tk-fn">formData</span>();</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">parsed</span> = <span class="tk-var">loginSchema</span>.<span class="tk-fn">safeParse</span>({</span><span class="ln">			<span class="tk-prop">email</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'email'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">password</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'password'</span>)?.<span class="tk-fn">toString</span>() ?? <span class="tk-str">''</span>,</span><span class="ln">			<span class="tk-prop">remember</span>: <span class="tk-var">formData</span>.<span class="tk-fn">get</span>(<span class="tk-str">'remember'</span>)?.<span class="tk-fn">toString</span>() === <span class="tk-str">'on'</span></span><span class="ln">		});</span><span class="ln">		<span class="tk-kw">if</span> (!<span class="tk-var">parsed</span>.<span class="tk-prop">success</span>) {</span><span class="ln">			<span class="tk-kw">return</span> <span class="tk-fn">fail</span>(<span class="tk-num">400</span>, { <span class="tk-prop">error</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">error</span>.<span class="tk-prop">issues</span>[<span class="tk-num">0</span>]?.<span class="tk-prop">message</span> ?? <span class="tk-str">'Invalid login.'</span> });</span><span class="ln">		}</span><span class="ln"></span><span class="ln">		<span class="tk-com">// Phase 1: stub. Set mock cookie so dashboard can render.</span></span><span class="ln">		<span class="tk-var">cookies</span>.<span class="tk-fn">set</span>(<span class="tk-str">'tradeflex-mock-user'</span>, <span class="tk-str">'member'</span>, {</span><span class="ln">			<span class="tk-prop">path</span>: <span class="tk-str">'/'</span>,</span><span class="ln">			<span class="tk-prop">maxAge</span>: <span class="tk-var">parsed</span>.<span class="tk-prop">data</span>.<span class="tk-prop">remember</span> ? <span class="tk-num">60</span> * <span class="tk-num">60</span> * <span class="tk-num">24</span> * <span class="tk-num">30</span> : <span class="tk-num">60</span> * <span class="tk-num">60</span> * <span class="tk-num">24</span></span><span class="ln">		});</span><span class="ln"></span><span class="ln">		<span class="tk-fn">redirect</span>(<span class="tk-num">303</span>, <span class="tk-str">'/dashboard'</span>);</span><span class="ln">	}</span><span class="ln">};</span></code></pre></div>
+
+      <dl>
+        <dt><code>cookies.set(name, value, opts)</code></dt>
+        <dd>SvelteKit's typed cookie helper. <code>path: '/'</code> makes the cookie readable on every route. <code>maxAge</code> is in seconds. With "remember me" checked we set 30 days; without, 24 hours.</dd>
+        <dt>Cookie value <code>'member'</code></dt>
+        <dd>The same string our <code>hooks.server.ts</code> reads in Vol 1. The dashboard layout then trusts <code>event.locals.user</code> to be populated.</dd>
+        <dt>No password check</dt>
+        <dd>The schema validates that an email and password were typed — it doesn't compare against a hash, because there's nothing to compare against. Real auth is a future-volume problem; the current stub lets the rest of the app render.</dd>
+        <dt><code>redirect(303, '/dashboard')</code></dt>
+        <dd>POST-Redirect-GET again. Lands the user on the protected area their cookie now grants.</dd>
+      </dl>
+
+      <h3>Signup, forgot, reset</h3>
+      <p>Same pattern. <code>signup</code> uses <code>signupSchema</code> (name, email, password + confirm + terms) and sets the same cookie. <code>forgot-password</code> is UI-only — no server file — because there's no email service yet; submitting "succeeds" via a Svelte 5 form binding without leaving the page. <code>reset-password</code> is similarly UI-only.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · don't ship this</div>
+        <p>This stub is fine for a Phase 1 demo. It is <strong>not</strong> safe to deploy publicly. The cookie is unsigned, the schema doesn't check credentials, and there's no protection against brute-force. Before Phase 2 hits production: real password hashing (argon2id, work factor ≥ 19), signed sessions (JWT or cookie-signed), rate limiting on login attempts, and email verification. Document this in your runbook, not just in a code comment.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-8"><div class="dir">← Prev</div><div class="ttl">Contact form</div></a>
+        <a class="next" href="#ch-10"><div class="dir">Next →</div><div class="ttl">Dashboard layout</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 10 ============================ -->
+    <section id="ch-10">
+      <p class="eyebrow">Chapter 10</p>
+      <h2>Dashboard layout &amp; overview</h2>
+      <p>The member dashboard is the first place we use a <em>nested layout</em> to give a sub-section its own chrome. <code>src/routes/dashboard/+layout.svelte</code> replaces the marketing Navbar/Footer with a sidebar + header pair (the <code>DashboardSidebar</code> and <code>DashboardHeader</code> components from Vol 3). Every page under <code>/dashboard/*</code> inherits that chrome automatically.</p>
+
+      <h3>The layout server load</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/dashboard/+layout.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">LayoutServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">LayoutServerLoad</span> = ({ <span class="tk-var">locals</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">user</span>: <span class="tk-var">locals</span>.<span class="tk-prop">user</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>Three lines. Forwards the <code>event.locals.user</code> that <code>hooks.server.ts</code> attached on every request. Every dashboard page now has access to the user via <code>$page.data.user</code> (or via <code>data.user</code> in its own <code>+page.svelte</code> with proper typing). Notice the absence of a redirect on null — that's intentional for Phase 1: the mock user is <em>always</em> present.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Phase 2 must add the gate</div>
+        <p>When real auth lands, this file must become:</p>
+        <p><code>if (!locals.user) redirect(303, '/login');</code></p>
+        <p>That single line — placed in the layout server load — protects every dashboard route at once. No per-page check, no risk of forgetting. The layout load runs before every page load underneath; an unauthenticated user never sees the protected component code.</p>
+      </div>
+
+      <h3>The dashboard overview page</h3>
+      <p><code>src/routes/dashboard/+page.svelte</code> is 410 lines, almost entirely composing Vol 3 components: a hero greeting (<code>Hi, Alex — here's where you stand today</code>), four <code>StatCard</code>s (open positions, P&amp;L this week, active subscriptions, courses in progress), a list of recent activity, and a quick-actions panel. The script block is short:</p>
+      <div class="code"><div class="head"><span class="lang">svelte</span><span class="path">excerpt</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">let</span> { <span class="tk-var">data</span> } = <span class="tk-rune">$props</span>();</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">user</span> = <span class="tk-rune">$derived</span>(<span class="tk-var">data</span>.<span class="tk-prop">user</span>);</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">firstName</span> = <span class="tk-rune">$derived</span>(<span class="tk-var">user</span>?.<span class="tk-prop">name</span>?.<span class="tk-fn">split</span>(<span class="tk-str">' '</span>)[<span class="tk-num">0</span>] ?? <span class="tk-str">'there'</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">// All KPI numbers are static mocks in Phase 1 — wired to real data in Phase 2</span></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">stats</span> = [</span><span class="ln">	{ <span class="tk-prop">label</span>: <span class="tk-str">'Open positions'</span>, <span class="tk-prop">value</span>: <span class="tk-num">3</span>, <span class="tk-prop">delta</span>: <span class="tk-str">'+1 today'</span> },</span><span class="ln">	<span class="tk-com">/* etc */</span></span><span class="ln">];</span></code></pre></div>
+
+      <p>Phase-1 honesty: the numbers are mock arrays. Phase 2 replaces this with a real query against a positions table. The component contract doesn't change, so the page itself only needs to swap how <code>stats</code> is computed.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-9"><div class="dir">← Prev</div><div class="ttl">Auth stubs</div></a>
+        <a class="next" href="#ch-11"><div class="dir">Next →</div><div class="ttl">Dashboard · courses, indicators, billing</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 11 ============================ -->
+    <section id="ch-11">
+      <p class="eyebrow">Chapter 11</p>
+      <h2>Dashboard · courses, indicators, billing</h2>
+      <p>Three feature areas, each a small folder of routes. Same shape: a list page and (for courses) a detail page. None requires a server load function — all data is module-level catalogs from <code>$lib/data/products</code> with mock per-user progress.</p>
+
+      <h3>My Courses</h3>
+      <p><code>src/routes/dashboard/courses/+page.svelte</code> renders a grid of enrolled courses with progress bars from Vol 3's <code>ProgressBar</code>. The progress numbers are mock per-user data hard-coded in the script block — easy to swap for a real <code>user_course_progress</code> table later.</p>
+
+      <h3>Course detail · <code>/dashboard/courses/[slug]</code></h3>
+      <p>The deepest dashboard route. <code>+page.ts</code>:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/dashboard/courses/[slug]/+page.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">error</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">getProductBySlug</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/products.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageLoad</span> = ({ <span class="tk-var">params</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">course</span> = <span class="tk-fn">getProductBySlug</span>(<span class="tk-var">params</span>.<span class="tk-prop">slug</span>);</span><span class="ln">	<span class="tk-kw">if</span> (!<span class="tk-var">course</span> || <span class="tk-var">course</span>.<span class="tk-prop">kind</span> !== <span class="tk-str">'course'</span>) <span class="tk-fn">error</span>(<span class="tk-num">404</span>, <span class="tk-str">'Course not found'</span>);</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">course</span> };</span><span class="ln">}</span></code></pre></div>
+
+      <p>Same pattern as the public course detail in Ch 5, but the page itself shows a video-player shell, module list, and lesson-progress checkboxes instead of a "Buy" CTA. The reader has already paid; this is their reading experience.</p>
+
+      <h3>My Indicators · download &amp; license keys</h3>
+      <p><code>/dashboard/indicators</code> lists owned indicators with download buttons and license keys. License keys are mock UUIDs generated in the script. In Phase 2 these come from a <code>user_licenses</code> table.</p>
+
+      <h3>Subscription &amp; Billing</h3>
+      <p>Two large pages — 709 and 451 lines — that read the cart store's persisted plan ID (no, actually a mock active-subscription object) to show the user's current plan, the change/pause/cancel flow, payment methods, and invoices. Both are Phase-1-mock and Phase-2-DB-backed.</p>
+
+      <div class="callout why">
+        <div class="label">Why mock data is fine right now</div>
+        <p>Every consumer-facing route compiles, renders, and lets us QA the visual design. When the DB tables and APIs land in Phase 2, the swap is mechanical: replace the mock arrays with a server load that selects from the new tables. The component contracts don't change because Vol 3 was built against types, not specific data sources.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-10"><div class="dir">← Prev</div><div class="ttl">Dashboard layout</div></a>
+        <a class="next" href="#ch-12"><div class="dir">Next →</div><div class="ttl">Dashboard · profile, notifications, downloads</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 12 ============================ -->
+    <section id="ch-12">
+      <p class="eyebrow">Chapter 12</p>
+      <h2>Dashboard · profile, notifications, downloads</h2>
+      <p>The final three dashboard areas are user-settings-heavy. Each contains many <code>Input</code>, <code>Switch</code>, and <code>Select</code> components from Vol 3 wired to local <code>$state</code> in the page's script — no server roundtrip until "Save."</p>
+
+      <h3>Profile · sections that aren't yet a server contract</h3>
+      <p><code>src/routes/dashboard/profile/+page.svelte</code> has six panels: profile, email, password, 2FA, sessions, export &amp; delete. In Phase 1 each "Save" button shows a toast and resets the form. In Phase 2 each maps to a named action in a future <code>+page.server.ts</code> — but the visual UX is already done.</p>
+
+      <p>The structural pattern in the script is worth noting:</p>
+      <div class="code"><div class="head"><span class="lang">svelte</span><span class="path">excerpt</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">let</span> { <span class="tk-var">data</span> } = <span class="tk-rune">$props</span>();</span><span class="ln"><span class="tk-kw">let</span> <span class="tk-var">name</span> = <span class="tk-rune">$state</span>(<span class="tk-var">data</span>.<span class="tk-prop">user</span>?.<span class="tk-prop">name</span> ?? <span class="tk-str">''</span>);</span><span class="ln"><span class="tk-kw">let</span> <span class="tk-var">timezone</span> = <span class="tk-rune">$state</span>(<span class="tk-str">'America/New_York'</span>);</span><span class="ln"><span class="tk-kw">let</span> <span class="tk-var">saving</span> = <span class="tk-rune">$state</span>(<span class="tk-bool">false</span>);</span><span class="ln"></span><span class="ln"><span class="tk-kw">async function</span> <span class="tk-fn">save</span>() {</span><span class="ln">	<span class="tk-var">saving</span> = <span class="tk-bool">true</span>;</span><span class="ln">	<span class="tk-kw">await</span> <span class="tk-kw">new</span> <span class="tk-typ">Promise</span>((<span class="tk-var">r</span>) =&gt; <span class="tk-fn">setTimeout</span>(<span class="tk-var">r</span>, <span class="tk-num">600</span>));</span><span class="ln">	<span class="tk-var">saving</span> = <span class="tk-bool">false</span>;</span><span class="ln">	<span class="tk-var">toasts</span>.<span class="tk-fn">success</span>(<span class="tk-str">'Profile saved'</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>Initial values come from <code>data.user</code> (whatever the load function provided), then local <code>$state</code> takes over for the user's edits. The fake 600ms timeout simulates network latency so the UI's loading states (Vol 3's Button <code>loading</code> prop) are exercised in QA without a real backend.</p>
+
+      <h3>Notifications</h3>
+      <p>352 lines of preference toggles: marketing emails, weekly digests, trade alerts, do-not-disturb hours. Each <code>Switch</code> binds to a local <code>$state</code> field. A "Save preferences" button at the bottom doesn't yet hit a server — Phase 2 attaches it to a named action.</p>
+
+      <h3>Downloads</h3>
+      <p><code>src/routes/dashboard/downloads/+page.svelte</code> is a flat list of downloadable assets: indicator binaries, PDFs, license certificates. Each entry has a Tabler icon, a size, a checksum, and a download button that opens a <code>&lt;a href="/static/..." download&gt;</code> link. Static files are served by SvelteKit's static asset pipeline; no server logic needed.</p>
+
+      <div class="callout why">
+        <div class="label">Why the static folder isn't a route</div>
+        <p>Anything in <code>static/</code> at the project root is served as-is by SvelteKit at the URL with the same path. <code>static/pdf/options-greeks-guide.pdf</code> → <code>/pdf/options-greeks-guide.pdf</code>. No <code>+server.ts</code> needed because there's no logic — just file delivery, with HTTP-level caching headers set by the adapter.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-11"><div class="dir">← Prev</div><div class="ttl">Courses &amp; billing</div></a>
+        <a class="next" href="#ch-13"><div class="dir">Next →</div><div class="ttl">Admin layout &amp; overview</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 13 ============================ -->
+    <section id="ch-13">
+      <p class="eyebrow">Chapter 13</p>
+      <h2>Admin layout &amp; overview</h2>
+      <p>The admin section is gated by role. <code>src/routes/admin/+layout.server.ts</code> is the gatekeeper:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/admin/+layout.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">error</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">LayoutServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">LayoutServerLoad</span> = ({ <span class="tk-var">locals</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">if</span> (<span class="tk-var">locals</span>.<span class="tk-prop">user</span>?.<span class="tk-prop">role</span> !== <span class="tk-str">'admin'</span>) {</span><span class="ln">		<span class="tk-fn">error</span>(<span class="tk-num">403</span>, { <span class="tk-prop">message</span>: <span class="tk-str">'Admin access required.'</span>, <span class="tk-prop">code</span>: <span class="tk-str">'forbidden'</span> });</span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">user</span>: <span class="tk-var">locals</span>.<span class="tk-prop">user</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>This is the layout-as-gate pattern in its cleanest form. <strong>Six lines</strong> protect <em>every</em> admin route — the layout load runs before any page load underneath, so a non-admin sees a 403 before any admin component even compiles into a render. The custom error has a code (<code>forbidden</code>) because our typed <code>App.Error</code> from Vol 1 includes that field; the project's <code>+error.svelte</code> can branch on it for a custom forbidden screen.</p>
+
+      <h3>How to become admin in Phase 1</h3>
+      <p>Open DevTools, Application → Cookies, set <code>tradeflex-mock-user=admin</code>, reload. <code>hooks.server.ts</code> reads that cookie and promotes the mock user's role. Switch back by deleting the cookie. This is intentionally cheap — Phase 1 is for demo and design QA, not production auth.</p>
+
+      <h3>The overview page · live DB read for KPIs</h3>
+      <p><code>src/routes/admin/+page.server.ts</code>:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/admin/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">db</span>, <span class="tk-var">schema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/db/client.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">desc</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageServerLoad</span> = <span class="tk-kw">async</span> () =&gt; {</span><span class="ln">	<span class="tk-kw">let</span> <span class="tk-var">recentLeads</span>: (<span class="tk-kw">typeof</span> <span class="tk-var">schema</span>.<span class="tk-prop">leads</span>.<span class="tk-prop">$inferSelect</span>)[] = [];</span><span class="ln">	<span class="tk-kw">let</span> <span class="tk-var">recentMessages</span>: (<span class="tk-kw">typeof</span> <span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>.<span class="tk-prop">$inferSelect</span>)[] = [];</span><span class="ln">	<span class="tk-kw">try</span> {</span><span class="ln">		<span class="tk-var">recentLeads</span> = <span class="tk-kw">await</span> <span class="tk-var">db</span></span><span class="ln">			.<span class="tk-fn">select</span>()</span><span class="ln">			.<span class="tk-fn">from</span>(<span class="tk-var">schema</span>.<span class="tk-prop">leads</span>)</span><span class="ln">			.<span class="tk-fn">orderBy</span>(<span class="tk-fn">desc</span>(<span class="tk-var">schema</span>.<span class="tk-prop">leads</span>.<span class="tk-prop">createdAt</span>))</span><span class="ln">			.<span class="tk-fn">limit</span>(<span class="tk-num">5</span>);</span><span class="ln">		<span class="tk-var">recentMessages</span> = <span class="tk-kw">await</span> <span class="tk-var">db</span></span><span class="ln">			.<span class="tk-fn">select</span>()</span><span class="ln">			.<span class="tk-fn">from</span>(<span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>)</span><span class="ln">			.<span class="tk-fn">orderBy</span>(<span class="tk-fn">desc</span>(<span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>.<span class="tk-prop">createdAt</span>))</span><span class="ln">			.<span class="tk-fn">limit</span>(<span class="tk-num">5</span>);</span><span class="ln">	} <span class="tk-kw">catch</span> {</span><span class="ln">		<span class="tk-com">// DB not migrated yet — render with empties</span></span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">recentLeads</span>, <span class="tk-var">recentMessages</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <dl>
+        <dt><code>db.select().from(schema.leads).orderBy(desc(...)).limit(5)</code></dt>
+        <dd>Drizzle's fluent query builder. Reads exactly like the SQL it generates: <code>SELECT * FROM leads ORDER BY created_at DESC LIMIT 5</code>. Type-safe — the resulting array's element type comes from the schema.</dd>
+        <dt><code>$inferSelect</code></dt>
+        <dd>Drizzle helper that infers the TypeScript shape of a row from the table definition. <code>typeof schema.leads.$inferSelect</code> is exactly <code>{ id: string; email: string; source: string; createdAt: Date }</code>. We use it to type the empty initial arrays so the catch branch doesn't crash on first render.</dd>
+        <dt>The try/catch around the queries</dt>
+        <dd>On a fresh checkout the SQLite file may not exist yet (the user hasn't run <code>pnpm db:push</code>). Instead of erroring, we degrade gracefully: render the overview with empty arrays. The KPI cards above show "—" instead of a number, and the dashboard is usable.</dd>
+      </dl>
+
+      <p>The overview page itself (453 lines) is a Vol 3 component recital: <code>StatCard</code>s for revenue/leads/orders/active subs, a <code>ChartCard</code> with the canvas revenue chart, and two activity feeds rendered from <code>recentLeads</code> and <code>recentMessages</code>.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-12"><div class="dir">← Prev</div><div class="ttl">Profile &amp; downloads</div></a>
+        <a class="next" href="#ch-14"><div class="dir">Next →</div><div class="ttl">Admin write surfaces</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 14 ============================ -->
+    <section id="ch-14">
+      <p class="eyebrow">Chapter 14</p>
+      <h2>Admin write surfaces</h2>
+      <p>Products, courses, plans, orders, customers, settings — each gets a list page and (for products) a new/edit pair. In Phase 1 these are <strong>UI-complete</strong> but their submits stub: the form action shows a success toast and resets the form. Phase 2 wires them to real DB inserts/updates with optimistic UI.</p>
+
+      <h3>The pattern · /admin/products/new</h3>
+      <p><code>src/routes/admin/products/new/+page.svelte</code> (246 lines) is a form with maybe twenty <code>Input</code>s, <code>Select</code>s, and <code>Textarea</code>s laid out in fieldset sections — basic info, pricing, media, SEO, deliverables, requirements. The page does <em>not</em> have a <code>+page.server.ts</code> yet; the form's <code>onsubmit</code> handler currently:</p>
+      <ol>
+        <li>Validates locally with the Zod product-create schema (a future addition to <code>validators.ts</code>)</li>
+        <li>Shows a toast: "Product created · feature wires to DB in Phase 2"</li>
+        <li>Resets the form</li>
+      </ol>
+
+      <h3>The pattern · /admin/products/[id]</h3>
+      <p>Edit-existing. Has a <code>+page.ts</code> that pre-fills the form from a mock catalog lookup:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/admin/products/[id]/+page.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">error</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">getAllProducts</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/products.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageLoad</span> = ({ <span class="tk-var">params</span> }) =&gt; {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">product</span> = <span class="tk-fn">getAllProducts</span>().<span class="tk-fn">find</span>((<span class="tk-var">p</span>) =&gt; <span class="tk-var">p</span>.<span class="tk-prop">id</span> === <span class="tk-var">params</span>.<span class="tk-prop">id</span>);</span><span class="ln">	<span class="tk-kw">if</span> (!<span class="tk-var">product</span>) <span class="tk-fn">error</span>(<span class="tk-num">404</span>, <span class="tk-str">'Product not found'</span>);</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">product</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>The <code>[id]</code> param is the product's primary key (<code>prod_revolution_ranger</code>), not the URL slug. The list page links to <code>/admin/products/{p.id}</code>. Why ID not slug? Because admins can change the slug, but the ID is the row's true identity — using it in URLs means renaming the slug doesn't break bookmarks or stale tabs.</p>
+
+      <h3>Plans, orders, customers, courses</h3>
+      <p>Same shape — list page reads mock data, individual rows link to detail/edit screens, save buttons are wired with toasts and TODO comments. All four are 200-350 lines of UI built on <code>DataTable</code> from Vol 3 and the form primitives from <code>$lib/components/ui</code>.</p>
+
+      <h3>Settings · multi-tab preferences</h3>
+      <p><code>/admin/settings</code> uses Vol 3's <code>Tabs</code> component: general, SEO, email, integrations. Each tab is a fieldset of inputs persisted to a mock <code>$state</code> object. Phase 2 introduces a server load that reads from a <code>site_settings</code> table and a default form action that updates it.</p>
+
+      <div class="callout why">
+        <div class="label">Why ship UI without DB writes?</div>
+        <p>The admin is the most expensive area to design — 9 routes, hundreds of inputs, complex layouts. Building the UI complete first means: (1) the Phase 2 backend work has clear contracts (the forms tell you exactly what fields each table needs), (2) stakeholders can click around and approve the workflow before any DB migration is written, (3) when real submits land, the visual review is already done. Ship UI ahead of wiring; never the reverse.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-13"><div class="dir">← Prev</div><div class="ttl">Admin overview</div></a>
+        <a class="next" href="#ch-15"><div class="dir">Next →</div><div class="ttl">Admin live-DB reads</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 15 ============================ -->
+    <section id="ch-15">
+      <p class="eyebrow">Chapter 15</p>
+      <h2>Admin live-DB reads · /admin/leads and /admin/messages</h2>
+      <p>Two routes in the admin actually query the real database in Phase 1: <code>/admin/leads</code> reads what the free-guide form wrote, and <code>/admin/messages</code> reads what the contact form wrote. End-to-end loop: form → DB → admin view.</p>
+
+      <h3>/admin/leads server load</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/admin/leads/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">db</span>, <span class="tk-var">schema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/db/client.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">desc</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageServerLoad</span> = <span class="tk-kw">async</span> () =&gt; {</span><span class="ln">	<span class="tk-kw">let</span> <span class="tk-var">leads</span>: (<span class="tk-kw">typeof</span> <span class="tk-var">schema</span>.<span class="tk-prop">leads</span>.<span class="tk-prop">$inferSelect</span>)[] = [];</span><span class="ln">	<span class="tk-kw">try</span> {</span><span class="ln">		<span class="tk-var">leads</span> = <span class="tk-kw">await</span> <span class="tk-var">db</span>.<span class="tk-fn">select</span>().<span class="tk-fn">from</span>(<span class="tk-var">schema</span>.<span class="tk-prop">leads</span>).<span class="tk-fn">orderBy</span>(<span class="tk-fn">desc</span>(<span class="tk-var">schema</span>.<span class="tk-prop">leads</span>.<span class="tk-prop">createdAt</span>)).<span class="tk-fn">limit</span>(<span class="tk-num">200</span>);</span><span class="ln">	} <span class="tk-kw">catch</span> {</span><span class="ln">		<span class="tk-com">/* DB not migrated yet */</span></span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">leads</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>Identical pattern to the overview's query, just unbounded to 200 rows instead of 5. The page renders a <code>DataTable</code> with email/source/date columns and a CSV export button (Phase 1: client-side download of <code>data.leads</code>; Phase 2: <code>/admin/leads/export.csv/+server.ts</code> endpoint).</p>
+
+      <h3>/admin/messages server load</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/admin/messages/+page.server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">PageServerLoad</span> } <span class="tk-kw">from</span> <span class="tk-str">'./$types'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">db</span>, <span class="tk-var">schema</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/server/db/client.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">desc</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">load</span>: <span class="tk-typ">PageServerLoad</span> = <span class="tk-kw">async</span> () =&gt; {</span><span class="ln">	<span class="tk-kw">let</span> <span class="tk-var">messages</span>: (<span class="tk-kw">typeof</span> <span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>.<span class="tk-prop">$inferSelect</span>)[] = [];</span><span class="ln">	<span class="tk-kw">try</span> {</span><span class="ln">		<span class="tk-var">messages</span> = <span class="tk-kw">await</span> <span class="tk-var">db</span></span><span class="ln">			.<span class="tk-fn">select</span>()</span><span class="ln">			.<span class="tk-fn">from</span>(<span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>)</span><span class="ln">			.<span class="tk-fn">orderBy</span>(<span class="tk-fn">desc</span>(<span class="tk-var">schema</span>.<span class="tk-prop">contactMessages</span>.<span class="tk-prop">createdAt</span>))</span><span class="ln">			.<span class="tk-fn">limit</span>(<span class="tk-num">200</span>);</span><span class="ln">	} <span class="tk-kw">catch</span> {</span><span class="ln">		<span class="tk-com">/* DB not migrated */</span></span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-var">messages</span> };</span><span class="ln">};</span></code></pre></div>
+
+      <p>Same query, different table. The page renders messages as expandable rows — click to see the full body inline. No read/unread state yet (no <code>read_at</code> column); that's the next column to add when the team needs an inbox triage UX.</p>
+
+      <div class="callout why">
+        <div class="label">Why these are the canary routes</div>
+        <p>These two routes prove the database pipe works end-to-end in Phase 1. Submit the free-guide form on the public site, switch to admin role via cookie, navigate to <code>/admin/leads</code>, see your test submission at the top. <strong>If anything breaks — hooks misconfigured, server file leaking to client, Drizzle schema mismatched, libsql url wrong — these are the routes that surface it first.</strong> Useful canaries.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-14"><div class="dir">← Prev</div><div class="ttl">Admin write surfaces</div></a>
+        <a class="next" href="#ch-16"><div class="dir">Next →</div><div class="ttl">SEO endpoints</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 16 ============================ -->
+    <section id="ch-16">
+      <p class="eyebrow">Chapter 16</p>
+      <h2>SEO endpoints · sitemap &amp; robots</h2>
+      <p>Two routes that ship XML and plain text instead of HTML: <code>/sitemap.xml</code> and <code>/robots.txt</code>. They use SvelteKit's <code>+server.ts</code> file type, which exports HTTP method handlers (<code>GET</code>, <code>POST</code>, etc.) returning <code>Response</code> objects. Both are prerendered at build time — a single static file each, served from CDN edge, no server compute per request.</p>
+
+      <h3>The sitemap</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/sitemap.xml/+server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">SITE_URL</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/seo.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">INDICATORS</span>, <span class="tk-var">COURSES</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/products.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">prerender</span> = <span class="tk-bool">true</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">STATIC_ROUTES</span>: <span class="tk-typ">Array</span>&lt;{ <span class="tk-prop">path</span>: <span class="tk-typ">string</span>; <span class="tk-prop">priority</span>: <span class="tk-typ">number</span>; <span class="tk-prop">changefreq</span>: <span class="tk-typ">string</span> }&gt; = [</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">1.0</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/subscription'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.95</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/indicators'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.9</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/courses'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.9</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/free-guide'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.8</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'monthly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/about'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.6</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'monthly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/contact'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.6</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'monthly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/legal/terms'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.3</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'yearly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/legal/privacy'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.3</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'yearly'</span> },</span><span class="ln">	{ <span class="tk-prop">path</span>: <span class="tk-str">'/legal/refund'</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.3</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'yearly'</span> }</span><span class="ln">];</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">GET</span> = <span class="tk-kw">async</span> () =&gt; {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">today</span> = <span class="tk-kw">new</span> <span class="tk-typ">Date</span>().<span class="tk-fn">toISOString</span>().<span class="tk-fn">slice</span>(<span class="tk-num">0</span>, <span class="tk-num">10</span>);</span><span class="ln"></span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">entries</span>: <span class="tk-typ">Array</span>&lt;{ <span class="tk-prop">path</span>: <span class="tk-typ">string</span>; <span class="tk-prop">priority</span>: <span class="tk-typ">number</span>; <span class="tk-prop">changefreq</span>: <span class="tk-typ">string</span> }&gt; = [</span><span class="ln">		...<span class="tk-var">STATIC_ROUTES</span>,</span><span class="ln">		...<span class="tk-var">INDICATORS</span>.<span class="tk-fn">map</span>((<span class="tk-var">p</span>) =&gt; ({ <span class="tk-prop">path</span>: <span class="tk-str">`/indicators/${</span><span class="tk-var">p</span>.<span class="tk-prop">slug</span><span class="tk-str">}`</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.85</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> })),</span><span class="ln">		...<span class="tk-var">COURSES</span>.<span class="tk-fn">map</span>((<span class="tk-var">p</span>) =&gt; ({ <span class="tk-prop">path</span>: <span class="tk-str">`/courses/${</span><span class="tk-var">p</span>.<span class="tk-prop">slug</span><span class="tk-str">}`</span>, <span class="tk-prop">priority</span>: <span class="tk-num">0.85</span>, <span class="tk-prop">changefreq</span>: <span class="tk-str">'weekly'</span> }))</span><span class="ln">	];</span><span class="ln"></span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">xml</span> = <span class="tk-str">`&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><span class="ln"><span class="tk-str">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;</span></span><span class="ln"><span class="tk-str">${</span><span class="tk-var">entries</span></span><span class="ln">	.<span class="tk-fn">map</span>(</span><span class="ln">		(<span class="tk-var">e</span>) =&gt; <span class="tk-str">`\t&lt;url&gt;</span></span><span class="ln"><span class="tk-str">\t\t&lt;loc&gt;${</span><span class="tk-var">SITE_URL</span><span class="tk-str">}${</span><span class="tk-var">e</span>.<span class="tk-prop">path</span><span class="tk-str">}&lt;/loc&gt;</span></span><span class="ln"><span class="tk-str">\t\t&lt;lastmod&gt;${</span><span class="tk-var">today</span><span class="tk-str">}&lt;/lastmod&gt;</span></span><span class="ln"><span class="tk-str">\t\t&lt;changefreq&gt;${</span><span class="tk-var">e</span>.<span class="tk-prop">changefreq</span><span class="tk-str">}&lt;/changefreq&gt;</span></span><span class="ln"><span class="tk-str">\t\t&lt;priority&gt;${</span><span class="tk-var">e</span>.<span class="tk-prop">priority</span>.<span class="tk-fn">toFixed</span>(<span class="tk-num">2</span>)<span class="tk-str">}&lt;/priority&gt;</span></span><span class="ln"><span class="tk-str">\t&lt;/url&gt;`</span></span><span class="ln">	)</span><span class="ln">	.<span class="tk-fn">join</span>(<span class="tk-str">'\n'</span>)}</span><span class="ln"><span class="tk-str">&lt;/urlset&gt;`</span>;</span><span class="ln"></span><span class="ln">	<span class="tk-kw">return new</span> <span class="tk-typ">Response</span>(<span class="tk-var">xml</span>, {</span><span class="ln">		<span class="tk-prop">headers</span>: { <span class="tk-str">'Content-Type'</span>: <span class="tk-str">'application/xml; charset=utf-8'</span> }</span><span class="ln">	});</span><span class="ln">};</span></code></pre></div>
+
+      <h3>Anatomy</h3>
+      <dl>
+        <dt>Folder name <code>sitemap.xml/</code></dt>
+        <dd>The route is <code>/sitemap.xml</code> because the folder is literally named that. SvelteKit's file router doesn't care that "xml" looks like a file extension — it treats the whole segment as a route name. The actual logic lives in <code>+server.ts</code> inside.</dd>
+        <dt><code>export const prerender = true</code></dt>
+        <dd>The whole point. At build time, SvelteKit calls our <code>GET</code> once, captures the response body, and writes <code>sitemap.xml</code> to the static output directory. In production this file is served by the CDN with zero server compute. Per the Svelte docs in Vol 1's Chapter 4 reference: "any two users hitting it directly must get the same content" — sitemaps are identical for every user. Perfect fit.</dd>
+        <dt><code>GET = async () =&gt; new Response(xml, { headers: ... })</code></dt>
+        <dd>The function name maps to the HTTP method. SvelteKit also supports <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>, <code>OPTIONS</code>, <code>HEAD</code>. The return must be a <code>Response</code> object (or a <code>Promise&lt;Response&gt;</code>) — same Web platform <code>Response</code> the browser <code>fetch</code> API hands back.</dd>
+        <dt>The <code>STATIC_ROUTES</code> array</dt>
+        <dd>Ten hand-curated routes with priorities (1.0 home page, 0.95 main funnel page, 0.3 legal) and changefreq hints. Google treats these as advisory, not binding — they help the crawler prioritize.</dd>
+        <dt>Dynamic entries from the product catalog</dt>
+        <dd>We <code>map</code> each indicator and course into a URL entry. The entire catalog is reachable at build time because Vol 2's <code>products.ts</code> is a static module — no DB lookup needed. Add a new product to the fixture and the sitemap regenerates next build.</dd>
+        <dt>Hand-rolled XML</dt>
+        <dd>No XML library. The output is fifteen lines of template literals. Simpler than pulling in <code>xmlbuilder2</code> for one route. The schema URL (<code>sitemaps.org/schemas/sitemap/0.9</code>) is the formal sitemap protocol — search engines validate against it.</dd>
+      </dl>
+
+      <h3>The robots file</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/robots.txt/+server.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">SITE_URL</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/utils/seo.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">prerender</span> = <span class="tk-bool">true</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">GET</span> = <span class="tk-kw">async</span> () =&gt; {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">body</span> = <span class="tk-str">`User-agent: *</span></span><span class="ln"><span class="tk-str">Allow: /</span></span><span class="ln"><span class="tk-str">Disallow: /dashboard</span></span><span class="ln"><span class="tk-str">Disallow: /admin</span></span><span class="ln"><span class="tk-str">Disallow: /cart</span></span><span class="ln"><span class="tk-str">Disallow: /login</span></span><span class="ln"><span class="tk-str">Disallow: /signup</span></span><span class="ln"><span class="tk-str">Disallow: /forgot-password</span></span><span class="ln"><span class="tk-str">Disallow: /reset-password</span></span><span class="ln"><span class="tk-str"></span></span><span class="ln"><span class="tk-str">Sitemap: ${</span><span class="tk-var">SITE_URL</span><span class="tk-str">}/sitemap.xml</span></span><span class="ln"><span class="tk-str">`</span>;</span><span class="ln">	<span class="tk-kw">return new</span> <span class="tk-typ">Response</span>(<span class="tk-var">body</span>, {</span><span class="ln">		<span class="tk-prop">headers</span>: { <span class="tk-str">'Content-Type'</span>: <span class="tk-str">'text/plain; charset=utf-8'</span> }</span><span class="ln">	});</span><span class="ln">};</span></code></pre></div>
+
+      <dl>
+        <dt>Eight Disallow lines</dt>
+        <dd>Tell crawlers to skip our private routes. Search engines won't index the dashboard or admin (even if they did somehow reach those URLs, the admin layout would return 403). The login/signup pages are also Disallowed — they're tools, not content.</dd>
+        <dt>The <code>Sitemap:</code> line at the end</dt>
+        <dd>Points crawlers to the sitemap above. Crawlers reach <code>/robots.txt</code> first and follow this link. The full <code>SITE_URL</code> is used because <code>robots.txt</code> values are URL-absolute by spec.</dd>
+        <dt><code>Content-Type: text/plain</code></dt>
+        <dd>Important: <code>robots.txt</code> is plain text, not HTML. Some servers serve it as HTML by mistake, which silently breaks crawler parsing.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why prerender both?</div>
+        <p>Neither file changes between requests. Prerendering means SvelteKit calls the <code>GET</code> once at build time, captures the output, and ships static files. The runtime cost is zero — no Lambda cold start, no server compute, no rate limiting. Both files live next to your CSS and JS in the CDN. Crawlers, which hit them constantly, never touch your origin.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-15"><div class="dir">← Prev</div><div class="ttl">Admin live-DB reads</div></a>
+        <a class="next" href="#ch-17"><div class="dir">Next →</div><div class="ttl">Drizzle · schema, client, seed</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 17 ============================ -->
+    <section id="ch-17">
+      <p class="eyebrow">Chapter 17</p>
+      <h2>Drizzle · schema, client, seed</h2>
+      <p>Three small files implement the entire database layer. Drizzle uses TypeScript-as-schema: the table definitions live in code, the migrations are generated from diffs, and the query builder enforces row types from the same source. One place to change a column; every consumer compiles or breaks.</p>
+
+      <h3>1. The schema · <code>src/lib/server/db/schema.ts</code></h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/db/schema.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">sql</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">sqliteTable</span>, <span class="tk-var">text</span>, <span class="tk-var">integer</span>, <span class="tk-var">index</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm/sqlite-core'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-com">/* ─────────────── Leads (email captures) ─────────────── */</span></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">leads</span> = <span class="tk-fn">sqliteTable</span>(</span><span class="ln">	<span class="tk-str">'leads'</span>,</span><span class="ln">	{</span><span class="ln">		<span class="tk-prop">id</span>: <span class="tk-fn">text</span>(<span class="tk-str">'id'</span>).<span class="tk-fn">primaryKey</span>(),</span><span class="ln">		<span class="tk-prop">email</span>: <span class="tk-fn">text</span>(<span class="tk-str">'email'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">		<span class="tk-prop">source</span>: <span class="tk-fn">text</span>(<span class="tk-str">'source'</span>).<span class="tk-fn">notNull</span>().<span class="tk-fn">default</span>(<span class="tk-str">'free-guide'</span>),</span><span class="ln">		<span class="tk-prop">createdAt</span>: <span class="tk-fn">integer</span>(<span class="tk-str">'created_at'</span>, { <span class="tk-prop">mode</span>: <span class="tk-str">'timestamp_ms'</span> })</span><span class="ln">			.<span class="tk-fn">notNull</span>()</span><span class="ln">			.<span class="tk-fn">default</span>(<span class="tk-var">sql</span><span class="tk-str">`(unixepoch() * 1000)`</span>)</span><span class="ln">	},</span><span class="ln">	(<span class="tk-var">t</span>) =&gt; [<span class="tk-fn">index</span>(<span class="tk-str">'leads_created_at_idx'</span>).<span class="tk-fn">on</span>(<span class="tk-var">t</span>.<span class="tk-prop">createdAt</span>)]</span><span class="ln">);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* ─────────────── Users (schema-only stub) ─────────────── */</span></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">users</span> = <span class="tk-fn">sqliteTable</span>(<span class="tk-str">'users'</span>, {</span><span class="ln">	<span class="tk-prop">id</span>: <span class="tk-fn">text</span>(<span class="tk-str">'id'</span>).<span class="tk-fn">primaryKey</span>(),</span><span class="ln">	<span class="tk-prop">email</span>: <span class="tk-fn">text</span>(<span class="tk-str">'email'</span>).<span class="tk-fn">notNull</span>().<span class="tk-fn">unique</span>(),</span><span class="ln">	<span class="tk-prop">name</span>: <span class="tk-fn">text</span>(<span class="tk-str">'name'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">	<span class="tk-prop">passwordHash</span>: <span class="tk-fn">text</span>(<span class="tk-str">'password_hash'</span>),</span><span class="ln">	<span class="tk-prop">avatarUrl</span>: <span class="tk-fn">text</span>(<span class="tk-str">'avatar_url'</span>),</span><span class="ln">	<span class="tk-prop">role</span>: <span class="tk-fn">text</span>(<span class="tk-str">'role'</span>, { <span class="tk-prop">enum</span>: [<span class="tk-str">'member'</span>, <span class="tk-str">'admin'</span>] }).<span class="tk-fn">notNull</span>().<span class="tk-fn">default</span>(<span class="tk-str">'member'</span>),</span><span class="ln">	<span class="tk-prop">createdAt</span>: <span class="tk-fn">integer</span>(<span class="tk-str">'created_at'</span>, { <span class="tk-prop">mode</span>: <span class="tk-str">'timestamp_ms'</span> })</span><span class="ln">		.<span class="tk-fn">notNull</span>()</span><span class="ln">		.<span class="tk-fn">default</span>(<span class="tk-var">sql</span><span class="tk-str">`(unixepoch() * 1000)`</span>)</span><span class="ln">});</span><span class="ln"></span><span class="ln"><span class="tk-com">/* ─────────────── Products, plans, cart, contact messages ─────────────── */</span></span><span class="ln"><span class="tk-com">/* same shape — see source for full content */</span></span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">contactMessages</span> = <span class="tk-fn">sqliteTable</span>(</span><span class="ln">	<span class="tk-str">'contact_messages'</span>,</span><span class="ln">	{</span><span class="ln">		<span class="tk-prop">id</span>: <span class="tk-fn">text</span>(<span class="tk-str">'id'</span>).<span class="tk-fn">primaryKey</span>(),</span><span class="ln">		<span class="tk-prop">name</span>: <span class="tk-fn">text</span>(<span class="tk-str">'name'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">		<span class="tk-prop">email</span>: <span class="tk-fn">text</span>(<span class="tk-str">'email'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">		<span class="tk-prop">subject</span>: <span class="tk-fn">text</span>(<span class="tk-str">'subject'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">		<span class="tk-prop">body</span>: <span class="tk-fn">text</span>(<span class="tk-str">'body'</span>).<span class="tk-fn">notNull</span>(),</span><span class="ln">		<span class="tk-prop">createdAt</span>: <span class="tk-fn">integer</span>(<span class="tk-str">'created_at'</span>, { <span class="tk-prop">mode</span>: <span class="tk-str">'timestamp_ms'</span> })</span><span class="ln">			.<span class="tk-fn">notNull</span>()</span><span class="ln">			.<span class="tk-fn">default</span>(<span class="tk-var">sql</span><span class="tk-str">`(unixepoch() * 1000)`</span>)</span><span class="ln">	},</span><span class="ln">	(<span class="tk-var">t</span>) =&gt; [<span class="tk-fn">index</span>(<span class="tk-str">'contact_messages_created_at_idx'</span>).<span class="tk-fn">on</span>(<span class="tk-var">t</span>.<span class="tk-prop">createdAt</span>)]</span><span class="ln">);</span><span class="ln"></span><span class="ln"><span class="tk-kw">export type</span> <span class="tk-typ">Lead</span> = <span class="tk-kw">typeof</span> <span class="tk-var">leads</span>.<span class="tk-prop">$inferSelect</span>;</span><span class="ln"><span class="tk-kw">export type</span> <span class="tk-typ">NewLead</span> = <span class="tk-kw">typeof</span> <span class="tk-var">leads</span>.<span class="tk-prop">$inferInsert</span>;</span><span class="ln"><span class="tk-kw">export type</span> <span class="tk-typ">ContactMessage</span> = <span class="tk-kw">typeof</span> <span class="tk-var">contactMessages</span>.<span class="tk-prop">$inferSelect</span>;</span></code></pre></div>
+
+      <dl>
+        <dt><code>sqliteTable('leads', { ... }, (t) =&gt; [index('leads_created_at_idx').on(t.createdAt)])</code></dt>
+        <dd>The third argument to <code>sqliteTable</code> is a function that returns table-level constraints — indexes, unique compounds, foreign keys. We index <code>created_at</code> on both leads and contact messages because the admin reads <code>ORDER BY created_at DESC LIMIT 200</code>. Without the index, that query scans the whole table; with it, the engine reads the tail in constant time.</dd>
+        <dt><code>integer('created_at', { mode: 'timestamp_ms' })</code></dt>
+        <dd>Drizzle's storage hint. SQLite stores integers; the <code>mode: 'timestamp_ms'</code> tells the ORM to marshal them to/from JavaScript <code>Date</code> objects automatically on the way in and out. The schema gets ergonomic Dates without losing the cheap integer storage.</dd>
+        <dt><code>.default(sql`(unixepoch() * 1000)`)</code></dt>
+        <dd>SQL-side default. SQLite's <code>unixepoch()</code> returns seconds since epoch; multiplied by 1000, milliseconds since epoch — matches what JavaScript's <code>Date.now()</code> uses. Means new rows get a timestamp at insert time without the app having to provide one.</dd>
+        <dt><code>text('role', { enum: ['member', 'admin'] })</code></dt>
+        <dd>Drizzle's tagged enum. At the DB level it's a CHECK constraint (<code>role IN ('member', 'admin')</code>). At the TypeScript level it's a string union. One declaration, two enforcements.</dd>
+        <dt><code>$inferSelect</code> and <code>$inferInsert</code></dt>
+        <dd>The TypeScript types for what a row looks like when you read it (<code>id: string; email: string; source: string; createdAt: Date</code>) and what you must provide to insert one (<code>id: string; email: string; source?: string; createdAt?: Date</code> — defaults make some fields optional). Used in our server loads to type the return arrays.</dd>
+      </dl>
+
+      <h3>2. The client · <code>src/lib/server/db/client.ts</code></h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/db/client.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">createClient</span> } <span class="tk-kw">from</span> <span class="tk-str">'@libsql/client'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">drizzle</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm/libsql'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">env</span> } <span class="tk-kw">from</span> <span class="tk-str">'$env/dynamic/private'</span>;</span><span class="ln"><span class="tk-kw">import</span> * <span class="tk-kw">as</span> <span class="tk-var">schema</span> <span class="tk-kw">from</span> <span class="tk-str">'./schema.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">url</span> = <span class="tk-var">env</span>.<span class="tk-prop">DATABASE_URL</span> ?? <span class="tk-str">'file:./drizzle/local.db'</span>;</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">authToken</span> = <span class="tk-var">env</span>.<span class="tk-prop">DATABASE_AUTH_TOKEN</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">client</span> = <span class="tk-fn">createClient</span>(<span class="tk-var">authToken</span> ? { <span class="tk-var">url</span>, <span class="tk-var">authToken</span> } : { <span class="tk-var">url</span> });</span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">db</span> = <span class="tk-fn">drizzle</span>(<span class="tk-var">client</span>, { <span class="tk-var">schema</span> });</span><span class="ln"><span class="tk-kw">export</span> { <span class="tk-var">schema</span> };</span></code></pre></div>
+
+      <dl>
+        <dt>The <code>file:./drizzle/local.db</code> URL</dt>
+        <dd>libsql speaks two transports: local file (<code>file:</code>) for dev, and HTTP/WebSocket to a Turso server for prod. Same client, same Drizzle wrapper, same code. <code>pnpm dev</code> uses the local file; production sets <code>DATABASE_URL=libsql://your-db.turso.io</code> and <code>DATABASE_AUTH_TOKEN=...</code> in env and nothing else changes.</dd>
+        <dt><code>$env/dynamic/private</code></dt>
+        <dd>SvelteKit-managed env access that's <em>guaranteed</em> to be server-only. Importing this in a <code>.ts</code> file that gets bundled for the browser is a build error. The compiler enforces our secrets boundary.</dd>
+        <dt><code>export { schema }</code></dt>
+        <dd>Re-exporting the schema namespace alongside <code>db</code> lets every caller import both from one path: <code>import { db, schema } from '$lib/server/db/client.js'</code>. Clean.</dd>
+      </dl>
+
+      <h3>3. The seed script · <code>src/lib/server/db/seed.ts</code></h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/db/seed.ts</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">createClient</span> } <span class="tk-kw">from</span> <span class="tk-str">'@libsql/client'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">drizzle</span> } <span class="tk-kw">from</span> <span class="tk-str">'drizzle-orm/libsql'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-fn">readFileSync</span> } <span class="tk-kw">from</span> <span class="tk-str">'node:fs'</span>;</span><span class="ln"><span class="tk-kw">import</span> * <span class="tk-kw">as</span> <span class="tk-var">schema</span> <span class="tk-kw">from</span> <span class="tk-str">'./schema.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">INDICATORS</span>, <span class="tk-var">COURSES</span> } <span class="tk-kw">from</span> <span class="tk-str">'../../data/products.js'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-var">DAY_TRADING_PLANS</span> } <span class="tk-kw">from</span> <span class="tk-str">'../../data/plans.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-com">// Load .env manually (no $env in CLI context)</span></span><span class="ln"><span class="tk-kw">try</span> {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">env</span> = <span class="tk-fn">readFileSync</span>(<span class="tk-str">'.env'</span>, <span class="tk-str">'utf8'</span>);</span><span class="ln">	<span class="tk-kw">for</span> (<span class="tk-kw">const</span> <span class="tk-var">line</span> <span class="tk-kw">of</span> <span class="tk-var">env</span>.<span class="tk-fn">split</span>(<span class="tk-str">'\n'</span>)) {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">m</span> = <span class="tk-var">line</span>.<span class="tk-fn">match</span>(<span class="tk-str">/^([A-Z_][A-Z0-9_]*)=["']?([^"'\n]+)["']?/</span>);</span><span class="ln">		<span class="tk-kw">if</span> (<span class="tk-var">m</span> &amp;&amp; <span class="tk-var">m</span>[<span class="tk-num">1</span>] &amp;&amp; !<span class="tk-var">process</span>.<span class="tk-prop">env</span>[<span class="tk-var">m</span>[<span class="tk-num">1</span>]]) <span class="tk-var">process</span>.<span class="tk-prop">env</span>[<span class="tk-var">m</span>[<span class="tk-num">1</span>]] = <span class="tk-var">m</span>[<span class="tk-num">2</span>];</span><span class="ln">	}</span><span class="ln">} <span class="tk-kw">catch</span> {</span><span class="ln">	<span class="tk-com">/* no .env file */</span></span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">url</span> = <span class="tk-var">process</span>.<span class="tk-prop">env</span>.<span class="tk-prop">DATABASE_URL</span> ?? <span class="tk-str">'file:./drizzle/local.db'</span>;</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">client</span> = <span class="tk-fn">createClient</span>({ <span class="tk-var">url</span> });</span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">db</span> = <span class="tk-fn">drizzle</span>(<span class="tk-var">client</span>, { <span class="tk-var">schema</span> });</span><span class="ln"></span><span class="ln"><span class="tk-kw">async function</span> <span class="tk-fn">seed</span>() {</span><span class="ln">	<span class="tk-fn">console</span>.<span class="tk-fn">log</span>(<span class="tk-str">'🌱  Seeding TradeFlex Trading database…'</span>);</span><span class="ln">	<span class="tk-kw">for</span> (<span class="tk-kw">const</span> <span class="tk-var">p</span> <span class="tk-kw">of</span> [...<span class="tk-var">INDICATORS</span>, ...<span class="tk-var">COURSES</span>]) {</span><span class="ln">		<span class="tk-kw">await</span> <span class="tk-var">db</span>.<span class="tk-fn">insert</span>(<span class="tk-var">schema</span>.<span class="tk-prop">products</span>).<span class="tk-fn">values</span>({</span><span class="ln">			<span class="tk-prop">id</span>: <span class="tk-var">p</span>.<span class="tk-prop">id</span>, <span class="tk-prop">slug</span>: <span class="tk-var">p</span>.<span class="tk-prop">slug</span>, <span class="tk-prop">kind</span>: <span class="tk-var">p</span>.<span class="tk-prop">kind</span>, <span class="tk-prop">name</span>: <span class="tk-var">p</span>.<span class="tk-prop">name</span>,</span><span class="ln">			<span class="tk-prop">tagline</span>: <span class="tk-var">p</span>.<span class="tk-prop">tagline</span>, <span class="tk-prop">description</span>: <span class="tk-var">p</span>.<span class="tk-prop">description</span>, <span class="tk-prop">priceCents</span>: <span class="tk-var">p</span>.<span class="tk-prop">priceCents</span></span><span class="ln">		}).<span class="tk-fn">onConflictDoNothing</span>();</span><span class="ln">	}</span><span class="ln">	<span class="tk-kw">for</span> (<span class="tk-kw">const</span> <span class="tk-var">pl</span> <span class="tk-kw">of</span> <span class="tk-var">DAY_TRADING_PLANS</span>) {</span><span class="ln">		<span class="tk-kw">await</span> <span class="tk-var">db</span>.<span class="tk-fn">insert</span>(<span class="tk-var">schema</span>.<span class="tk-prop">subscriptionPlans</span>).<span class="tk-fn">values</span>({</span><span class="ln">			<span class="tk-prop">id</span>: <span class="tk-var">pl</span>.<span class="tk-prop">id</span>, <span class="tk-prop">slug</span>: <span class="tk-var">pl</span>.<span class="tk-prop">slug</span>, <span class="tk-prop">name</span>: <span class="tk-var">pl</span>.<span class="tk-prop">name</span>, <span class="tk-prop">cadence</span>: <span class="tk-var">pl</span>.<span class="tk-prop">cadence</span>,</span><span class="ln">			<span class="tk-prop">priceCents</span>: <span class="tk-var">pl</span>.<span class="tk-prop">priceCents</span>, <span class="tk-prop">savingsPct</span>: <span class="tk-var">pl</span>.<span class="tk-prop">savingsPct</span> ?? <span class="tk-num">0</span></span><span class="ln">		}).<span class="tk-fn">onConflictDoNothing</span>();</span><span class="ln">	}</span><span class="ln">	<span class="tk-fn">console</span>.<span class="tk-fn">log</span>(<span class="tk-str">'✅  Done.'</span>);</span><span class="ln">	<span class="tk-var">process</span>.<span class="tk-fn">exit</span>(<span class="tk-num">0</span>);</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-fn">seed</span>().<span class="tk-fn">catch</span>((<span class="tk-var">err</span>) =&gt; {</span><span class="ln">	<span class="tk-fn">console</span>.<span class="tk-fn">error</span>(<span class="tk-var">err</span>);</span><span class="ln">	<span class="tk-var">process</span>.<span class="tk-fn">exit</span>(<span class="tk-num">1</span>);</span><span class="ln">});</span></code></pre></div>
+
+      <dl>
+        <dt>Manual .env loading</dt>
+        <dd>The seed runs as a Node CLI script via <code>tsx</code> — outside SvelteKit, so <code>$env/dynamic/private</code> isn't available. We read <code>.env</code> ourselves with a tiny regex parser, populating <code>process.env</code>. Skipping a real dependency (<code>dotenv</code>) because the parser is 5 lines.</dd>
+        <dt><code>.onConflictDoNothing()</code></dt>
+        <dd>SQLite's <code>INSERT … ON CONFLICT DO NOTHING</code>. Makes the seed <strong>idempotent</strong>: re-running it doesn't duplicate rows or error. The seed is safe to run any time — useful when you check out the repo on a new laptop, or after a fresh migration during development.</dd>
+        <dt>Iterating the same fixtures the app uses</dt>
+        <dd>The seed reads <code>INDICATORS</code>, <code>COURSES</code>, and <code>DAY_TRADING_PLANS</code> from Vol 2's data modules. <strong>One source of truth.</strong> Phase 1 renders directly from the fixture; Phase 2 will query the DB. Same content either way, no drift.</dd>
+      </dl>
+
+      <h3>The migration workflow</h3>
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm db:generate</span>     <span class="out"># diff schema vs current DB → write SQL to drizzle/</span>
+<span class="prompt">$</span> <span class="cmd">pnpm db:push</span>         <span class="out"># apply pending migrations directly (dev only)</span>
+<span class="prompt">$</span> <span class="cmd">pnpm db:seed</span>         <span class="out"># populate products + plans from data/ fixtures</span>
+<span class="prompt">$</span> <span class="cmd">pnpm db:studio</span>       <span class="out"># open the local web GUI to browse tables</span></pre></div>
+
+      <p>Four scripts from Vol 1's <code>package.json</code> Ch 5. In dev, <code>pnpm db:push</code> is fast and convenient. In production, you should run <code>pnpm db:generate</code> to author a tracked migration file and then check it in — your prod database applies migrations through whatever release process you use (CI step, init container, etc.).</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · never edit a shipped migration</div>
+        <p>Once a migration file is checked in and applied anywhere (CI, prod, a teammate's laptop), <strong>treat it as immutable</strong>. Editing it later means a fresh checkout will apply the new version, but anyone who already applied the old one is now in an inconsistent state. The right move is always: write a new migration that does the additional change. Drizzle's migrator tracks which migrations have been applied; the workflow assumes append-only.</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-16"><div class="dir">← Prev</div><div class="ttl">SEO endpoints</div></a>
+        <a class="next" href="#ch-18"><div class="dir">Next →</div><div class="ttl">Production · adapters &amp; deploy</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 18 ============================ -->
+    <section id="ch-18">
+      <p class="eyebrow">Chapter 18</p>
+      <h2>Production · adapters &amp; deploy</h2>
+      <p>The last chapter. Everything you've built — twelve volumes' worth of code — now has to ship to a real host that answers HTTPS at a domain. SvelteKit's answer is <em>adapters</em>: small plugins that take your build output and produce platform-specific deployment artifacts. Pick the right one and the rest is configuration.</p>
+
+      <h3>What an adapter actually does</h3>
+      <p>At build time SvelteKit produces a generic build manifest: which routes are server-rendered, which are prerendered, which are static, what code each handler needs. An adapter consumes that manifest and emits the shape the target platform expects:</p>
+      <ul>
+        <li><strong>adapter-node</strong> → a standalone <code>build/</code> directory with a <code>node build</code> entry that boots an Express-style server.</li>
+        <li><strong>adapter-vercel</strong> → a <code>.vercel/output/</code> tree of serverless and edge function bundles plus static assets.</li>
+        <li><strong>adapter-netlify</strong> → Netlify Functions + a <code>publish/</code> static dir.</li>
+        <li><strong>adapter-cloudflare</strong> → a Cloudflare Workers script with KV/D1 bindings exposed.</li>
+        <li><strong>adapter-static</strong> → just HTML, CSS, JS files. No server. Requires every route to be prerenderable.</li>
+        <li><strong>adapter-auto</strong> → sniffs the deploy environment and chooses one of the above automatically.</li>
+      </ul>
+
+      <h3>Why we ship Phase 1 with <code>adapter-auto</code></h3>
+      <p>Vol 1 Chapter 6 installed <code>@sveltejs/adapter-auto</code>. It's the right default while the deployment target is still undecided: push to Vercel, deploy works; push to Netlify, deploy works; the build figures it out. The downside is that the chosen adapter resolves at deploy time — your local <code>pnpm build</code> doesn't tell you exactly what will run in production.</p>
+
+      <p>Once you've committed to a host, swap in the specific adapter for two reasons: (1) build-time validation that the platform's constraints are met, (2) access to platform-specific config (e.g., Vercel's <code>edge</code>/<code>serverless</code> split, Cloudflare's bindings).</p>
+
+      <h3>Picking the right adapter</h3>
+      <table>
+        <thead><tr><th>If you want…</th><th>Use</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Lowest ops overhead, instant push-to-deploy</td><td><code>adapter-vercel</code></td><td>Native SvelteKit support, edge functions, ISR, image optim</td></tr>
+          <tr><td>Lowest cost, edge-native compute</td><td><code>adapter-cloudflare</code></td><td>Workers + KV + D1, hilariously cheap at small scale</td></tr>
+          <tr><td>Full control of the runtime</td><td><code>adapter-node</code></td><td>Run your own Node container on Railway, Fly, ECS, etc.</td></tr>
+          <tr><td>No server at all (all prerendered)</td><td><code>adapter-static</code></td><td>Marketing-only sites; not us — we have form actions</td></tr>
+          <tr><td>Solo developer, multiple hosts to try</td><td><code>adapter-auto</code></td><td>Defer the decision until you commit</td></tr>
+        </tbody>
+      </table>
+
+      <h3>How to swap in a specific adapter</h3>
+      <p>One file change. In <code>svelte.config.js</code>:</p>
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js (production)</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">// Before (Phase 1)</span></span><span class="ln"><span class="tk-kw">import</span> <span class="tk-var">adapter</span> <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/adapter-auto'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-com">// After (Vercel)</span></span><span class="ln"><span class="tk-kw">import</span> <span class="tk-var">adapter</span> <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/adapter-vercel'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-com">// After (Node)</span></span><span class="ln"><span class="tk-kw">import</span> <span class="tk-var">adapter</span> <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/adapter-node'</span>;</span></code></pre></div>
+
+      <p>Then update <code>package.json</code> to depend on the specific adapter. Re-build. Done.</p>
+
+      <h3>Prerender what you can</h3>
+      <p>The cheapest request is the one your server doesn't handle. Every route that doesn't need per-request data should be prerendered. In Vol 4 we already did this for <code>/sitemap.xml</code> and <code>/robots.txt</code>. The same applies to about and legal pages — they could earn <code>export const prerender = true</code> with no code change:</p>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/routes/legal/terms/+page.svelte (add a sibling +page.ts)</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">// src/routes/legal/terms/+page.ts</span></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-var">prerender</span> = <span class="tk-bool">true</span>;</span></code></pre></div>
+
+      <p>Same for <code>/legal/privacy</code>, <code>/legal/refund</code>, <code>/about</code>. They become static files at build time, served from CDN edge with zero compute. The catch: any page with a form action <em>cannot</em> be prerendered (the form needs a server to POST to). That's why <code>/free-guide</code> and <code>/contact</code> stay SSR — they have actions.</p>
+
+      <h3>SSR vs CSR vs prerender · the decision tree</h3>
+      <div class="diagram">  Does the page have a form action?
+  ├── Yes → SSR (default). Cannot prerender.
+  └── No → Does any two users see identical content?
+      ├── Yes → prerender = true. Free, fast, CDN.
+      └── No → SSR + cache headers. Per-request server work,
+              but cacheable at the edge via Cache-Control.
+
+  Does the page only work in the browser (uses window/document at top level)?
+  └── Yes → ssr = false. Renders an empty shell, hydrates in browser.
+            (Rare; we don't use this in Phase 1.)</div>
+
+      <h3>Environment variables in production</h3>
+      <p>The two we set in Vol 1's <code>.env</code> file (<code>DATABASE_URL</code>, <code>PUBLIC_SITE_URL</code>) translate to platform-specific env config:</p>
+      <ul>
+        <li><strong>Vercel</strong>: Project Settings → Environment Variables. Mark <code>DATABASE_URL</code> and <code>DATABASE_AUTH_TOKEN</code> as Secret.</li>
+        <li><strong>Netlify</strong>: Site → Environment variables. Same.</li>
+        <li><strong>Railway/Fly/Render</strong>: their respective env-config UIs.</li>
+      </ul>
+      <p>The <code>PUBLIC_</code>-prefixed variables (we have <code>PUBLIC_SITE_URL</code>) end up in the client bundle. Anything <em>without</em> the prefix stays server-only. SvelteKit enforces this at compile time — try to import <code>DATABASE_URL</code> from <code>$env/static/public</code> and the build errors.</p>
+
+      <h3>The Phase 2 production checklist</h3>
+      <ol>
+        <li>Pick and install a specific adapter (Vercel or Node, most likely).</li>
+        <li>Provision a Turso libsql database, set <code>DATABASE_URL</code> and <code>DATABASE_AUTH_TOKEN</code> as host env vars.</li>
+        <li>Run <code>pnpm db:generate</code> locally, commit the migration files, ensure CI runs <code>pnpm db:push</code> on deploy.</li>
+        <li>Add <code>export const prerender = true</code> to the legal and about pages.</li>
+        <li>Wire real auth — argon2id password hashing, signed session cookies, login rate limiting.</li>
+        <li>Replace mock cookie-based admin promotion with role lookup on the real <code>users</code> table.</li>
+        <li>Swap in-memory rate limiter for Redis (or Cloudflare KV).</li>
+        <li>Wire Stripe (or Paddle, LemonSqueezy) for actual checkout.</li>
+        <li>Set up Sentry / Datadog / OpenTelemetry for production error tracking.</li>
+        <li>Production smoke tests: end-to-end Playwright suite hitting Vercel preview deploys on every PR.</li>
+      </ol>
+
+      <div class="callout why">
+        <div class="label">The Principal-L7 mindset · ship early, ship visible</div>
+        <p>What we've built across four volumes is a complete, observable, secure Phase 1. The UI works, the routes resolve, the forms persist, the admin reads back what the public wrote. Two real DB tables and ten more scaffolded for Phase 2. The seed is idempotent. The rate limiter defends the only two endpoints that touch the DB. Adapter-auto means we can deploy <em>today</em> and pick a permanent host once we've measured. <strong>This is what shipping looks like</strong> — not "feature-complete," but "honest about what's done and what's stubbed, with the stubs marked clearly enough that Phase 2 is mechanical."</p>
+      </div>
+
+      <div class="pager">
+        <a class="prev" href="#ch-17"><div class="dir">← Prev</div><div class="ttl">Drizzle</div></a>
+        <span class="next disabled"><a><div class="dir">Next →</div><div class="ttl">— end of series —</div></a></span>
+      </div>
+
+      <div class="vol-end">
+        <div class="eyebrow" style="justify-content:center">End of Volume 4 · End of Series</div>
+        <h3>Frontend Engineering — complete.</h3>
+        <p>Four volumes. ~250 pages of HTML tutorial. Every config in Vol 1, every rune / store / util / attachment in Vol 2, every component in Vol 3, every route + DB layer + production note here. You started in an empty folder; you finish with a deployable production-grade SvelteKit application you understand line-by-line.</p>
+        <p>The repo is yours. Read it. Run it. Ship it.</p>
+      </div>
+
+      <div class="series-toc">
+        <div class="card done"><div class="num">VOL 01</div><div class="name">Foundations</div><div class="status">Complete</div></div>
+        <div class="card done"><div class="num">VOL 02</div><div class="name">Reactivity</div><div class="status">Complete</div></div>
+        <div class="card done"><div class="num">VOL 03</div><div class="name">Components</div><div class="status">Complete</div></div>
+        <div class="card current"><div class="num">VOL 04</div><div class="name">Routes &amp; Data</div><div class="status">Complete ✓</div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll('.sidebar nav a.ch-link'));
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  if (!sections.length) return;
+  const byId = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+  function setActive(id) {
+    links.forEach((a) => a.classList.remove('active'));
+    const a = byId.get(id);
+    if (a) a.classList.add('active');
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort(
+          (a, b) =>
+            a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top
+        );
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
+  );
+  sections.forEach((s) => io.observe(s));
+  links.forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+      setActive(id);
+    });
+  });
+})();
+
+(function () {
+  document.querySelectorAll('.code .copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = btn.closest('.code');
+      if (!block) return;
+      const code = block.querySelector('pre');
+      if (!code) return;
+      const text = code.innerText;
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          btn.textContent = 'copied';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'copy';
+            btn.classList.remove('copied');
+          }, 1500);
+        })
+        .catch(() => {
+          btn.textContent = 'error';
+          setTimeout(() => (btn.textContent = 'copy'), 1500);
+        });
+      });
+    });
+})();
+</script>
+</body>
+</html>
