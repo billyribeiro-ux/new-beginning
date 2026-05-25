@@ -4,18 +4,28 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const isProd = process.env.NODE_ENV === 'production';
 
 /**
- * Prepend our @custom-media breakpoint declarations to every Svelte
- * <style> block BEFORE vitePreprocess hands them to Lightning CSS.
- * Single source of truth lives in this file; keep aligned with the
- * --bp-* CSS variables in src/lib/styles/tokens.css (those exist
- * for JS-side reads via getComputedStyle).
+ * Two transforms on every Svelte <style> block, BEFORE vitePreprocess
+ * hands it to Lightning CSS:
  *
- * Why this and not a Vite plugin: vitePreprocess runs Lightning CSS
- * inside Svelte's preprocessor pipeline, so by the time Vite's
- * plugin transform hooks see the .svelte file, the CSS has already
- * been parsed and any unknown @custom-media references have already
- * errored. The only sound injection point is here, as a Svelte
- * preprocessor that runs ahead of vitePreprocess.
+ *   1. Prepend the canonical @custom-media breakpoint declarations.
+ *      Lightning CSS resolves @custom-media within a single file
+ *      only, so each component needs its own copy. Keep aligned
+ *      with the --bp-* CSS variables in src/lib/styles/tokens.css
+ *      (those exist for JS-side reads via getComputedStyle).
+ *
+ *   2. Wrap the block in `@layer components { ... }`. The cascade
+ *      order is declared once in src/app.css; component styles
+ *      live in the `components` layer so that utility classes from
+ *      $lib/styles/utilities.css (in the `utilities` layer) always
+ *      lose to component-local declarations. Without this wrapper,
+ *      cascade ordering between components and utilities would
+ *      depend on source/bundle order — unpredictable.
+ *
+ * Why a Svelte preprocessor and not a Vite plugin: vitePreprocess
+ * runs Lightning CSS inside Svelte's preprocessor pipeline, so by
+ * the time Vite's plugin transform hooks see the .svelte file, the
+ * CSS has already been parsed and any unknown at-rules have already
+ * errored. Injection has to happen here, ahead of vitePreprocess.
  */
 const CUSTOM_MEDIA = `
 @custom-media --bp-sm (min-width: 480px);
@@ -31,16 +41,18 @@ const CUSTOM_MEDIA = `
 `;
 
 /** @type {import('svelte/compiler').PreprocessorGroup} */
-const customMediaPreprocessor = {
-	name: 'tradeflex-custom-media',
+const cssArchitecturePreprocessor = {
+	name: 'tradeflex-css-architecture',
 	style({ content }) {
-		return { code: CUSTOM_MEDIA + content };
+		return {
+			code: `${CUSTOM_MEDIA}\n@layer components {\n${content}\n}\n`
+		};
 	}
 };
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [customMediaPreprocessor, vitePreprocess()],
+	preprocess: [cssArchitecturePreprocessor, vitePreprocess()],
 	kit: {
 		adapter: adapter(),
 		alias: {

@@ -1,6 +1,23 @@
-/* TradeFlex Trading — global stylesheet entry */
-@import '$lib/styles/tokens.css';
-@import '$lib/styles/reset.css';
-@import '$lib/styles/typography.css';
-@import '$lib/styles/utilities.css';
-@import '$lib/styles/animations.css';
+/* TradeFlex Trading — global stylesheet entry
+ *
+ * Cascade architecture: explicit @layer order, declared once.
+ * Priority (lowest → highest): reset → tokens → base → utilities →
+ * components → overrides. Anything outside a @layer wins over
+ * everything inside one, so `overrides` exists as a named escape
+ * hatch with no actual content — emergency rules go *unlayered*
+ * and the layer reserves the conceptual slot.
+ *
+ * Each global file below assigns itself to one layer; Svelte
+ * component <style> blocks are wrapped in `components` by the
+ * preprocessor in svelte.config.js. breakpoints.css is imported
+ * UNLAYERED (and first) so its @custom-media declarations are
+ * visible to every layer that follows. */
+
+@import '$lib/styles/breakpoints.css';
+@import '$lib/styles/tokens.css' layer(tokens);
+@import '$lib/styles/reset.css' layer(reset);
+@import '$lib/styles/typography.css' layer(base);
+@import '$lib/styles/utilities.css' layer(utilities);
+@import '$lib/styles/animations.css' layer(utilities);
+
+@layer reset, tokens, base, utilities, components, overrides;

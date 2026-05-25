@@ -3,22 +3,12 @@
  * Dark canvas + gold/amber luxury palette.
  *
  * Use `@media (--bp-md)` etc. anywhere — never hardcode pixel
- * widths in @media queries. Component <style> blocks get the
- * same declarations prepended by a Svelte preprocessor in
- * svelte.config.js; the two sources must stay in sync.
+ * widths in @media queries. The canonical @custom-media
+ * declarations live at the top of src/app.css (outside any
+ * @layer so they're visible to every layer) and are also
+ * prepended to each component <style> by the preprocessor in
+ * svelte.config.js. Keep all three sources aligned.
  * ============================================================ */
-
-/* === Custom media (single source of truth for breakpoints) === */
-@custom-media --bp-sm (min-width: 480px);
-@custom-media --bp-md (min-width: 768px);
-@custom-media --bp-lg (min-width: 1024px);
-@custom-media --bp-xl (min-width: 1280px);
-@custom-media --bp-2xl (min-width: 1536px);
-@custom-media --bp-3xl (min-width: 1920px);
-@custom-media --bp-4xl (min-width: 2560px);
-@custom-media --bp-sm-down (max-width: 479.98px);
-@custom-media --bp-md-down (max-width: 767.98px);
-@custom-media --bp-lg-down (max-width: 1023.98px);
 
 :root {
 	/* === Color: surfaces (dark canvas) === */
