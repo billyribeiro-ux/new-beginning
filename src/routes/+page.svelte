@@ -329,8 +329,15 @@
 			grid-template-columns: 1fr 1.05fr 1fr;
 		}
 	}
+	/* Reserve breathing room for the featured PricingCard's
+	 * `transform: scale(1.02)` lift. Without this padding, the
+	 * scaled card's border-box overflows the wrapper by ~5px on
+	 * each side, leaving borders visually clipped at the wrapper
+	 * boundary. 1% padding on each side covers the 2% total scale. */
 	.featured-plan-card {
 		display: flex;
+		padding-inline: 8px;
+		padding-block: 8px;
 	}
 	.featured-plan-card :global(.pricing-card) {
 		flex: 1;

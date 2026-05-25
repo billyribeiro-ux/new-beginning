@@ -106,10 +106,17 @@
 		box-shadow: var(--glow-gold-strong);
 		transform: scale(1.02);
 	}
-	/* Disable the featured-card lift when the card itself is narrow,
-	 * regardless of viewport. Stacked single-column layouts always
-	 * see flat cards even on a 4K screen. */
-	@container pricing-card (max-width: 28rem) {
+	/* Disable the featured-card lift below the viewport where it
+	 * appears in a multi-column grid context. The scale(1.02) above
+	 * visually extends the card past its border-box, which would
+	 * overflow narrow wrappers. This MUST be a viewport-relative
+	 * media query (not a @container query) because the card itself
+	 * is the container — and per CSS Containment spec, an element
+	 * can't query its own container size, only its ancestor's. So
+	 * a self-referential @container query never fires on the
+	 * scaled element. The lift only reads as intentional at the
+	 * --bp-lg breakpoint where featured-grid layouts go multi-col. */
+	@media (--bp-lg-down) {
 		.is-featured {
 			transform: none;
 		}
