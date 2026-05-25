@@ -213,15 +213,171 @@ dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
       <p>Fourteen chapters. Every <code>src/lib/styles/*.css</code> file. Every commit since <code>affc7b5</code>. Every measurement re-verified against the current build at write-time. If something in this volume disagrees with the code, the volume is wrong — open a PR.</p>
     </header>
 
-    <!-- =========================================================
-         CHAPTER 1 placeholder — replaced in the next commit.
-         Subsequent chapters appended as separate commits, one
-         per chapter, to keep the volume reviewable in stages.
-         ========================================================= -->
+    <!-- ============================ CHAPTER 1 ============================ -->
     <section id="ch-1">
       <p class="eyebrow">Chapter 01</p>
       <h2>The cascade, specificity, and <code>@layer</code></h2>
-      <p class="lede"><em>Coming in the next commit.</em></p>
+      <p class="lede">The CSS cascade is a sorting algorithm. Every browser runs it on every page, every time. For most projects it runs invisibly and developers never have to think about it. For this project it broke production intermittently — same source code, same build, same browser, different cascade. This chapter is the diagnosis, the cause, and the fix, with the citations that prove each step.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commits</div>
+        <p><code>4b61ad5</code> · <em>css(infra): adopt @layer cascade architecture</em> — the change that introduced the architecture (and the regression).</p>
+        <p><code>948dac6</code> · <em>css(infra): inject @layer priority into EVERY CSS chunk (fixes intermittent layout breakage)</em> — the fix.</p>
+      </div>
+
+      <h3>The starting state · five files, no cascade strategy</h3>
+      <p>Before either of those commits, the project had five global stylesheets imported in a flat list:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/app.css (before commit 4b61ad5)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* TradeFlex Trading — global stylesheet entry */</span></span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/tokens.css'</span>;</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/reset.css'</span>;</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/typography.css'</span>;</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/utilities.css'</span>;</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/animations.css'</span>;</span></code></pre></div>
+
+      <p>Six lines, no cascade architecture. Each file's rules win or lose by the CSS default rules: source order plus specificity. That's been the way for thirty years and it mostly works — but it has two specific failure modes that bite at scale:</p>
+
+      <ol>
+        <li><strong>Specificity wars.</strong> A utility class like <code>.container</code> from <code>utilities.css</code> and a component-local rule like <code>.card</code> from a Svelte <code>&lt;style&gt;</code> block have the same specificity (0-1-0). Whichever loads later wins. Bundle order is non-deterministic in SvelteKit when route-specific chunks split out from the global stylesheet. Result: the same component renders differently on a cold load vs. a warm load.</li>
+        <li><strong>No escape hatch.</strong> You need a one-off override and your only tool is <code>!important</code>, which is a cliff — once you use it, the next override needs <code>!important</code> too, and you're in declaration-order roulette inside the <code>!important</code> bucket.</li>
+      </ol>
+
+      <p>CSS Cascade Level 5 added <code>@layer</code> in 2022 specifically to solve both problems. Every modern evergreen browser supports it. The fix is to declare an explicit priority order once, then sort every rule into a named layer.</p>
+
+      <h3>The architecture · <code>reset → tokens → base → utilities → components → overrides</code></h3>
+      <p>Six conceptual buckets, ordered from lowest to highest priority. Each global file assigns itself to a bucket. Component <code>&lt;style&gt;</code> blocks land in <code>components</code>. The bucket called <code>overrides</code> exists but stays empty — it's a named placeholder for the "I need this to win over everything" rule that hasn't been written yet. Anything outside <em>any</em> layer wins over everything inside one, so emergency rules go unlayered and the <code>overrides</code> name reserves the conceptual slot for documentation.</p>
+
+      <div class="callout why">
+        <div class="label">Why these names, in this order</div>
+        <p>The order reflects how rules want to apply. <strong>reset</strong> first — these are the universal element resets, they need to be overridden by everything else. <strong>tokens</strong> next — custom properties that everything reads. <strong>base</strong> — element-selector typography (<code>h1</code>, <code>p</code>) that componentry can override. <strong>utilities</strong> — <code>.container</code>, <code>.stack</code>, layout primitives. <strong>components</strong> — Svelte component-local rules, which must always beat utilities because the utility was generic and the component is specific to its context. <strong>overrides</strong> — escape hatch.</p>
+      </div>
+
+      <p>The <em>intended</em> rule, declared once in <code>app.css</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/app.css (commit 4b61ad5 — the introduction)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@layer</span> reset, tokens, base, utilities, components, overrides;</span><span class="ln"></span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/tokens.css'</span> <span class="tk-kw">layer</span>(tokens);</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/reset.css'</span> <span class="tk-kw">layer</span>(reset);</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/typography.css'</span> <span class="tk-kw">layer</span>(base);</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/utilities.css'</span> <span class="tk-kw">layer</span>(utilities);</span><span class="ln"><span class="tk-kw">@import</span> <span class="tk-str">'$lib/styles/animations.css'</span> <span class="tk-kw">layer</span>(utilities);</span></code></pre></div>
+
+      <p>The first line is the <em>layer-priority statement</em>. Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@layer">MDN's <code>@layer</code> reference</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN</div>
+        <p>"The initial order in which layers are declared indicates which layer has precedence. As with declarations, the last layer to be listed will win if declarations are found in multiple layers."</p>
+        <p>"Having declared your layer names, thus setting their order, you can add CSS rules to the layer by re-declaring the name. The styles are then appended to the layer and the layer order will not be changed."</p>
+      </div>
+
+      <p>Locally — running <code>pnpm dev</code> on a single machine — this worked perfectly. The cascade was correct. Builds passed. CSS shipped. The change went out as commit <code>4b61ad5</code> and seemed done.</p>
+
+      <h3>The regression · "sometimes the layout is broken"</h3>
+      <p>Two days after <code>4b61ad5</code> shipped, the user reported a layout regression: on some page loads the design looked right; on others it looked subtly broken — specifically, utility classes were beating component-local rules. The symptom was inconsistent across reloads. Hard refreshes sometimes fixed it; sometimes didn't. Same browser, same URL, same build.</p>
+
+      <p>"Sometimes" is the diagnostic tell. Deterministic bugs are easy. Intermittent bugs almost always mean <strong>load-order non-determinism</strong>. Let me show what investigation revealed.</p>
+
+      <h4>Hard evidence #1 · the chunk emission</h4>
+      <p>SvelteKit + Vite split CSS into per-route + per-component chunks. The global stylesheet (<code>app.css</code>) becomes one chunk; each route brings its own component chunks. The browser loads them by <code>&lt;link rel="stylesheet"&gt;</code> tags in the HTML head. Spinning up a preview server and checking the actual emitted HTML for the home page:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — order links appear in the SSR HTML head</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">curl -s http://localhost:4180/ | grep -oE '&lt;link[^&gt;]*\.css[^&gt;]*&gt;' | head -8</span>
+<span class="out">&lt;link href="./_app/immutable/assets/LogoWordmark.DCIm7jWP.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/Button.BZP9N7IF.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/Tooltip.Ch3G4_NG.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/0.CZn9h2r8.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/AddToCartButton.C33DtGjW.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/Badge.BF_udbdt.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/PricingCard.DpZIDqdA.css" rel="stylesheet"&gt;</span>
+<span class="out">&lt;link href="./_app/immutable/assets/ProductCard.hQMfQwDH.css" rel="stylesheet"&gt;</span></pre></div>
+
+      <p>The global stylesheet — chunk <code>0.CZn9h2r8.css</code> — sits in <strong>fourth</strong> place. Three component stylesheets (<code>LogoWordmark</code>, <code>Button</code>, <code>Tooltip</code>) load <em>before</em> it. That's the smoking gun. By the time the browser parses chunk 0 and sees the layer-priority statement, it has <em>already</em> seen <code>@layer components { ... }</code> in three other files.</p>
+
+      <h4>Hard evidence #2 · the spec quote that explains why this breaks</h4>
+      <p>Re-read the second MDN quote above: <em>"The styles are then appended to the layer and the layer order will not be changed."</em></p>
+
+      <p>That sentence is the bug. When <code>Button.BZP9N7IF.css</code> arrives first containing <code>@layer components { .btn { ... } }</code>, the browser sees a layer it has never heard of and creates it. The first-encounter order becomes <strong>the priority order</strong>. <code>components</code> is now layer #1 with the lowest priority. When chunk 0 arrives later declaring <code>@layer reset, tokens, base, utilities, components, overrides;</code>, the four <em>new</em> layer names get appended <em>after</em> <code>components</code>, giving them <em>higher</em> priority. Result: <code>utilities</code> beats <code>components</code>, the inverse of the design.</p>
+
+      <p>The cascade is now upside-down — utility classes start winning over component-local rules. Every component that uses both (most of them) renders subtly wrong.</p>
+
+      <h4>Hard evidence #3 · why "sometimes" and not "always"</h4>
+      <p>Browsers can reorder which stylesheet they finish parsing first. Cache state, HTTP/2 multiplexing, network jitter — all play a role. On a cold load with a fast network and a small Button chunk, Button.css might finish first. On a warm load where chunk 0 was previously cached, chunk 0 finishes first. The order in which the browser <em>creates the layers</em> is therefore non-deterministic across reloads. Same code, different cascade, different render.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · declaring layer order in one file is not enough</div>
+        <p>If the layer-priority statement only lives in one CSS file, you're betting that file will always parse first. That bet is not safe in any code-split bundler — Vite, webpack, esbuild, Rolldown. The browser only honors the order it first encounters layers in. By the time your "canonical" declaration arrives, the cascade is already locked.</p>
+      </div>
+
+      <h3>The fix · declare priority in <em>every</em> chunk</h3>
+      <p>Once the cause was clear the fix wrote itself. Re-declaring the same layer order is a no-op per spec (the second MDN quote: "the layer order will not be changed"). So if every CSS chunk opens with the priority statement, the first chunk the browser parses always establishes the correct order — regardless of which chunk it is.</p>
+
+      <p>The implementation needed two changes. First, move the layer-priority statement out of <code>app.css</code> and into a tiny file imported <em>before</em> everything else, unlayered, so its rules are visible to every layer that follows:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/breakpoints.css (created in commit 948dac6)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* TradeFlex Trading — cascade foundation.</span></span><span class="ln"><span class="tk-com"> * Imported FIRST and UNLAYERED in src/app.css. */</span></span><span class="ln"></span><span class="ln"><span class="tk-com">/* Cascade priority (lowest → highest). */</span></span><span class="ln"><span class="tk-kw">@layer</span> reset, tokens, base, utilities, components, overrides;</span><span class="ln"></span><span class="ln"><span class="tk-com">/* (Breakpoint @custom-media declarations also live here — see Ch 5.) */</span></span></code></pre></div>
+
+      <p>Second, the same priority statement needs to ship in <em>component</em> stylesheets too — because those are the chunks that often parse before the global one. Svelte component <code>&lt;style&gt;</code> blocks become their own CSS chunks at build time. To get the foundation block into every one of them, a small Svelte preprocessor injects it:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js (excerpted)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">CSS_FOUNDATION</span> = <span class="tk-str">`</span></span><span class="ln"><span class="tk-str">@layer reset, tokens, base, utilities, components, overrides;</span></span><span class="ln"><span class="tk-str">/* @custom-media declarations also live here — see Ch 5. */</span></span><span class="ln"><span class="tk-str">`</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">cssPrePreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-css-pre'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">return</span> {</span><span class="ln">      <span class="tk-prop">code</span>: <span class="tk-str">`${</span><span class="tk-var">CSS_FOUNDATION</span><span class="tk-str">}\n@layer components {\n${</span><span class="tk-var">content</span><span class="tk-str">}\n}\n`</span></span><span class="ln">    };</span><span class="ln">  }</span><span class="ln">};</span></code></pre></div>
+
+      <p>Every Svelte <code>&lt;style&gt;</code> block now starts with the priority statement <em>and</em> wraps its own rules in <code>@layer components { ... }</code>. The result is verifiable in the build output:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — proving every chunk now declares the order</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">grep -l "@layer reset" .svelte-kit/output/client/_app/immutable/assets/*.css | wc -l</span>
+<span class="out">64</span>
+<span class="prompt">$</span> <span class="cmd">ls .svelte-kit/output/client/_app/immutable/assets/*.css | wc -l</span>
+<span class="out">64</span></pre></div>
+
+      <p>64 of 64. Every chunk. The first one the browser parses — whichever one that turns out to be — establishes the correct cascade order. The bug cannot recur because no path through the bundle skips the declaration.</p>
+
+      <h3>What about Svelte's <code>:global()</code>?</h3>
+      <p>An astute reader will notice the preprocessor I just showed has a subtle wrinkle — Svelte's <code>:global(...)</code> selector syntax. Lightning CSS (which Vite uses to process the injected block) doesn't recognize <code>:global</code> as a valid pseudo-class and warns ~60 times per build. The full pre-processor handles this with a mask/unmask trick — but that's a Ch 11 topic. For Ch 1 the relevant fact is just that the foundation injection is solid; the implementation details around tooling compatibility are in their own chapter.</p>
+
+      <h3>Specificity in 2026 · <code>:where()</code>, <code>:is()</code>, and the bare <code>*</code> reset</h3>
+      <p>Beyond layers, two other CSS Selectors Level 4 features affect cascade in this project. Both are worth knowing because the project's reset uses one and deliberately avoids the other.</p>
+
+      <p><code>:is(selectorA, selectorB)</code> matches if the element matches any selector in the list, and contributes <em>the highest specificity</em> of the listed selectors. So <code>:is(.button, #submit)</code> has the specificity of <code>#submit</code> (1-0-0), even when matching <code>.button</code>. Useful for shortening selector lists; dangerous if you mix high-specificity selectors into the list.</p>
+
+      <p><code>:where(selectorA, selectorB)</code> matches the same elements as <code>:is</code> but contributes <strong>specificity zero</strong>. The selector still selects, but it can be overridden by literally any other rule. This is the killer feature for design-system foundations: you can target <code>:where(button, input, select)</code> with default styling that's trivially overridable.</p>
+
+      <p>The project's reset (<code>src/lib/styles/reset.css</code>) uses bare <code>*</code> selectors, not <code>:where(*)</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/reset.css (lines 3–11)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-punct">*</span>,</span><span class="ln"><span class="tk-punct">*</span>::before,</span><span class="ln"><span class="tk-punct">*</span>::after {</span><span class="ln">  <span class="tk-prop">box-sizing</span>: border-box;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-punct">*</span> {</span><span class="ln">  <span class="tk-prop">margin</span>: <span class="tk-num">0</span>;</span><span class="ln">  <span class="tk-prop">padding</span>: <span class="tk-num">0</span>;</span><span class="ln">}</span></code></pre></div>
+
+      <p>This is a deliberate choice. Bare <code>*</code> has specificity 0-0-0 (universal selector) <em>but</em> it's a real selector — it contributes one to the type-selector count if you ever combine it. Wrapping in <code>:where(*)</code> would make absolutely sure these rules can be overridden by anything else, even other 0-0-0 rules. The trade-off:</p>
+
+      <dl>
+        <dt>Bare <code>*</code> (the project's choice)</dt>
+        <dd>Simple, what every other reset on the internet uses, instantly recognizable. Specificity 0-0-0 in the <code>reset</code> layer. Because the layer is the lowest-priority one, the reset will always lose to anything else anyway — wrapping in <code>:where()</code> would be redundant insurance against an already-impossible situation.</dd>
+        <dt><code>:where(*)</code> (the more defensive option)</dt>
+        <dd>Belt and braces — even if layers were somehow disabled or stripped, the reset rules still couldn't beat anything. Costs nothing at runtime. Reads slightly more abstract.</dd>
+      </dl>
+
+      <p>Since the layer architecture is the cascade guard, the bare <code>*</code> is the right call. The "redundant insurance" of <code>:where()</code> would imply a lack of trust in the layer order — and trusting the layer order is exactly what this chapter argues for.</p>
+
+      <h3>The trade-off matrix · five files vs the alternatives</h3>
+      <p>One last architectural question worth addressing explicitly: why five separate CSS files instead of one big file, Tailwind, CSS-in-JS, or BEM? The honest answer is that all four work; the choice depends on team shape and rate of change. Here's the matrix that justified five files for this project:</p>
+
+      <table>
+        <thead>
+          <tr><th></th><th>One file</th><th>5 files</th><th>Tailwind</th><th>CSS-in-JS</th><th>BEM</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Discoverability</td><td>poor</td><td>good</td><td>excellent</td><td>poor</td><td>good</td></tr>
+          <tr><td>Bundle size</td><td>smallest</td><td>small</td><td>medium (purged)</td><td>largest</td><td>small</td></tr>
+          <tr><td>Refactor cost</td><td>high</td><td>low</td><td>medium</td><td>low</td><td>high</td></tr>
+          <tr><td>Component coupling</td><td>low</td><td>low</td><td>high</td><td>very high</td><td>low</td></tr>
+          <tr><td>Designer handoff</td><td>hard</td><td>hard</td><td>hardest</td><td>hardest</td><td>medium</td></tr>
+          <tr><td>AI-tool friendliness</td><td>medium</td><td>high</td><td>very high</td><td>medium</td><td>medium</td></tr>
+        </tbody>
+      </table>
+
+      <p>Five files won here because: (1) separation by <em>concern</em>, not by component (tokens never change at runtime, reset is set once, typography is content-driven, utilities are layout, animations are motion — five orthogonal domains); (2) Svelte gives you scoped <code>&lt;style&gt;</code> blocks for free, so per-component CSS-in-JS solves a problem the framework doesn't have; (3) Tailwind wins for teams that change designers monthly — this is a single designer-developer where the cognitive cost of utility-class strings outweighs the win; (4) BEM was a 2010s answer to a 2010s problem (no native scoping), and Svelte's scoped styles solve it natively.</p>
+
+      <h3>What this chapter taught (and what the rest of the volume builds on)</h3>
+      <p>The cascade is solvable. <code>@layer</code> from CSS Cascade Level 5 makes the cascade <em>declarative</em> instead of source-order roulette. The project's six-layer order — <code>reset → tokens → base → utilities → components → overrides</code> — is the spine that everything else hangs on.</p>
+
+      <p>But the layer architecture has a non-obvious failure mode: the priority statement must ship in every CSS chunk the browser might encounter first, not just in the canonical one. Code-splitting bundlers (Vite, Rolldown, webpack, esbuild) all make this guarantee hard to maintain without intervention. The project's fix is a Svelte preprocessor that injects the foundation into every component <code>&lt;style&gt;</code> block.</p>
+
+      <p>The rest of the volume builds on this. Chapter 5 explains the <code>@custom-media</code> declarations that share the same injection point. Chapter 6 adds <code>@container</code> queries to the <code>components</code> layer. Chapter 11 explains the build-pipeline trick that makes Lightning CSS tolerate Svelte's <code>:global()</code> syntax. Every one of those chapters depends on the cascade architecture being correct — which is why this chapter comes first.</p>
+
+      <div class="pager">
+        <a class="prev" href="Frontend-Engineering-Vol-4-Routes-Data-and-Production.html"><div class="dir">← Previous volume</div><div class="ttl">Vol 4 · Routes &amp; Data</div></a>
+        <a class="next" href="#ch-2"><div class="dir">Next →</div><div class="ttl">Length units</div></a>
+      </div>
     </section>
 
   </main>
