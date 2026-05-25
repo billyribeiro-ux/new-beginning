@@ -2466,6 +2466,178 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 14 ============================ -->
+    <section id="ch-14">
+      <p class="eyebrow">Chapter 14</p>
+      <h2>The L7 mindset · what this whole audit was actually about</h2>
+      <p class="lede">Thirteen chapters of specific CSS work. One closing chapter to extract what generalizes. The patterns in this final chapter aren't about CSS — they're about the difference between a senior engineer who knows the answer and a Principal-L7 engineer who knows <em>how to find the answer when nobody knows it yet</em>. Every principle below is anchored to a specific moment in the audit narrated by this volume. If the chapter feels short, that's deliberate: principles compress; war stories don't.</p>
+
+      <h3>Principle 1 · hard evidence over assumption · every time</h3>
+      <p>The most expensive mistake in this entire volume happened in <strong>commit <code>aef35dc</code></strong>. The user reported the chart labels were "slightly below the line." I assumed that meant "should be centered on the line." I shipped a <code>transform: translateY(-50%)</code> fix that centered them on the line. I committed with a confident message — <em>"fix(Hero): center rail labels on their lines (math + L7 pattern)."</em> The next user message: <em>"the lower rail has to also sit on top of the line and not below."</em></p>
+
+      <p>The user had wanted the labels <em>above</em> the line. They told me with the original "below the line" phrasing — meaning <em>"the label is below the line when it should be above."</em> I read it as <em>"the label is in the wrong vertical position; please center it."</em> Two valid interpretations of the same sentence. I picked the one I could implement without asking, and shipped the wrong code with a confident commit message that told future readers (including me) the work was done.</p>
+
+      <p>The fix was <code>1705fe4</code> — translate the label by <code>calc(-100% - 4px)</code> so its bottom edge rests above the rail with a 4px gap. The actually-correct math. Same word count as the broken version; better intent reading.</p>
+
+      <div class="callout pitfall">
+        <div class="label">The L7 distinction · ambiguity is a deliverable</div>
+        <p>A senior engineer ships code that compiles and matches one reading of the spec. A Principal-L7 engineer notices when the spec has two readings and resolves the ambiguity <em>before</em> shipping. The cost of asking <em>"do you want the label centered on the line, or sitting above it?"</em> is one message. The cost of guessing wrong is a commit, a revert, a second commit, and an apology in the channel. Every time the spec has more than one reading and you ship without asking, you're betting on which reading is correct. The Principal-L7 move is to not take the bet.</p>
+      </div>
+
+      <h3>Principle 2 · measure, don't guess</h3>
+      <p>The Tabler tree-shake in Ch 13 produced a 77% bundle reduction. The win was real, but it would have been invisible without the measurement infrastructure built first. The CDP-driven Chrome script ran before any code changes, then again after, then again two weeks later when the chapter was being written. Same script, same output format, three different timestamps. The 12 MB → 2.8 MB number isn't <em>"I think it was around 12 MB before"</em>; it's <em>"the script that I can re-run right now produced 12 MB before and 2.8 MB after."</em></p>
+
+      <p>The same discipline applies to every claim in this volume:</p>
+
+      <ul>
+        <li><strong>Ch 1's cascade-ordering regression</strong> — proven via grep against built CSS chunks, not via "the layout looks off."</li>
+        <li><strong>Ch 5's 12 breakpoint outliers</strong> — counted via grep, with the file paths enumerated, not via "I think there were a few."</li>
+        <li><strong>Ch 7's 13 <code>backdrop-filter</code> sites</strong> — counted, categorized, table-formatted. Not "we should add fallbacks everywhere."</li>
+        <li><strong>Ch 8's 10 logical-property migrations</strong> — verified against <code>git show 8db73b9</code>'s actual diff, which led to flagging that the commit message said "10 sites" but really meant "10 declarations across 9 files."</li>
+        <li><strong>Ch 13's 6,193 icons in the bundle</strong> — grep against the actual chunk file, twice (once before the migration, once after, both numbers verified).</li>
+      </ul>
+
+      <p>The pattern: <strong>every numerical claim has a one-line bash command that reproduces it</strong>. The numbers age well because the commands aren't going anywhere. If a future reader doubts a count, they run the command. The volume's accuracy is independent of memory.</p>
+
+      <h3>Principle 3 · failures are content, not embarrassment</h3>
+      <p>Five chapters in this volume narrate failure on the way to the working solution. The pattern is the same in each:</p>
+
+      <ol>
+        <li><strong>Ch 1</strong> · the cascade-priority declaration was added to <code>app.css</code> only; the bug shipped; the fix injected it into every chunk.</li>
+        <li><strong>Ch 5</strong> · three failed approaches to <code>@custom-media</code> before the bracket-pattern preprocessor worked.</li>
+        <li><strong>Ch 6</strong> · the self-reference container query that silently never fires; the bug shipped; the fix replaced it with a viewport media query.</li>
+        <li><strong>Ch 13</strong> · the <code>.svelte</code> extension wildcard trap broke the first migrator run; the fix dropped the extension after reading the package's <code>exports</code> map.</li>
+        <li><strong>The chart-label saga</strong> (this chapter's Principle 1) — wrong fix shipped, corrected fix shipped.</li>
+      </ol>
+
+      <p>None of these failures were edited out. The chapters narrate them in order — what was tried, what broke, what the new constraint was, what worked. Senior engineers often present polished solutions as if they came out fully formed; Principal-L7 engineers present the journey because <strong>the journey is what teaches</strong>. A reader who only sees the polished output learns the answer; a reader who sees the failures learns the methodology.</p>
+
+      <p>The hygiene rule: <strong>failed attempts go in the chapter narrative, not the git log</strong>. The git log is the working solution; the chapter is the journey. The commit message says <em>"adopt @layer cascade architecture"</em>; the chapter says <em>"here's what broke when we first tried it, here's how we diagnosed it, here's the fix."</em> Both are true. Neither is the full story without the other.</p>
+
+      <h3>Principle 4 · trust but verify upstream</h3>
+      <p>Three moments in this volume where the framework's documentation was incomplete, wrong, or absent:</p>
+
+      <ol>
+        <li><strong>Ch 5</strong> · Vite's TypeScript surface didn't expose Lightning CSS's <code>customMedia</code> map. The TS error was real; the feature genuinely didn't exist. Discovered by reading <code>node_modules/lightningcss/node/index.d.ts</code> directly.</li>
+        <li><strong>Ch 11</strong> · <a href="https://github.com/sveltejs/vite-plugin-svelte/issues/1074">vite-plugin-svelte issue #1074</a> documented the Lightning CSS + Svelte interaction but had no shipped fix. The workaround (the <code>:--svelte-global</code> mask) is the project's own; the official answer is still pending.</li>
+        <li><strong>Ch 13</strong> · the <code>@tabler/icons-svelte</code> package's <code>exports</code> wildcard ate the <code>.svelte</code> extension. The Tabler docs showed extension-less imports without explaining why; the SvelteKit docs linked to vite-plugin-svelte without elaborating. The truth was in the package's <code>package.json</code>.</li>
+      </ol>
+
+      <p>The pattern: <strong>when the upstream docs disagree with reality, reality wins, and the source code is the tiebreaker</strong>. Reading <code>node_modules/</code> directly to verify what an API accepts is faster than waiting for the docs to be updated. The Principal-L7 instinct is to <em>not</em> trust that a documented feature works without verifying — and to <em>not</em> assume an undocumented behavior is a bug without verifying it isn't.</p>
+
+      <h3>Principle 5 · the bisection discipline</h3>
+      <p>This audit produced <strong>14 atomic commits across the CSS infrastructure</strong> (the <code>affc7b5</code> → <code>433d6db</code> chain). Each commit is a single conceptual change with a self-contained explanation. None of them bundles multiple unrelated changes. None of them is a "WIP" or "fixes" or "cleanup."</p>
+
+      <p>Why this matters: when the cascade-ordering regression appeared in production, <code>git bisect</code> would land on <code>4b61ad5</code> immediately — the <code>@layer</code> architecture commit — because that commit is <em>the</em> introducer of the entire feature. The fix went in as its own commit (<code>948dac6</code>), preserving the clear before/after structure. A reader walking the log can read each commit's full story without parsing entangled diffs.</p>
+
+      <p>Compare with the alternative — one giant <em>"refactor CSS architecture"</em> commit that includes <code>@layer</code> introduction, the cascade-fix, the breakpoint migration, the container queries, the logical properties, the backdrop fallbacks, the dead-token cleanup, all bundled. That commit is unreviewable, unbisectable, unrevertable. A regression months later forces a forensic dive instead of a 5-minute <code>git bisect</code>.</p>
+
+      <p>The L7 discipline: <strong>commit per conceptual change, no exceptions</strong>. Even if it means more git operations, even if the diff is small, even if it feels excessive at the moment. The investment is paid back the first time anyone needs to understand the history.</p>
+
+      <h3>Principle 6 · "I was wrong" is a feature, not a bug</h3>
+      <p>The audit shipped at least three measurable mistakes:</p>
+
+      <ul>
+        <li><strong>The cascade-order regression</strong> — I added <code>@layer</code> in commit <code>4b61ad5</code> without understanding that the priority declaration needs to be in every chunk. The bug shipped intermittently for two days before <code>948dac6</code> fixed it.</li>
+        <li><strong>The chart-label misread</strong> — I shipped <code>aef35dc</code> based on a wrong reading of the user's intent. Corrected in <code>1705fe4</code>.</li>
+        <li><strong>The icon import-path wildcard</strong> — the first migration run produced <code>arrow-right.svelte.svelte</code> paths that didn't resolve. Should have read the package's <code>exports</code> field first. Fixed in the same commit before pushing, but the diagnostic delay was real.</li>
+      </ul>
+
+      <p>None of these is hidden. Each is named in its chapter's narrative, attributed to me by name in the commit messages and chapter text, and explained — not glossed. <strong>L7 isn't about not making mistakes; it's about catching them quickly, fixing them cleanly, and not pretending they didn't happen.</strong> A team that hides mistakes builds a culture where the next mistake takes longer to surface. A team that names them builds a culture where mistakes get caught earlier.</p>
+
+      <p>The practical version: every commit message that fixes a previous mistake explains what was wrong, why it was wrong, and what the new approach proves. Future-me reading the log six months from now sees not just <em>"this is the current state"</em> but <em>"here's how this state was earned, including the failures."</em> That context is worth more than any "perfect" git log.</p>
+
+      <h3>Principle 7 · knowing what you haven't done is a deliverable</h3>
+      <p>Two chapters in this volume are deliberately <em>about</em> things the project doesn't do:</p>
+
+      <ul>
+        <li><strong>Ch 10</strong> · <code>prefers-contrast</code>, <code>forced-colors</code>, <code>prefers-reduced-data</code> — three user-preference media queries the project doesn't handle yet.</li>
+        <li><strong>Ch 12</strong> · <code>content-visibility</code>, <code>contain</code>, <code>will-change</code> — three CSS performance levers the project doesn't use.</li>
+      </ul>
+
+      <p>Both chapters are honest about the deferral. Both chapters provide concrete hypothetical code so the work can be done in minutes when the need arises. Both chapters specify the <em>budget triggers</em> that should flip the deferral into shipping: FCP exceeding 400ms, or pages with 100+ repeating elements, or the first enterprise customer's accessibility audit. The deferral isn't permanent; it's <em>conditional</em>.</p>
+
+      <p>This is the distinction the L7 mindset cares about: <strong>a team that didn't ship <code>prefers-contrast</code> because they never considered it has an accessibility gap they don't know about</strong>. A team that consciously deferred it, with a written audit and an estimate, has a planned omission. When the user report comes in, the team's response is "yes, we know, here's the 5-line fix; shipping today" instead of "let me investigate." The visible work is the same; the difference is whether the team is surprised.</p>
+
+      <h3>Principle 8 · cite your sources, even in code</h3>
+      <p>Every code snippet in this volume that quotes an external spec includes a verbatim quote from MDN or the W3C draft. Every "this is recommended" claim links to where it's recommended. The discipline carries over into the code: every non-obvious decision in <code>svelte.config.js</code>, <code>vite.config.ts</code>, and the project's CSS architecture has a comment explaining <em>why</em>, often with a link or a reference to a spec rule.</p>
+
+      <p>Why this matters: a future engineer reading the code can <em>verify</em> the rationale. The comment isn't a static assertion ("this is right because I said so") — it's a pointer to the evidence ("this is right because <a href="https://github.com/sveltejs/vite-plugin-svelte/issues/1074">vite-plugin-svelte issue #1074</a> documents the Lightning CSS + Svelte interaction problem"). Six months from now, if the upstream lands the fix, the comment's link tells the reader exactly where to check for status. The code documents not just <em>what</em> but <em>why</em> and <em>when this will become outdated</em>.</p>
+
+      <p>The implementation version: <strong>if you're writing a workaround for an upstream bug, link the upstream bug in the comment</strong>. If you're making a non-obvious trade-off, link the documentation that informed the trade-off. Comments are pointers, not statements.</p>
+
+      <h3>Principle 9 · the under-engineered cases are deliberate</h3>
+      <p>This volume has explicit "we didn't do this on purpose" sections in five different chapters. Worth listing them in one place so the L7-reader can see the pattern:</p>
+
+      <table>
+        <thead><tr><th>Under-engineered choice</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Hex/rgba color tokens (not <code>oklch()</code>)</td><td>Designer-tool handoff via Figma still defaults to hex; the codebase doesn't yet need ramp-generation power that oklch provides.</td></tr>
+          <tr><td>No <code>prefers-contrast: more</code> stylesheet</td><td>Body-text contrast is already 13.5:1 — three times AAA. Users with the preference set get "fine" instead of "tailored." Different from "broken."</td></tr>
+          <tr><td>No <code>forced-colors</code> hardening</td><td>Windows HCM provides a usable baseline by default. Users get a functional but un-themed experience instead of the project's specific aesthetic.</td></tr>
+          <tr><td>No <code>content-visibility: auto</code> on long lists</td><td>Current pages don't have a measurable rendering problem. FCP under 300ms; no rationale for the per-component intrinsic-size estimate work.</td></tr>
+          <tr><td>Triple-source-of-truth for breakpoints</td><td>Three files (breakpoints.css, svelte.config.js, tokens.css) carry the same values. Could be deduplicated via a <code>breakpoints.json</code> + plugin. Not done yet because the maintenance cost is low and the abstraction cost would be real.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Each row is a choice that could be "improved" by an over-eager engineer reading this volume. Each row would also <em>add complexity for no current win</em>. The L7 instinct is to leave them as-is and document why — so when the conditions change (a new designer joins; an accessibility audit lands; a long list gets shipped; a breakpoint needs to be added in three places), the work is well-scoped and the trigger is obvious.</p>
+
+      <h3>Principle 10 · the operator's intuition is data</h3>
+      <p>This volume started with an off-hand observation: <em>"why is my browser making 792 requests when I navigate the dev site?"</em> That was the user, not a metric. Not a Lighthouse audit. Not a Sentry alert. Just an operator looking at a number that felt off and asking out loud.</p>
+
+      <p>Following that question produced the volume's biggest concrete win — a 12 MB → 2.8 MB bundle reduction that no automated tooling would have flagged (every metric was within "normal" range; the per-route requests were technically fine; the bundle size was loud but only loud once you went looking). The win exists only because someone took the operator's intuition seriously enough to investigate.</p>
+
+      <p>Same pattern, smaller scale: the chart-label complaint that started the misread / corrected sequence. The user could see something was off; they couldn't articulate <em>what</em> on the first try; the right L7 response was to investigate the operator's gut, not dismiss the imprecise wording. <strong>"It feels off" is signal, not noise.</strong></p>
+
+      <p>The discipline: when a user gives you an imprecise observation, treat it as data. Ask what they're noticing. Measure what they're seeing. Find the anchor. The investigation may turn up nothing; that's fine. The investigations that turn up <em>something</em> are nearly always the ones triggered by a non-metric, non-tooling, non-automated signal — because if a metric or tool had caught it, you'd already know.</p>
+
+      <h3>The synthesis · what the L7 difference actually is</h3>
+      <p>Strip away the specifics — the cascade ordering, the <code>@custom-media</code> draft, the icon tree-shake — and the L7 mindset is a small set of habits applied consistently:</p>
+
+      <ol>
+        <li>Resolve ambiguity before shipping.</li>
+        <li>Build the measurement first; ship the change second; re-measure third.</li>
+        <li>Show your failures; they teach more than your successes.</li>
+        <li>Verify upstream claims against source, not docs.</li>
+        <li>Commit per conceptual change, atomic and reviewable.</li>
+        <li>Name your mistakes in commit messages and post-mortems; don't hide them.</li>
+        <li>Document what you haven't done with the same care as what you have.</li>
+        <li>Comments and commit messages are pointers to evidence, not assertions.</li>
+        <li>Under-engineer deliberately; document the trade-off.</li>
+        <li>The operator's intuition is data; investigate the imprecise observations.</li>
+      </ol>
+
+      <p>None of these is novel. None is hard to understand. Every L4 engineer can recite them. The L7 difference is that L7 engineers <em>actually do them, every time, without negotiating with themselves about when shortcuts are OK</em>. The discipline is the deliverable.</p>
+
+      <h3>What this volume is really for</h3>
+      <p>Five volumes. Vol 1 set up the project. Vol 2 explained the runes. Vol 3 walked the components. Vol 4 walked the routes. Vol 5 documented an audit.</p>
+
+      <p>If you came to Vol 5 to learn CSS, you should have learned some — but the real material is the methodology. The cascade architecture in Ch 1, the breakpoint pipeline in Ch 5, the container query trap in Ch 6, the build pipeline in Ch 11, the icon migration in Ch 13 — those are case studies. The patterns above are what's portable. The next time you sit down with an audit on a codebase you've never seen, the chapters in this volume show you how someone else worked through theirs.</p>
+
+      <p>The project will keep evolving. The CSS in <code>src/lib/styles/</code> will be edited, the breakpoints might change, the icon library might get replaced. The chapters in this volume will drift from the code. When that happens, the volume is doing its job — <strong>documentation isn't supposed to be the truth, the code is the truth; documentation is supposed to be the explanation</strong>. If you find a discrepancy between a chapter and the repo, the chapter is wrong; open a PR.</p>
+
+      <p>That's the close. The repo is yours. Read it, run it, audit it. The next L7 move on this codebase is the one you find.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-13"><div class="dir">← Prev</div><div class="ttl">Tabler tree-shake</div></a>
+        <span class="next disabled"><a><div class="dir">Next →</div><div class="ttl">— end of volume —</div></a></span>
+      </div>
+
+      <div class="vol-end">
+        <h3>End of Vol 5 · End of Series</h3>
+        <p>Five volumes. Fourteen chapters in this one. Every chapter anchored to a real commit, every measurement re-verifiable against the repo. You started Vol 1 in an empty folder; you finish Vol 5 with a deployable SvelteKit application <em>and</em> the documentation that shows how every architectural choice was made — including the mistakes.</p>
+        <p>The repo is yours. Read it. Run it. Ship it. Audit the next thing.</p>
+      </div>
+
+      <div class="series-toc">
+        <div class="card done"><div class="num">VOL 01</div><div class="name">Foundations</div><div class="status">Complete</div></div>
+        <div class="card done"><div class="num">VOL 02</div><div class="name">Reactivity</div><div class="status">Complete</div></div>
+        <div class="card done"><div class="num">VOL 03</div><div class="name">Components</div><div class="status">Complete</div></div>
+        <div class="card done"><div class="num">VOL 04</div><div class="name">Routes &amp; Data</div><div class="status">Complete</div></div>
+        <div class="card current"><div class="num">VOL 05</div><div class="name">CSS Architecture</div><div class="status">Complete ✓</div></div>
+      </div>
+    </section>
+
   </main>
 </div>
 
