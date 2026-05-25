@@ -174,8 +174,9 @@ dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
         <li><a href="#ch-14" class="ch-link">Admin write surfaces</a></li>
         <li><a href="#ch-15" class="ch-link">Admin live-DB reads</a></li>
         <li><a href="#ch-16" class="ch-link">SEO endpoints · sitemap &amp; robots</a></li>
-        <li><a href="#ch-17" class="ch-link">Drizzle · schema, client, seed</a></li>
-        <li><a href="#ch-18" class="ch-link">Production · adapters &amp; deploy</a></li>
+        <li><a href="#ch-17" class="ch-link">The rate limiter · server-only memory hygiene</a></li>
+        <li><a href="#ch-18" class="ch-link">Drizzle · schema, client, seed</a></li>
+        <li><a href="#ch-19" class="ch-link">Production · adapters &amp; deploy</a></li>
       </ol>
     </nav>
     <div class="series">
@@ -298,8 +299,9 @@ RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
         <li>Chapters 10–12 — the member dashboard tree.</li>
         <li>Chapters 13–15 — the admin tree, including the two routes that read live from Drizzle.</li>
         <li>Chapter 16 — the two <code>+server.ts</code> endpoints.</li>
-        <li>Chapter 17 — the database itself: schema, client, seed, migrations.</li>
-        <li>Chapter 18 — adapters, prerender vs SSR trade-offs, and the deploy checklist.</li>
+        <li>Chapter 17 — the rate limiter that defends the form endpoints, line by careful line.</li>
+        <li>Chapter 18 — the database itself: schema, client, seed, migrations.</li>
+        <li>Chapter 19 — adapters, prerender vs SSR trade-offs, and the deploy checklist.</li>
       </ul>
 
       <div class="pager">
@@ -657,16 +659,7 @@ RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
       </dl>
 
       <h3>Companion: the rate limiter</h3>
-      <p>The <code>checkRateLimit</code> import is from a small server-only module we added to defend the form endpoints. Here's the full file:</p>
-      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/rateLimit.ts (excerpt)</span><button class="copy" data-copy>copy</button></div>
-<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">buckets</span> = <span class="tk-kw">new</span> <span class="tk-typ">Map</span>&lt;<span class="tk-typ">string</span>, <span class="tk-typ">number</span>[]&gt;();</span><span class="ln"></span><span class="ln"><span class="tk-kw">export function</span> <span class="tk-fn">checkRateLimit</span>(<span class="tk-var">key</span>: <span class="tk-typ">string</span>, <span class="tk-var">opts</span>: <span class="tk-typ">RateLimitOptions</span>): <span class="tk-typ">RateLimitResult</span> {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">now</span> = <span class="tk-typ">Date</span>.<span class="tk-fn">now</span>();</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">cutoff</span> = <span class="tk-var">now</span> - <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span>;</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">existing</span> = <span class="tk-var">buckets</span>.<span class="tk-fn">get</span>(<span class="tk-var">key</span>);</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">timestamps</span> = <span class="tk-var">existing</span> ? <span class="tk-var">existing</span>.<span class="tk-fn">filter</span>((<span class="tk-var">t</span>) =&gt; <span class="tk-var">t</span> &gt; <span class="tk-var">cutoff</span>) : [];</span><span class="ln">	<span class="tk-kw">if</span> (<span class="tk-var">timestamps</span>.<span class="tk-prop">length</span> &gt;= <span class="tk-var">opts</span>.<span class="tk-prop">limit</span>) {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">oldest</span> = <span class="tk-var">timestamps</span>[<span class="tk-num">0</span>] ?? <span class="tk-var">now</span>;</span><span class="ln">		<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">false</span>, <span class="tk-prop">retryAfterMs</span>: <span class="tk-typ">Math</span>.<span class="tk-fn">max</span>(<span class="tk-num">0</span>, <span class="tk-var">oldest</span> + <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span> - <span class="tk-var">now</span>) };</span><span class="ln">	}</span><span class="ln">	<span class="tk-var">timestamps</span>.<span class="tk-fn">push</span>(<span class="tk-var">now</span>);</span><span class="ln">	<span class="tk-var">buckets</span>.<span class="tk-fn">set</span>(<span class="tk-var">key</span>, <span class="tk-var">timestamps</span>);</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">true</span> };</span><span class="ln">}</span></code></pre></div>
-
-      <p>A sliding-window limiter backed by an in-memory <code>Map</code>. Each key (e.g., <code>'lead:1.2.3.4'</code>) holds the recent timestamps for that bucket. On every call we prune timestamps older than <code>windowMs</code>, count what's left, and either accept or return the retry-after delay until the oldest still-active timestamp expires.</p>
-
-      <div class="callout pitfall">
-        <div class="label">Pitfall · in-memory limits don't scale</div>
-        <p>This Map lives in process memory. <strong>Two server instances = two separate buckets</strong>, doubling the effective rate. Fine for a single-instance deploy (Phase 1). For multi-instance production, swap the Map for Redis (the file comment says exactly that). The interface stays identical; only the storage backend changes.</p>
-      </div>
+      <p>The <code>checkRateLimit</code> and <code>getClientKey</code> imports come from <code>src/lib/server/rateLimit.ts</code> — a small server-only module that earns its own chapter because the careful bits (memory hygiene on rejection, a graceful fallback when <code>getClientAddress()</code> throws, an HMR-safe cleanup interval) are easy to miss when you're skimming. See <a href="#ch-17">Chapter 17 · The rate limiter</a> for the full file. For now: it returns <code>{ ok: true }</code> on accept and <code>{ ok: false, retryAfterMs }</code> on reject; that's all the form action needs to know.</p>
 
       <h3>The success page</h3>
       <p><code>src/routes/free-guide/success/+page.ts</code>:</p>
@@ -991,13 +984,90 @@ RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
 
       <div class="pager">
         <a class="prev" href="#ch-15"><div class="dir">← Prev</div><div class="ttl">Admin live-DB reads</div></a>
-        <a class="next" href="#ch-17"><div class="dir">Next →</div><div class="ttl">Drizzle · schema, client, seed</div></a>
+        <a class="next" href="#ch-17"><div class="dir">Next →</div><div class="ttl">The rate limiter</div></a>
       </div>
     </section>
 
     <!-- ============================ CHAPTER 17 ============================ -->
     <section id="ch-17">
       <p class="eyebrow">Chapter 17</p>
+      <h2>The rate limiter · server-only memory hygiene</h2>
+      <p>The lead-capture and contact actions in Chapters 7 and 8 both open with the same two lines: a <code>checkRateLimit</code> call, then a <code>fail(429)</code> if the bucket is full. The function those lines call lives in <code>src/lib/server/rateLimit.ts</code> — 89 lines that look like 30 at first read. The extra 60 are the difference between a toy limiter and one you'd actually run.</p>
+
+      <p>This chapter walks the file in three layers. The <strong>algorithm</strong> — what the lead-capture chapter teased — is the easy part. The <strong>operational</strong> layer is the part that catches a Principal-L7 reviewer's eye: graceful degradation when SvelteKit's client-IP helper throws, and pruning the timestamp list <em>even on rejection</em> so memory doesn't grow under attack. The <strong>long-game</strong> layer is the cleanup interval — eighteen lines that prevent a slow leak no integration test would ever catch.</p>
+
+      <h3>Layer 1 · the algorithm</h3>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/rateLimit.ts · algorithm</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">RequestEvent</span> } <span class="tk-kw">from</span> <span class="tk-str">'@sveltejs/kit'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">type</span> <span class="tk-typ">RateLimitOk</span> = { <span class="tk-prop">ok</span>: <span class="tk-bool">true</span> };</span><span class="ln"><span class="tk-kw">type</span> <span class="tk-typ">RateLimitDenied</span> = { <span class="tk-prop">ok</span>: <span class="tk-bool">false</span>; <span class="tk-prop">retryAfterMs</span>: <span class="tk-typ">number</span> };</span><span class="ln"><span class="tk-kw">export type</span> <span class="tk-typ">RateLimitResult</span> = <span class="tk-typ">RateLimitOk</span> | <span class="tk-typ">RateLimitDenied</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">interface</span> <span class="tk-typ">RateLimitOptions</span> {</span><span class="ln">	<span class="tk-prop">limit</span>: <span class="tk-typ">number</span>;</span><span class="ln">	<span class="tk-prop">windowMs</span>: <span class="tk-typ">number</span>;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">buckets</span> = <span class="tk-kw">new</span> <span class="tk-typ">Map</span>&lt;<span class="tk-typ">string</span>, <span class="tk-typ">number</span>[]&gt;();</span><span class="ln"></span><span class="ln"><span class="tk-kw">export function</span> <span class="tk-fn">checkRateLimit</span>(<span class="tk-var">key</span>: <span class="tk-typ">string</span>, <span class="tk-var">opts</span>: <span class="tk-typ">RateLimitOptions</span>): <span class="tk-typ">RateLimitResult</span> {</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">now</span> = <span class="tk-typ">Date</span>.<span class="tk-fn">now</span>();</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">cutoff</span> = <span class="tk-var">now</span> - <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span>;</span><span class="ln"></span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">existing</span> = <span class="tk-var">buckets</span>.<span class="tk-fn">get</span>(<span class="tk-var">key</span>);</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">timestamps</span> = <span class="tk-var">existing</span> ? <span class="tk-var">existing</span>.<span class="tk-fn">filter</span>((<span class="tk-var">t</span>) =&gt; <span class="tk-var">t</span> &gt; <span class="tk-var">cutoff</span>) : [];</span><span class="ln"></span><span class="ln">	<span class="tk-kw">if</span> (<span class="tk-var">timestamps</span>.<span class="tk-prop">length</span> &gt;= <span class="tk-var">opts</span>.<span class="tk-prop">limit</span>) {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">oldest</span> = <span class="tk-var">timestamps</span>[<span class="tk-num">0</span>] ?? <span class="tk-var">now</span>;</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">retryAfterMs</span> = <span class="tk-typ">Math</span>.<span class="tk-fn">max</span>(<span class="tk-num">0</span>, <span class="tk-var">oldest</span> + <span class="tk-var">opts</span>.<span class="tk-prop">windowMs</span> - <span class="tk-var">now</span>);</span><span class="ln">		<span class="tk-com">// Persist the pruned list so memory doesn't grow unbounded on rejected calls.</span></span><span class="ln">		<span class="tk-var">buckets</span>.<span class="tk-fn">set</span>(<span class="tk-var">key</span>, <span class="tk-var">timestamps</span>);</span><span class="ln">		<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">false</span>, <span class="tk-var">retryAfterMs</span> };</span><span class="ln">	}</span><span class="ln"></span><span class="ln">	<span class="tk-var">timestamps</span>.<span class="tk-fn">push</span>(<span class="tk-var">now</span>);</span><span class="ln">	<span class="tk-var">buckets</span>.<span class="tk-fn">set</span>(<span class="tk-var">key</span>, <span class="tk-var">timestamps</span>);</span><span class="ln">	<span class="tk-kw">return</span> { <span class="tk-prop">ok</span>: <span class="tk-bool">true</span> };</span><span class="ln">}</span></code></pre></div>
+
+      <p>The shape is a <strong>sliding-window counter</strong>. Every call to the same key (say <code>'lead:1.2.3.4'</code>) appends the current timestamp to that key's list. Before counting, we prune anything older than <code>windowMs</code>. If what remains is at the limit, reject and tell the caller exactly how long until the oldest timestamp in the bucket expires — that's the soonest moment another call could succeed. If under the limit, push and accept.</p>
+
+      <dl>
+        <dt>The discriminated-union return type</dt>
+        <dd><code>{ ok: true }</code> on accept; <code>{ ok: false, retryAfterMs }</code> on reject. The caller writes <code>if (!rl.ok) return fail(429, { error: ... })</code> and TypeScript narrows <code>rl.retryAfterMs</code> to <code>number</code> inside that branch — no optional chaining, no <code>!</code> assertion. The shape encodes the API.</dd>
+        <dt>Why a sliding window and not a token bucket?</dt>
+        <dd>Token-bucket gives you burst-then-throttle; sliding-window gives you "exactly N per rolling window." For form endpoints the requirement is "no more than 5 submissions per minute from one IP" — that's a sliding-window question. Token buckets win when you want to allow bursts after quiet periods; we don't.</dd>
+        <dt>The <code>timestamps[0] ?? now</code> fallback</dt>
+        <dd>Defensive: if somehow we hit the reject branch with an empty array (we shouldn't — we just checked <code>length &gt;= limit</code>, and the limit is at least 1), default to <code>now</code> which produces <code>retryAfterMs = windowMs</code> rather than crashing on a tuple-index undefined. Cheap insurance; the alternative is <code>noUncheckedIndexedAccess</code> warnings or a runtime <code>TypeError</code>.</dd>
+      </dl>
+
+      <h3>Layer 2 · operational concerns</h3>
+
+      <p>Two pieces of polish that the simple version forgets. They look small. They aren't.</p>
+
+      <h4>Pruning <em>on rejection</em> too</h4>
+      <p>Notice the <code>buckets.set(key, timestamps)</code> inside the reject branch — easy to miss. Without it, every rejected call leaves <em>more</em> expired timestamps in the bucket than necessary, because the filtered list is computed locally and thrown away. Under sustained attack, a single key's array grows to thousands of timestamps even though only the most recent <code>limit</code> matter. Setting the pruned list back on reject keeps memory bounded by <code>O(limit)</code> per key, not <code>O(requests since first hit)</code>. This is the kind of detail that doesn't show up in a unit test but does show up in a 3 AM page.</p>
+
+      <h4><code>getClientKey</code> with graceful degradation</h4>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/rateLimit.ts · getClientKey</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/**</span></span><span class="ln"><span class="tk-com"> * Best-effort client identifier. SvelteKit can throw from</span></span><span class="ln"><span class="tk-com"> * `getClientAddress()` when no adapter has populated it (e.g. some test</span></span><span class="ln"><span class="tk-com"> * harnesses), so we swallow the error and degrade to a shared bucket rather</span></span><span class="ln"><span class="tk-com"> * than crashing the request.</span></span><span class="ln"><span class="tk-com"> */</span></span><span class="ln"><span class="tk-kw">export function</span> <span class="tk-fn">getClientKey</span>(<span class="tk-var">event</span>: <span class="tk-typ">RequestEvent</span>): <span class="tk-typ">string</span> {</span><span class="ln">	<span class="tk-kw">try</span> {</span><span class="ln">		<span class="tk-kw">return</span> <span class="tk-var">event</span>.<span class="tk-fn">getClientAddress</span>();</span><span class="ln">	} <span class="tk-kw">catch</span> {</span><span class="ln">		<span class="tk-kw">return</span> <span class="tk-str">'unknown'</span>;</span><span class="ln">	}</span><span class="ln">}</span></code></pre></div>
+
+      <p>SvelteKit's <code>event.getClientAddress()</code> throws if the adapter hasn't populated the IP — which happens in some test harnesses, in unusual deploy targets, or when running behind a misconfigured proxy. The naive call <code>event.getClientAddress()</code> would crash the form action with a 500 before validation even runs.</p>
+
+      <p>The right move is the one above: catch and fall back to a literal <code>'unknown'</code> bucket. Every request without a resolvable IP shares the same key, so the limiter still works — it just degrades to "5 anonymous submissions per minute, globally." That's looser than per-IP, but it's a circuit-breaker, not a security boundary. Crashing would be worse than rate-limiting too loosely.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the boundary rule</div>
+        <p>The CLAUDE.md rule is <em>"validate at system boundaries; trust internal code."</em> <code>getClientAddress()</code> is a boundary — it reaches into the adapter, which reaches into the runtime. The boundary rule applies: defend against the boundary throwing, and let the rest of the function trust the result. Inside <code>checkRateLimit</code> we don't second-guess the key. We trust it.</p>
+      </div>
+
+      <h3>Layer 3 · the long-game · memory reclamation</h3>
+
+      <p>Active keys are pruned on every call. But <em>inactive</em> keys — IPs that submitted once and never came back — stay in the Map forever. Over weeks, that's a slow leak: every unique IP that ever touched a form endpoint occupies a tiny slice of process memory until the next deploy resets it.</p>
+
+      <p>The fix is a periodic cleanup interval. Here's the full block — every line earns its place:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/server/rateLimit.ts · cleanup</span><button class="copy" data-copy>copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">CLEANUP_INTERVAL_MS</span> = <span class="tk-num">10</span> * <span class="tk-num">60</span> * <span class="tk-num">1000</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">declare global</span> {</span><span class="ln">	<span class="tk-com">// eslint-disable-next-line no-var</span></span><span class="ln">	<span class="tk-kw">var</span> <span class="tk-var">__rateLimitCleanupStarted</span>: <span class="tk-typ">boolean</span> | <span class="tk-kw">undefined</span>;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">if</span> (<span class="tk-kw">typeof</span> <span class="tk-var">globalThis</span> !== <span class="tk-str">'undefined'</span> &amp;&amp; !<span class="tk-var">globalThis</span>.<span class="tk-prop">__rateLimitCleanupStarted</span>) {</span><span class="ln">	<span class="tk-var">globalThis</span>.<span class="tk-prop">__rateLimitCleanupStarted</span> = <span class="tk-bool">true</span>;</span><span class="ln">	<span class="tk-kw">const</span> <span class="tk-var">interval</span> = <span class="tk-fn">setInterval</span>(() =&gt; {</span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">now</span> = <span class="tk-typ">Date</span>.<span class="tk-fn">now</span>();</span><span class="ln">		<span class="tk-com">// We don't know each key's windowMs at cleanup time, so we use a generous</span></span><span class="ln">		<span class="tk-com">// upper bound: drop entries whose newest timestamp is older than an hour.</span></span><span class="ln">		<span class="tk-com">// Active keys are pruned by checkRateLimit on every call; this loop only</span></span><span class="ln">		<span class="tk-com">// reclaims memory for keys that have gone quiet.</span></span><span class="ln">		<span class="tk-kw">const</span> <span class="tk-var">staleCutoff</span> = <span class="tk-var">now</span> - <span class="tk-num">60</span> * <span class="tk-num">60</span> * <span class="tk-num">1000</span>;</span><span class="ln">		<span class="tk-kw">for</span> (<span class="tk-kw">const</span> [<span class="tk-var">key</span>, <span class="tk-var">timestamps</span>] <span class="tk-kw">of</span> <span class="tk-var">buckets</span>) {</span><span class="ln">			<span class="tk-kw">if</span> (<span class="tk-var">timestamps</span>.<span class="tk-prop">length</span> === <span class="tk-num">0</span>) {</span><span class="ln">				<span class="tk-var">buckets</span>.<span class="tk-fn">delete</span>(<span class="tk-var">key</span>);</span><span class="ln">				<span class="tk-kw">continue</span>;</span><span class="ln">			}</span><span class="ln">			<span class="tk-kw">const</span> <span class="tk-var">newest</span> = <span class="tk-var">timestamps</span>[<span class="tk-var">timestamps</span>.<span class="tk-prop">length</span> - <span class="tk-num">1</span>] ?? <span class="tk-num">0</span>;</span><span class="ln">			<span class="tk-kw">if</span> (<span class="tk-var">newest</span> &lt; <span class="tk-var">staleCutoff</span>) {</span><span class="ln">				<span class="tk-var">buckets</span>.<span class="tk-fn">delete</span>(<span class="tk-var">key</span>);</span><span class="ln">			}</span><span class="ln">		}</span><span class="ln">	}, <span class="tk-var">CLEANUP_INTERVAL_MS</span>);</span><span class="ln">	<span class="tk-com">// Don't keep the event loop alive purely for cleanup (Node only).</span></span><span class="ln">	<span class="tk-kw">if</span> (<span class="tk-kw">typeof</span> (<span class="tk-var">interval</span> <span class="tk-kw">as</span> { <span class="tk-prop">unref</span>?: () =&gt; <span class="tk-kw">void</span> }).<span class="tk-prop">unref</span> === <span class="tk-str">'function'</span>) {</span><span class="ln">		(<span class="tk-var">interval</span> <span class="tk-kw">as</span> { <span class="tk-prop">unref</span>: () =&gt; <span class="tk-kw">void</span> }).<span class="tk-fn">unref</span>();</span><span class="ln">	}</span><span class="ln">}</span></code></pre></div>
+
+      <dl>
+        <dt>The <code>globalThis.__rateLimitCleanupStarted</code> guard</dt>
+        <dd><strong>This is the senior bit.</strong> In dev, Vite HMR re-evaluates this module every time you edit a server file. Without the guard, every edit starts a <em>new</em> <code>setInterval</code> and the old ones keep firing — within a few minutes you have dozens of cleanup loops running in parallel, each holding a closure over the same <code>buckets</code> Map. CPU climbs, the dev experience degrades, and nothing in the code looks wrong. The fix is the global flag: first module evaluation sets it, subsequent re-evaluations no-op. The <code>declare global</code> + <code>var</code> + eslint-disable are the TypeScript ceremony to make that legal.</dd>
+        <dt><code>interval.unref()</code> at the bottom</dt>
+        <dd>By default, an active <code>setInterval</code> keeps the Node event loop alive. That means if your process should exit (a graceful shutdown, a CLI script that imported this module by accident), the cleanup timer would hold it open for up to 10 minutes. <code>unref()</code> tells Node "this timer is allowed to keep running, but don't extend the process lifetime for it." The feature-detection (<code>typeof ... === 'function'</code>) is for non-Node runtimes where the return type from <code>setInterval</code> doesn't have <code>unref</code> — Cloudflare Workers, Deno, the browser.</dd>
+        <dt>Why one hour, not <code>windowMs</code>?</dt>
+        <dd>The cleanup loop doesn't know which window each key was using — different callers can pass different <code>opts.windowMs</code>. A generous upper bound (1 hour) means we never drop a key that's still relevant; the worst case is we hold onto a stale entry for an extra hour. That's the right trade. Tightening the cleanup window would require either (a) tracking per-key <code>windowMs</code> in the bucket, or (b) accepting the risk of evicting a key mid-window. Neither is worth it.</dd>
+        <dt>The 10-minute interval</dt>
+        <dd>Cleanup runs six times an hour. Each run is <code>O(n)</code> over the bucket count. At reasonable traffic — say 10k unique IPs touching forms over a day — that's a 10k-key map scan every 10 minutes, completing in well under a millisecond. The cost is invisible; the benefit (memory stays bounded under months-long uptime) is real.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the bugs that ship are the ones that look small</div>
+        <p>None of Layer 2 or Layer 3 would block a code review. The simple version <em>works</em>. It also leaks memory on idle keys, crashes in some test harnesses, and spawns runaway cleanup loops in dev. Each of those is a future incident — the kind that takes a senior engineer half a day to diagnose because the code looks innocent. The hardened version makes the incidents impossible. That's the L7 move: code reviewed twice, written once.</p>
+      </div>
+
+      <h3>Where this should go in Phase 2</h3>
+      <p>The file comment at the top says it plainly: <em>"Suitable for single-instance deployments. For multi-instance production, swap the backing Map for Redis."</em> The interface (<code>checkRateLimit(key, opts) → RateLimitResult</code>) stays identical; only the storage backend changes. Two instances behind a load balancer with this in-memory limiter give attackers 2× the effective rate; with shared Redis, the limit is global. That swap is one of the line items in Ch 19's Phase-2 production checklist.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-16"><div class="dir">← Prev</div><div class="ttl">SEO endpoints</div></a>
+        <a class="next" href="#ch-18"><div class="dir">Next →</div><div class="ttl">Drizzle · schema, client, seed</div></a>
+      </div>
+    </section>
+
+    <!-- ============================ CHAPTER 18 ============================ -->
+    <section id="ch-18">
+      <p class="eyebrow">Chapter 18</p>
       <h2>Drizzle · schema, client, seed</h2>
       <p>Three small files implement the entire database layer. Drizzle uses TypeScript-as-schema: the table definitions live in code, the migrations are generated from diffs, and the query builder enforces row types from the same source. One place to change a column; every consumer compiles or breaks.</p>
 
@@ -1059,14 +1129,14 @@ RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
       </div>
 
       <div class="pager">
-        <a class="prev" href="#ch-16"><div class="dir">← Prev</div><div class="ttl">SEO endpoints</div></a>
-        <a class="next" href="#ch-18"><div class="dir">Next →</div><div class="ttl">Production · adapters &amp; deploy</div></a>
+        <a class="prev" href="#ch-17"><div class="dir">← Prev</div><div class="ttl">The rate limiter</div></a>
+        <a class="next" href="#ch-19"><div class="dir">Next →</div><div class="ttl">Production · adapters &amp; deploy</div></a>
       </div>
     </section>
 
-    <!-- ============================ CHAPTER 18 ============================ -->
-    <section id="ch-18">
-      <p class="eyebrow">Chapter 18</p>
+    <!-- ============================ CHAPTER 19 ============================ -->
+    <section id="ch-19">
+      <p class="eyebrow">Chapter 19</p>
       <h2>Production · adapters &amp; deploy</h2>
       <p>The last chapter. Everything you've built — twelve volumes' worth of code — now has to ship to a real host that answers HTTPS at a domain. SvelteKit's answer is <em>adapters</em>: small plugins that take your build output and produce platform-specific deployment artifacts. Pick the right one and the rest is configuration.</p>
 
@@ -1153,7 +1223,7 @@ RESPONSE  200 OK · text/html · (then JS hydrates the runes)</div>
       </div>
 
       <div class="pager">
-        <a class="prev" href="#ch-17"><div class="dir">← Prev</div><div class="ttl">Drizzle</div></a>
+        <a class="prev" href="#ch-18"><div class="dir">← Prev</div><div class="ttl">Drizzle</div></a>
         <span class="next disabled"><a><div class="dir">Next →</div><div class="ttl">— end of series —</div></a></span>
       </div>
 
