@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { IconPlus } from '@tabler/icons-svelte';
+	import IconPlus from '@tabler/icons-svelte/icons/plus';
 	import { slide } from 'svelte/transition';
 
 	type Item = { id: string; title: string; content: string };

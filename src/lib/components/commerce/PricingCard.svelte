@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconCheck, IconSparkles } from '@tabler/icons-svelte';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconSparkles from '@tabler/icons-svelte/icons/sparkles';
 	import PriceTag from './PriceTag.svelte';
 	import AddToCartButton from './AddToCartButton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';

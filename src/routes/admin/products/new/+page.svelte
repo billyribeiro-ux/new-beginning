@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-svelte';
+	import IconArrowLeft from '@tabler/icons-svelte/icons/arrow-left';
+	import IconDeviceFloppy from '@tabler/icons-svelte/icons/device-floppy';
 	import { resolve } from '$app/paths';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Input from '$lib/components/ui/Input.svelte';

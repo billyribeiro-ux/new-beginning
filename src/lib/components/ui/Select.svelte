@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLSelectAttributes } from 'svelte/elements';
-	import { IconChevronDown } from '@tabler/icons-svelte';
+	import IconChevronDown from '@tabler/icons-svelte/icons/chevron-down';
 
 	type Option = { value: string; label: string };
 	type Props = HTMLSelectAttributes & {

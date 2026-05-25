@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import LogoWordmark from '$lib/components/media/LogoWordmark.svelte';
-	import { IconArrowLeft, IconStarFilled } from '@tabler/icons-svelte';
+	import IconArrowLeft from '@tabler/icons-svelte/icons/arrow-left';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
 	import { resolve } from '$app/paths';
 
 	type Props = { children: Snippet; testimonial?: { quote: string; name: string; role: string } };

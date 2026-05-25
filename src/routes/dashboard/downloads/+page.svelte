@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconDownload, IconFileText, IconArchive } from '@tabler/icons-svelte';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconFileText from '@tabler/icons-svelte/icons/file-text';
+	import IconArchive from '@tabler/icons-svelte/icons/archive';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import EmptyState from '$lib/components/dashboard/EmptyState.svelte';

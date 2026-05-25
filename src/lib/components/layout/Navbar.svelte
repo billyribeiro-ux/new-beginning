@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { IconShoppingBag, IconUser, IconMenu2, IconX } from '@tabler/icons-svelte';
+	import IconShoppingBag from '@tabler/icons-svelte/icons/shopping-bag';
+	import IconUser from '@tabler/icons-svelte/icons/user';
+	import IconMenu2 from '@tabler/icons-svelte/icons/menu-2';
+	import IconX from '@tabler/icons-svelte/icons/x';
 	import LogoWordmark from '$lib/components/media/LogoWordmark.svelte';
 	import { MAIN_NAV } from '$lib/data/navigation.js';
 	import { cart } from '$lib/stores/cart.svelte.js';

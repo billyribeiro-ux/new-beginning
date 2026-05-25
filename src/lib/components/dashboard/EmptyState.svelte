@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { IconInbox } from '@tabler/icons-svelte';
+	import IconInbox from '@tabler/icons-svelte/icons/inbox';
 
 	type IconLike = typeof IconInbox;
 	type Props = {

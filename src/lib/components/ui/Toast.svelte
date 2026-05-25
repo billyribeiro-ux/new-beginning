@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { toasts } from '$lib/stores/toast.svelte.js';
-	import { IconCheck, IconAlertTriangle, IconInfoCircle, IconX } from '@tabler/icons-svelte';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconAlertTriangle from '@tabler/icons-svelte/icons/alert-triangle';
+	import IconInfoCircle from '@tabler/icons-svelte/icons/info-circle';
+	import IconX from '@tabler/icons-svelte/icons/x';
 	import { fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 

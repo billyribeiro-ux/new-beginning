@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconSend, IconCheck } from '@tabler/icons-svelte';
+	import IconSend from '@tabler/icons-svelte/icons/send';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

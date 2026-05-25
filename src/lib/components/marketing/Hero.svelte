@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		IconArrowRight,
-		IconStarFilled,
-		IconChartCandle,
-		IconBolt,
-		IconShieldCheck
-	} from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
+	import IconBolt from '@tabler/icons-svelte/icons/bolt';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import {

@@ -1,16 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		IconStarFilled,
-		IconCheck,
-		IconCertificate,
-		IconClock,
-		IconCalendarStats,
-		IconPlayerPlayFilled,
-		IconLock,
-		IconBook2,
-		IconShieldCheck
-	} from '@tabler/icons-svelte';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconCertificate from '@tabler/icons-svelte/icons/certificate';
+	import IconClock from '@tabler/icons-svelte/icons/clock';
+	import IconCalendarStats from '@tabler/icons-svelte/icons/calendar-stats';
+	import IconPlayerPlayFilled from '@tabler/icons-svelte/icons/player-play-filled';
+	import IconLock from '@tabler/icons-svelte/icons/lock';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import JsonLd from '$lib/components/seo/JsonLd.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';

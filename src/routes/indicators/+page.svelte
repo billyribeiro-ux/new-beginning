@@ -7,7 +7,7 @@
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';
 	import { INDICATORS, INDICATOR_ROADMAP } from '$lib/data/products.js';
 	import { stagger, fadeUp } from '$lib/animations/attachments.js';
-	import { IconChartCandle } from '@tabler/icons-svelte';
+	import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
 	import Button from '$lib/components/ui/Button.svelte';
 </script>
 
@@ -160,5 +160,4 @@
 			grid-template-columns: repeat(4, 1fr);
 		}
 	}
-
 </style>

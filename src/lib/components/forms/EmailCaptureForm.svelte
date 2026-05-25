@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconMail, IconArrowRight, IconCheck } from '@tabler/icons-svelte';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';

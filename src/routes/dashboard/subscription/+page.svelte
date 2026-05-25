@@ -1,15 +1,13 @@
 <script lang="ts">
-	import {
-		IconStar,
-		IconCalendar,
-		IconReceiptTax,
-		IconArrowRight,
-		IconAlertTriangle,
-		IconPlayerPause,
-		IconRefresh,
-		IconCheck,
-		IconX
-	} from '@tabler/icons-svelte';
+	import IconStar from '@tabler/icons-svelte/icons/star';
+	import IconCalendar from '@tabler/icons-svelte/icons/calendar';
+	import IconReceiptTax from '@tabler/icons-svelte/icons/receipt-tax';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconAlertTriangle from '@tabler/icons-svelte/icons/alert-triangle';
+	import IconPlayerPause from '@tabler/icons-svelte/icons/player-pause';
+	import IconRefresh from '@tabler/icons-svelte/icons/refresh';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconX from '@tabler/icons-svelte/icons/x';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';

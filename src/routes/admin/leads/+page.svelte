@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { IconSearch, IconDownload, IconMail, IconUserPlus } from '@tabler/icons-svelte';
+	import IconSearch from '@tabler/icons-svelte/icons/search';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
+	import IconUserPlus from '@tabler/icons-svelte/icons/user-plus';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import EmptyState from '$lib/components/dashboard/EmptyState.svelte';

@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconSearch, IconMail, IconEye } from '@tabler/icons-svelte';
+	import IconSearch from '@tabler/icons-svelte/icons/search';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
+	import IconEye from '@tabler/icons-svelte/icons/eye';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 

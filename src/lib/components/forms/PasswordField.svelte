@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconEye, IconEyeOff, IconLockSquareRoundedFilled } from '@tabler/icons-svelte';
+	import IconEye from '@tabler/icons-svelte/icons/eye';
+	import IconEyeOff from '@tabler/icons-svelte/icons/eye-off';
+	import IconLockSquareRoundedFilled from '@tabler/icons-svelte/icons/lock-square-rounded-filled';
 	import { scorePassword } from '$lib/utils/validators.js';
 
 	type Props = {

@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { IconStarFilled, IconArrowLeft, IconArrowRight, IconQuote } from '@tabler/icons-svelte';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconArrowLeft from '@tabler/icons-svelte/icons/arrow-left';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconQuote from '@tabler/icons-svelte/icons/quote';
 	import { TESTIMONIALS } from '$lib/data/testimonials.js';
 	import { fadeUp } from '$lib/animations/attachments.js';
 

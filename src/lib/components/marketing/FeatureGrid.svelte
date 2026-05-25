@@ -1,22 +1,15 @@
 <script lang="ts">
-	import * as TablerIcons from '@tabler/icons-svelte';
-	import { IconCircleDot } from '@tabler/icons-svelte';
-	import type { Component } from 'svelte';
+	import type { Icon as IconComponent } from '@tabler/icons-svelte';
 	import { stagger } from '$lib/animations/attachments.js';
 
-	type Feature = { icon: string; title: string; description: string };
+	type Feature = { icon: IconComponent; title: string; description: string };
 	type Props = { features: Feature[]; columns?: 2 | 3; class?: string };
 	let { features, columns = 3, class: className }: Props = $props();
-
-	function iconOf(name: string): Component {
-		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
-		return dict[name] ?? (IconCircleDot as unknown as Component);
-	}
 </script>
 
 <div class="grid cols-{columns} {className ?? ''}" {@attach stagger({ stagger: 0.06 })}>
 	{#each features as f (f.title)}
-		{@const Icon = iconOf(f.icon)}
+		{@const Icon = f.icon}
 		<article class="card">
 			<div class="icon-wrap">
 				<Icon size={22} />

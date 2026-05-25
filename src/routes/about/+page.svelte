@@ -1,12 +1,10 @@
 <script lang="ts">
-	import {
-		IconCompass,
-		IconTargetArrow,
-		IconBolt,
-		IconShieldCheck,
-		IconBook2,
-		IconUsersGroup
-	} from '@tabler/icons-svelte';
+	import IconCompass from '@tabler/icons-svelte/icons/compass';
+	import IconTargetArrow from '@tabler/icons-svelte/icons/target-arrow';
+	import IconBolt from '@tabler/icons-svelte/icons/bolt';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+	import IconUsersGroup from '@tabler/icons-svelte/icons/users-group';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import JsonLd from '$lib/components/seo/JsonLd.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';

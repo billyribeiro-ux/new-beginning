@@ -1,13 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import * as TablerIcons from '@tabler/icons-svelte';
-	import type { Component } from 'svelte';
-	import {
-		IconLayoutSidebarLeftCollapse,
-		IconLayoutSidebarLeftExpand,
-		IconLogout,
-		IconCircleDot
-	} from '@tabler/icons-svelte';
+	import IconLayoutSidebarLeftCollapse from '@tabler/icons-svelte/icons/layout-sidebar-left-collapse';
+	import IconLayoutSidebarLeftExpand from '@tabler/icons-svelte/icons/layout-sidebar-left-expand';
+	import IconLogout from '@tabler/icons-svelte/icons/logout';
 	import LogoMark from '$lib/components/media/LogoMark.svelte';
 	import { ADMIN_NAV } from '$lib/data/navigation.js';
 	import { ui } from '$lib/stores/ui.svelte.js';
@@ -15,10 +10,6 @@
 
 	const resolveDynamic = resolve as (href: string) => string;
 
-	function iconOf(name: string): Component {
-		const dict = TablerIcons as unknown as Record<string, Component | undefined>;
-		return dict[name] ?? (IconCircleDot as unknown as Component);
-	}
 	function isActive(href: string): boolean {
 		const pathname = page.url.pathname as string;
 		if (href === '/admin') return pathname === href;
@@ -45,7 +36,7 @@
 				{#if !ui.sidebarCollapsed}<p class="heading">{section.heading}</p>{/if}
 				<ul>
 					{#each section.items as item (item.href)}
-						{@const Icon = iconOf(item.icon)}
+						{@const Icon = item.icon}
 						<li>
 							<a
 								href={resolveDynamic(item.href)}

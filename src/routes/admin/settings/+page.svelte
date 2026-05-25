@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		IconWorld,
-		IconSearch,
-		IconMailFast,
-		IconPlug,
-		IconDeviceFloppy
-	} from '@tabler/icons-svelte';
+	import IconWorld from '@tabler/icons-svelte/icons/world';
+	import IconSearch from '@tabler/icons-svelte/icons/search';
+	import IconMailFast from '@tabler/icons-svelte/icons/mail-fast';
+	import IconPlug from '@tabler/icons-svelte/icons/plug';
+	import IconDeviceFloppy from '@tabler/icons-svelte/icons/device-floppy';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import Input from '$lib/components/ui/Input.svelte';

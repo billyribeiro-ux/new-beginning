@@ -1,15 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		IconChartLine,
-		IconBook2,
-		IconChartCandle,
-		IconWallet,
-		IconArrowRight,
-		IconCalendarStats,
-		IconDownload,
-		IconPlayerPlay
-	} from '@tabler/icons-svelte';
+	import IconChartLine from '@tabler/icons-svelte/icons/chart-line';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+	import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
+	import IconWallet from '@tabler/icons-svelte/icons/wallet';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconCalendarStats from '@tabler/icons-svelte/icons/calendar-stats';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconPlayerPlay from '@tabler/icons-svelte/icons/player-play';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import StatCard from '$lib/components/dashboard/StatCard.svelte';
 	import ProgressBar from '$lib/components/dashboard/ProgressBar.svelte';

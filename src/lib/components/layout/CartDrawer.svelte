@@ -1,13 +1,11 @@
 <script lang="ts">
-	import {
-		IconX,
-		IconMinus,
-		IconPlus,
-		IconTrash,
-		IconShoppingBagX,
-		IconArrowRight,
-		IconLock
-	} from '@tabler/icons-svelte';
+	import IconX from '@tabler/icons-svelte/icons/x';
+	import IconMinus from '@tabler/icons-svelte/icons/minus';
+	import IconPlus from '@tabler/icons-svelte/icons/plus';
+	import IconTrash from '@tabler/icons-svelte/icons/trash';
+	import IconShoppingBagX from '@tabler/icons-svelte/icons/shopping-bag-x';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconLock from '@tabler/icons-svelte/icons/lock';
 	import { cart } from '$lib/stores/cart.svelte.js';
 	import { formatPrice } from '$lib/utils/money.js';
 	import Button from '$lib/components/ui/Button.svelte';

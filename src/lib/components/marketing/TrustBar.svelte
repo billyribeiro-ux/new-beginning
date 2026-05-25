@@ -1,14 +1,12 @@
 <script lang="ts">
-	import {
-		IconChartLine,
-		IconCpu2,
-		IconChartHistogram,
-		IconCertificate,
-		IconShieldCheck,
-		IconUsersGroup,
-		IconCloudDataConnection,
-		IconRocket
-	} from '@tabler/icons-svelte';
+	import IconChartLine from '@tabler/icons-svelte/icons/chart-line';
+	import IconCpu2 from '@tabler/icons-svelte/icons/cpu-2';
+	import IconChartHistogram from '@tabler/icons-svelte/icons/chart-histogram';
+	import IconCertificate from '@tabler/icons-svelte/icons/certificate';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
+	import IconUsersGroup from '@tabler/icons-svelte/icons/users-group';
+	import IconCloudDataConnection from '@tabler/icons-svelte/icons/cloud-data-connection';
+	import IconRocket from '@tabler/icons-svelte/icons/rocket';
 
 	const items = [
 		{ icon: IconChartLine, label: 'TradingView Pro' },

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconArrowRight, IconRocket } from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconRocket from '@tabler/icons-svelte/icons/rocket';
 	import type { RoadmapItem } from '$lib/data/products.js';
 	import Button from '$lib/components/ui/Button.svelte';
 

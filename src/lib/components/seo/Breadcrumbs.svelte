@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { IconChevronRight } from '@tabler/icons-svelte';
+	import IconChevronRight from '@tabler/icons-svelte/icons/chevron-right';
 	import JsonLd from './JsonLd.svelte';
 	import { breadcrumbLd } from '$lib/utils/jsonld.js';
 	import { resolve } from '$app/paths';

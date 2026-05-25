@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconArrowRight, IconSparkles } from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconSparkles from '@tabler/icons-svelte/icons/sparkles';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fadeUp, cursorGlow } from '$lib/animations/attachments.js';
 

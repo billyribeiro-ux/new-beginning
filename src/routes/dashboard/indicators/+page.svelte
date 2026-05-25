@@ -1,12 +1,10 @@
 <script lang="ts">
-	import {
-		IconDownload,
-		IconKey,
-		IconCpu,
-		IconRefresh,
-		IconBookmark,
-		IconCheck
-	} from '@tabler/icons-svelte';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconKey from '@tabler/icons-svelte/icons/key';
+	import IconCpu from '@tabler/icons-svelte/icons/cpu';
+	import IconRefresh from '@tabler/icons-svelte/icons/refresh';
+	import IconBookmark from '@tabler/icons-svelte/icons/bookmark';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

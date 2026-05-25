@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconTrendingUp, IconTrendingDown, IconActivity } from '@tabler/icons-svelte';
+	import IconTrendingUp from '@tabler/icons-svelte/icons/trending-up';
+	import IconTrendingDown from '@tabler/icons-svelte/icons/trending-down';
+	import IconActivity from '@tabler/icons-svelte/icons/activity';
 	import { numberTicker } from '$lib/animations/attachments.js';
 
 	type IconLike = typeof IconActivity;

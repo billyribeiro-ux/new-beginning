@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconShoppingBagPlus, IconCheck } from '@tabler/icons-svelte';
+	import IconShoppingBagPlus from '@tabler/icons-svelte/icons/shopping-bag-plus';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { cart, type CartLine } from '$lib/stores/cart.svelte.js';
 	import { toasts } from '$lib/stores/toast.svelte.js';

@@ -1,18 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		IconUser,
-		IconMail,
-		IconLockSquareRoundedFilled,
-		IconShieldLock,
-		IconDevices,
-		IconBrandGoogleFilled,
-		IconBrandApple,
-		IconKey,
-		IconDownload,
-		IconAlertTriangle,
-		IconCheck
-	} from '@tabler/icons-svelte';
+	import IconUser from '@tabler/icons-svelte/icons/user';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
+	import IconLockSquareRoundedFilled from '@tabler/icons-svelte/icons/lock-square-rounded-filled';
+	import IconShieldLock from '@tabler/icons-svelte/icons/shield-lock';
+	import IconDevices from '@tabler/icons-svelte/icons/devices';
+	import IconBrandGoogleFilled from '@tabler/icons-svelte/icons/brand-google-filled';
+	import IconBrandApple from '@tabler/icons-svelte/icons/brand-apple';
+	import IconKey from '@tabler/icons-svelte/icons/key';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconAlertTriangle from '@tabler/icons-svelte/icons/alert-triangle';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import PasswordField from '$lib/components/forms/PasswordField.svelte';

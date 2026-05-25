@@ -1,15 +1,13 @@
 <script lang="ts">
-	import {
-		IconArrowRight,
-		IconBolt,
-		IconShieldCheck,
-		IconCalendarStats,
-		IconChartCandle,
-		IconBook2,
-		IconUsersGroup,
-		IconStarFilled,
-		IconCheck
-	} from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconBolt from '@tabler/icons-svelte/icons/bolt';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
+	import IconCalendarStats from '@tabler/icons-svelte/icons/calendar-stats';
+	import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+	import IconUsersGroup from '@tabler/icons-svelte/icons/users-group';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 	import { resolve } from '$app/paths';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Hero from '$lib/components/marketing/Hero.svelte';
@@ -35,37 +33,37 @@
 
 	const pillarFeatures = [
 		{
-			icon: 'IconChartCandle',
+			icon: IconChartCandle,
 			title: 'Real systems, not signals',
 			description:
 				'Lorem ipsum dolor sit amet, consectetur adipiscing elit. We give you tooling and an opinionated process — not a stream of trades to mirror.'
 		},
 		{
-			icon: 'IconBolt',
+			icon: IconBolt,
 			title: 'Sub-millisecond alerts',
 			description:
 				'Sed do eiusmod tempor. Our DOM hooks deliver before the next candle prints. No repaint, ever.'
 		},
 		{
-			icon: 'IconShieldCheck',
+			icon: IconShieldCheck,
 			title: '14-day money back',
 			description:
 				'Ut enim ad minim veniam. Try anything for two weeks. If it does not fit your process, we will refund — no questions.'
 		},
 		{
-			icon: 'IconCalendarStats',
+			icon: IconCalendarStats,
 			title: 'Cohorted education',
 			description:
 				'Duis aute irure dolor. Courses run on cohorts with weekly office hours. Self-paced, but never alone.'
 		},
 		{
-			icon: 'IconUsersGroup',
+			icon: IconUsersGroup,
 			title: 'Live trading room',
 			description:
 				'Excepteur sint occaecat cupidatat. Daily 9:30am ET open with seasoned operators on ES · NQ · CL · GC.'
 		},
 		{
-			icon: 'IconBook2',
+			icon: IconBook2,
 			title: 'Original research',
 			description:
 				'Sunt in culpa qui officia. Weekly market structure notes and macro deep-dives written by the desk.'

@@ -1,3 +1,20 @@
+/* Tabler exports its own canonical icon component type. See
+ * navigation.ts for the rationale on using this over `Component`. */
+import type { Icon as IconComponent } from '@tabler/icons-svelte';
+
+import IconAdjustments from '@tabler/icons-svelte/icons/adjustments';
+import IconBolt from '@tabler/icons-svelte/icons/bolt';
+import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+import IconCalculator from '@tabler/icons-svelte/icons/calculator';
+import IconCertificate from '@tabler/icons-svelte/icons/certificate';
+import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
+import IconChartLine from '@tabler/icons-svelte/icons/chart-line';
+import IconMath from '@tabler/icons-svelte/icons/math';
+import IconRefresh from '@tabler/icons-svelte/icons/refresh';
+import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
+import IconStack2 from '@tabler/icons-svelte/icons/stack-2';
+import IconUsersGroup from '@tabler/icons-svelte/icons/users-group';
+
 export type ProductKind = 'indicator' | 'course';
 
 export interface Product {
@@ -12,7 +29,10 @@ export interface Product {
 	badge?: string;
 	rating: { value: number; count: number };
 	highlights: string[];
-	features: Array<{ title: string; description: string; icon: string }>;
+	/* icon is the statically-imported component (not a string) so the
+	 * bundler can tree-shake unused icons. String-keyed dictionary
+	 * lookups force the entire icon library into the bundle. */
+	features: Array<{ title: string; description: string; icon: IconComponent }>;
 	specs?: Array<{ label: string; value: string }>;
 	deliverables?: string[];
 	requirements?: string[];
@@ -40,37 +60,37 @@ export const INDICATORS: Product[] = [
 		],
 		features: [
 			{
-				icon: 'IconChartCandle',
+				icon: IconChartCandle,
 				title: 'Adaptive Range Engine',
 				description:
 					'Lorem ipsum dolor sit amet, consectetur adipiscing elit. The proprietary engine adapts band width to realized volatility every tick — no manual tuning, ever.'
 			},
 			{
-				icon: 'IconBolt',
+				icon: IconBolt,
 				title: 'Sub-millisecond Signals',
 				description:
 					'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Optimized DOM hooks deliver alerts faster than the next candle prints.'
 			},
 			{
-				icon: 'IconShieldCheck',
+				icon: IconShieldCheck,
 				title: 'Trade-Validated Logic',
 				description:
 					'Ut enim ad minim veniam, quis nostrud exercitation. Built and refined across six market regimes by a desk that trades it live.'
 			},
 			{
-				icon: 'IconStack2',
+				icon: IconStack2,
 				title: 'Confluence Layers',
 				description:
 					'Duis aute irure dolor in reprehenderit. Compose Revolution Ranger with liquidity sweeps, order flow, and your favorite tools.'
 			},
 			{
-				icon: 'IconAdjustments',
+				icon: IconAdjustments,
 				title: 'Full Customization',
 				description:
 					'Excepteur sint occaecat cupidatat non proident. Every threshold, color, alert, and zone is yours to shape.'
 			},
 			{
-				icon: 'IconRefresh',
+				icon: IconRefresh,
 				title: 'Lifetime Updates',
 				description:
 					'Sunt in culpa qui officia deserunt. New regime detectors, instrument presets, and platform exports — forever.'
@@ -118,37 +138,37 @@ export const COURSES: Product[] = [
 		],
 		features: [
 			{
-				icon: 'IconBook2',
+				icon: IconBook2,
 				title: 'Foundations First',
 				description:
 					'Lorem ipsum dolor sit amet. Mechanics, settlement, assignment, multipliers — built bottom-up so nothing is hand-waved.'
 			},
 			{
-				icon: 'IconMath',
+				icon: IconMath,
 				title: 'Greeks Without the Calculus',
 				description:
 					'Consectetur adipiscing elit. Visual-first treatment of delta, gamma, theta, vega, rho — with playable scenarios.'
 			},
 			{
-				icon: 'IconChartLine',
+				icon: IconChartLine,
 				title: 'Strategy Construction',
 				description:
 					'Sed do eiusmod. From long calls to broken-wing butterflies — when, why, and how each structure earns its keep.'
 			},
 			{
-				icon: 'IconCalculator',
+				icon: IconCalculator,
 				title: 'Position Sizing',
 				description:
 					'Ut labore et dolore. A repeatable framework for sizing with respect to portfolio vol and assignment risk.'
 			},
 			{
-				icon: 'IconCertificate',
+				icon: IconCertificate,
 				title: 'Certification Exam',
 				description:
 					'Magna aliqua. Pass the 40-question final to earn a signed certificate and access alumni-only content.'
 			},
 			{
-				icon: 'IconUsersGroup',
+				icon: IconUsersGroup,
 				title: 'Cohort Community',
 				description:
 					'Quis nostrud exercitation. Weekly office hours plus a focused Discord — built for traders who push each other.'

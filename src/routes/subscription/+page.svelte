@@ -1,12 +1,10 @@
 <script lang="ts">
-	import {
-		IconCheck,
-		IconShieldCheck,
-		IconUsersGroup,
-		IconStarFilled,
-		IconCalendarStats,
-		IconHeadset
-	} from '@tabler/icons-svelte';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconShieldCheck from '@tabler/icons-svelte/icons/shield-check';
+	import IconUsersGroup from '@tabler/icons-svelte/icons/users-group';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconCalendarStats from '@tabler/icons-svelte/icons/calendar-stats';
+	import IconHeadset from '@tabler/icons-svelte/icons/headset';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import JsonLd from '$lib/components/seo/JsonLd.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';

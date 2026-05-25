@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { IconBell, IconBellOff, IconMoon, IconCheck, IconDots } from '@tabler/icons-svelte';
+	import IconBell from '@tabler/icons-svelte/icons/bell';
+	import IconBellOff from '@tabler/icons-svelte/icons/bell-off';
+	import IconMoon from '@tabler/icons-svelte/icons/moon';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconDots from '@tabler/icons-svelte/icons/dots';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

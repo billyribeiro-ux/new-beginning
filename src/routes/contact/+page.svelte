@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { IconMail, IconMapPin, IconBrandDiscord, IconClock } from '@tabler/icons-svelte';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
+	import IconMapPin from '@tabler/icons-svelte/icons/map-pin';
+	import IconBrandDiscord from '@tabler/icons-svelte/icons/brand-discord';
+	import IconClock from '@tabler/icons-svelte/icons/clock';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';
 	import SectionHeading from '$lib/components/marketing/SectionHeading.svelte';

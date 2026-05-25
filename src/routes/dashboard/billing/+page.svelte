@@ -1,16 +1,14 @@
 <script lang="ts">
-	import {
-		IconCreditCard,
-		IconPlus,
-		IconTrash,
-		IconStar,
-		IconStarFilled,
-		IconDownload,
-		IconBrandVisa,
-		IconBrandMastercard,
-		IconReceipt2,
-		IconBuilding
-	} from '@tabler/icons-svelte';
+	import IconCreditCard from '@tabler/icons-svelte/icons/credit-card';
+	import IconPlus from '@tabler/icons-svelte/icons/plus';
+	import IconTrash from '@tabler/icons-svelte/icons/trash';
+	import IconStar from '@tabler/icons-svelte/icons/star';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconBrandVisa from '@tabler/icons-svelte/icons/brand-visa';
+	import IconBrandMastercard from '@tabler/icons-svelte/icons/brand-mastercard';
+	import IconReceipt2 from '@tabler/icons-svelte/icons/receipt-2';
+	import IconBuilding from '@tabler/icons-svelte/icons/building';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';

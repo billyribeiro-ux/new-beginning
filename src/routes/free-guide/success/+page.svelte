@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
-	import {
-		IconCircleCheckFilled,
-		IconDownload,
-		IconBookmark,
-		IconArrowRight,
-		IconMail
-	} from '@tabler/icons-svelte';
+	import IconCircleCheckFilled from '@tabler/icons-svelte/icons/circle-check-filled';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
+	import IconBookmark from '@tabler/icons-svelte/icons/bookmark';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconMail from '@tabler/icons-svelte/icons/mail';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fadeUp } from '$lib/animations/attachments.js';

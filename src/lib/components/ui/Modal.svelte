@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { IconX } from '@tabler/icons-svelte';
+	import IconX from '@tabler/icons-svelte/icons/x';
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { focusTrap } from '$lib/utils/focusTrap.js';

@@ -1,10 +1,8 @@
 <script lang="ts">
-	import {
-		IconBrandGoogleFilled,
-		IconBrandApple,
-		IconBrandGithub,
-		IconArrowRight
-	} from '@tabler/icons-svelte';
+	import IconBrandGoogleFilled from '@tabler/icons-svelte/icons/brand-google-filled';
+	import IconBrandApple from '@tabler/icons-svelte/icons/brand-apple';
+	import IconBrandGithub from '@tabler/icons-svelte/icons/brand-github';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';

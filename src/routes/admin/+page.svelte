@@ -1,17 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
-	import {
-		IconCash,
-		IconUsers,
-		IconCalendarStats,
-		IconChartArea,
-		IconArrowRight,
-		IconActivity,
-		IconShoppingBag,
-		IconUserPlus,
-		IconMessages
-	} from '@tabler/icons-svelte';
+	import IconCash from '@tabler/icons-svelte/icons/cash';
+	import IconUsers from '@tabler/icons-svelte/icons/users';
+	import IconCalendarStats from '@tabler/icons-svelte/icons/calendar-stats';
+	import IconChartArea from '@tabler/icons-svelte/icons/chart-area';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconActivity from '@tabler/icons-svelte/icons/activity';
+	import IconShoppingBag from '@tabler/icons-svelte/icons/shopping-bag';
+	import IconUserPlus from '@tabler/icons-svelte/icons/user-plus';
+	import IconMessages from '@tabler/icons-svelte/icons/messages';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import StatCard from '$lib/components/dashboard/StatCard.svelte';
 	import ChartCard from '$lib/components/admin/ChartCard.svelte';

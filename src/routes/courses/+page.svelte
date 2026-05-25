@@ -7,7 +7,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { COURSES } from '$lib/data/products.js';
 	import { stagger, fadeUp } from '$lib/animations/attachments.js';
-	import { IconBook2, IconRocket, IconArrowRight } from '@tabler/icons-svelte';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
+	import IconRocket from '@tabler/icons-svelte/icons/rocket';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
 
 	type RoadmapEntry = {
 		title: string;

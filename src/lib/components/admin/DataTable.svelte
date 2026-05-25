@@ -1,11 +1,9 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
 	import type { Snippet } from 'svelte';
-	import {
-		IconArrowsSort,
-		IconSortAscending,
-		IconSortDescending,
-		IconSearch
-	} from '@tabler/icons-svelte';
+	import IconArrowsSort from '@tabler/icons-svelte/icons/arrows-sort';
+	import IconSortAscending from '@tabler/icons-svelte/icons/sort-ascending';
+	import IconSortDescending from '@tabler/icons-svelte/icons/sort-descending';
+	import IconSearch from '@tabler/icons-svelte/icons/search';
 	import EmptyState from '$lib/components/dashboard/EmptyState.svelte';
 
 	type Column<Row> = {

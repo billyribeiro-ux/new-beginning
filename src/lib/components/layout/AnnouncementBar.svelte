@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { IconSparkles, IconArrowNarrowRight } from '@tabler/icons-svelte';
+	import IconSparkles from '@tabler/icons-svelte/icons/sparkles';
+	import IconArrowNarrowRight from '@tabler/icons-svelte/icons/arrow-narrow-right';
 	import { resolve } from '$app/paths';
 </script>
 

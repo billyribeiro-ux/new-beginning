@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { IconTrendingUp3 } from '@tabler/icons-svelte';
+	import IconTrendingUp3 from '@tabler/icons-svelte/icons/trending-up-3';
 	type Props = { size?: number };
 	let { size = 36 }: Props = $props();
 </script>

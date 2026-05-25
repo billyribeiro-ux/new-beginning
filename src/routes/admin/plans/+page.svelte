@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { IconEdit, IconStar, IconStarFilled, IconUsers } from '@tabler/icons-svelte';
+	import IconEdit from '@tabler/icons-svelte/icons/edit';
+	import IconStar from '@tabler/icons-svelte/icons/star';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconUsers from '@tabler/icons-svelte/icons/users';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

@@ -1,14 +1,12 @@
 <script lang="ts">
-	import {
-		IconShoppingBagX,
-		IconMinus,
-		IconPlus,
-		IconTrash,
-		IconArrowRight,
-		IconLock,
-		IconReceiptTax,
-		IconGift
-	} from '@tabler/icons-svelte';
+	import IconShoppingBagX from '@tabler/icons-svelte/icons/shopping-bag-x';
+	import IconMinus from '@tabler/icons-svelte/icons/minus';
+	import IconPlus from '@tabler/icons-svelte/icons/plus';
+	import IconTrash from '@tabler/icons-svelte/icons/trash';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconLock from '@tabler/icons-svelte/icons/lock';
+	import IconReceiptTax from '@tabler/icons-svelte/icons/receipt-tax';
+	import IconGift from '@tabler/icons-svelte/icons/gift';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

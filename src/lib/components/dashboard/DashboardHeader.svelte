@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconBell, IconSearch, IconChevronDown } from '@tabler/icons-svelte';
+	import IconBell from '@tabler/icons-svelte/icons/bell';
+	import IconSearch from '@tabler/icons-svelte/icons/search';
+	import IconChevronDown from '@tabler/icons-svelte/icons/chevron-down';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 

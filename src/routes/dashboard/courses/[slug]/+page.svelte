@@ -1,16 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		IconPlayerPlay,
-		IconCheck,
-		IconLock,
-		IconChevronLeft,
-		IconChevronRight,
-		IconBookmark,
-		IconNotes,
-		IconFileText,
-		IconDownload
-	} from '@tabler/icons-svelte';
+	import IconPlayerPlay from '@tabler/icons-svelte/icons/player-play';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
+	import IconLock from '@tabler/icons-svelte/icons/lock';
+	import IconChevronLeft from '@tabler/icons-svelte/icons/chevron-left';
+	import IconChevronRight from '@tabler/icons-svelte/icons/chevron-right';
+	import IconBookmark from '@tabler/icons-svelte/icons/bookmark';
+	import IconNotes from '@tabler/icons-svelte/icons/notes';
+	import IconFileText from '@tabler/icons-svelte/icons/file-text';
+	import IconDownload from '@tabler/icons-svelte/icons/download';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { resolve } from '$app/paths';

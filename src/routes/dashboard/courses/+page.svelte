@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		IconArrowRight,
-		IconCertificate,
-		IconClock,
-		IconPlayerPlay,
-		IconBookmark
-	} from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconCertificate from '@tabler/icons-svelte/icons/certificate';
+	import IconClock from '@tabler/icons-svelte/icons/clock';
+	import IconPlayerPlay from '@tabler/icons-svelte/icons/player-play';
+	import IconBookmark from '@tabler/icons-svelte/icons/bookmark';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import ProgressBar from '$lib/components/dashboard/ProgressBar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';

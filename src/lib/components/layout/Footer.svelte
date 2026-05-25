@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		IconBrandX,
-		IconBrandYoutube,
-		IconBrandLinkedin,
-		IconBrandDiscord,
-		IconArrowRight
-	} from '@tabler/icons-svelte';
+	import IconBrandX from '@tabler/icons-svelte/icons/brand-x';
+	import IconBrandYoutube from '@tabler/icons-svelte/icons/brand-youtube';
+	import IconBrandLinkedin from '@tabler/icons-svelte/icons/brand-linkedin';
+	import IconBrandDiscord from '@tabler/icons-svelte/icons/brand-discord';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
 	import LogoWordmark from '$lib/components/media/LogoWordmark.svelte';
 	import { FOOTER_NAV } from '$lib/data/navigation.js';
 	import { resolve } from '$app/paths';

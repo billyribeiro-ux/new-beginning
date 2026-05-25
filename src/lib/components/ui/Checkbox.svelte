@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { HTMLInputAttributes } from 'svelte/elements';
-	import { IconCheck } from '@tabler/icons-svelte';
+	import IconCheck from '@tabler/icons-svelte/icons/check';
 
 	type Props = Omit<HTMLInputAttributes, 'type' | 'checked'> & {
 		label?: string;

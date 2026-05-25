@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		IconArrowRight,
-		IconStarFilled,
-		IconBookmark,
-		IconChartCandle,
-		IconBook2
-	} from '@tabler/icons-svelte';
+	import IconArrowRight from '@tabler/icons-svelte/icons/arrow-right';
+	import IconStarFilled from '@tabler/icons-svelte/icons/star-filled';
+	import IconBookmark from '@tabler/icons-svelte/icons/bookmark';
+	import IconChartCandle from '@tabler/icons-svelte/icons/chart-candle';
+	import IconBook2 from '@tabler/icons-svelte/icons/book-2';
 	import type { Product } from '$lib/data/products.js';
 	import PriceTag from './PriceTag.svelte';
 	import AddToCartButton from './AddToCartButton.svelte';

@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { IconBell, IconPlus, IconChevronDown } from '@tabler/icons-svelte';
+	import IconBell from '@tabler/icons-svelte/icons/bell';
+	import IconPlus from '@tabler/icons-svelte/icons/plus';
+	import IconChevronDown from '@tabler/icons-svelte/icons/chevron-down';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';

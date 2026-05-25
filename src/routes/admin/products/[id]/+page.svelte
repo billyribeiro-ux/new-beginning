@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { IconArrowLeft, IconDeviceFloppy, IconTrash } from '@tabler/icons-svelte';
+	import IconArrowLeft from '@tabler/icons-svelte/icons/arrow-left';
+	import IconDeviceFloppy from '@tabler/icons-svelte/icons/device-floppy';
+	import IconTrash from '@tabler/icons-svelte/icons/trash';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';

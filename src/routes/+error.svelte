@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { IconHomeQuestion, IconArrowLeft } from '@tabler/icons-svelte';
+	import IconHomeQuestion from '@tabler/icons-svelte/icons/home-question';
+	import IconArrowLeft from '@tabler/icons-svelte/icons/arrow-left';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import { resolve } from '$app/paths';
