@@ -380,6 +380,153 @@ dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 2 ============================ -->
+    <section id="ch-2">
+      <p class="eyebrow">Chapter 02</p>
+      <h2>Length units · <code>px</code>, <code>rem</code>, <code>em</code>, <code>%</code>, <code>ch</code>, <code>vw/vh</code>, <code>dvh/svh/lvh</code>, <code>cqi</code></h2>
+      <p class="lede">CSS has more than a dozen length units. Most projects use three of them. The choice is not stylistic — it determines whether the design scales with a user's accessibility preferences, whether mobile browsers clip content under their address bars, and whether a component remains correct when it's reused in a sidebar half the width of its original context. This chapter is the decision tree, anchored to the exact units this project uses in <code>src/lib/styles/tokens.css</code>.</p>
+
+      <h3>The five categories that matter</h3>
+      <p>Every CSS length resolves to a number of CSS pixels at render time. What varies is <em>what determines the multiplier</em>. Five categories cover everything you'll use in 2026:</p>
+
+      <dl>
+        <dt>Absolute · <code>px</code></dt>
+        <dd>A fixed CSS pixel. Doesn't scale with anything. Use for things that genuinely have a fixed physical meaning at any zoom level: hairlines, the corner radius of small components, media-query breakpoints.</dd>
+        <dt>Root-relative · <code>rem</code></dt>
+        <dd>Resolves to a multiple of the <code>&lt;html&gt;</code> element's font size. Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/font-size#ems_and_rems">MDN</a>: <em>"For font-relative units that are root-based (such as <code>rem</code>), the font size is relative to the size of the font used by the <code>&lt;html&gt;</code> (root) element."</em> Critical for accessibility — if a user sets their browser's default font size to 20px instead of 16px, every <code>rem</code> in your design scales proportionally.</dd>
+        <dt>Font-relative · <code>em</code>, <code>ch</code></dt>
+        <dd><code>em</code> resolves relative to the <em>current element's</em> font size. <code>ch</code> resolves to the width of the digit "0" in the current font. Both compound across nesting — useful for tightly-coupled spacing (padding around a label that should scale with the label's own size) but dangerous as a default.</dd>
+        <dt>Parent-relative · <code>%</code></dt>
+        <dd>Resolves to a fraction of the parent's matching dimension. <code>width: 50%</code> means half the parent's width; <code>height: 50%</code> means half the parent's height (and may behave unexpectedly if the parent has no explicit height).</dd>
+        <dt>Viewport-relative · <code>vw</code>, <code>vh</code>, <code>dvh</code>, <code>svh</code>, <code>lvh</code></dt>
+        <dd>Resolves to a fraction of the viewport's dimension. The newer variants (<code>dvh</code>/<code>svh</code>/<code>lvh</code>) account for mobile browser chrome that expands and retracts during scroll.</dd>
+        <dt>Container-relative · <code>cqw</code>, <code>cqh</code>, <code>cqi</code>, <code>cqb</code></dt>
+        <dd>Resolves to a fraction of the nearest containment context's dimension. Introduced with CSS Containment Level 3. Cover in detail in <a href="#ch-6">Chapter 6 (container queries)</a>; mentioned here so the unit family is complete.</dd>
+      </dl>
+
+      <h3>The <code>rem</code> vs <code>em</code> trap (with the MDN example)</h3>
+      <p>This is the most common length-unit mistake. The MDN documentation makes the trap explicit:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · font-size</div>
+        <p>"One important fact to keep in mind: <strong>em values compound</strong>."</p>
+        <p>"<code>rem</code> values were invented in order to sidestep the compounding problem. <code>rem</code> values are relative to the root <code>html</code> element, not the parent element. In other words, it lets you specify a font size in a relative fashion without being affected by the size of the parent, thereby eliminating compounding."</p>
+      </div>
+
+      <p>What "compounding" actually means: if you put a span with <code>font-size: 1.6em</code> inside another span with <code>font-size: 1.6em</code>, the inner span renders at <strong>1.6 × 1.6 = 2.56× the root size</strong> — not <code>1.6×</code>. Each level of nesting multiplies. In a Svelte component tree, where deeply-nested layouts are normal, <code>em</code>-based sizing produces invisible compounding bugs the moment a component is moved one layer deeper.</p>
+
+      <p>This is why every spacing token in the project's <code>tokens.css</code> uses <code>rem</code>, not <code>em</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · spacing scale</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* === Spacing (4px base) === */</span></span><span class="ln"><span class="tk-prop">--space-0</span>: <span class="tk-num">0</span>;</span><span class="ln"><span class="tk-prop">--space-1</span>: <span class="tk-num">0.25rem</span>;</span><span class="ln"><span class="tk-prop">--space-2</span>: <span class="tk-num">0.5rem</span>;</span><span class="ln"><span class="tk-prop">--space-3</span>: <span class="tk-num">0.75rem</span>;</span><span class="ln"><span class="tk-prop">--space-4</span>: <span class="tk-num">1rem</span>;</span><span class="ln"><span class="tk-prop">--space-5</span>: <span class="tk-num">1.25rem</span>;</span><span class="ln"><span class="tk-prop">--space-6</span>: <span class="tk-num">1.5rem</span>;</span><span class="ln"><span class="tk-prop">--space-7</span>: <span class="tk-num">1.75rem</span>;</span><span class="ln"><span class="tk-prop">--space-8</span>: <span class="tk-num">2rem</span>;</span><span class="ln"><span class="tk-com">/* ... up to --space-48: 12rem */</span></span></code></pre></div>
+
+      <p>The "4px base" comment is a designer convention — each step is a multiple of <code>0.25rem</code>, which at the default 16px root equals 4px increments. But the rem unit means: <strong>if the user sets a 20px root size, the entire spacing scale grows proportionally</strong>. <code>--space-4</code> becomes 20px instead of 16px. The rhythm stays consistent; only the absolute size changes. Use <code>px</code> for the same scale and accessibility scaling silently breaks.</p>
+
+      <h3>When <code>em</code> is right · context-relative spacing</h3>
+      <p>The compound-scaling trap doesn't mean <code>em</code> is always wrong. There's one common case where <code>em</code> is actively the <em>better</em> choice: <strong>spacing that should scale with the element's own font size</strong>. Padding inside a button is the classic example:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">example · em for context-relative padding</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* This button scales its padding with its font size automatically. */</span></span><span class="ln">.<span class="tk-var">btn</span> {</span><span class="ln">  <span class="tk-prop">font-size</span>: <span class="tk-num">1rem</span>;</span><span class="ln">  <span class="tk-prop">padding</span>: <span class="tk-num">0.5em</span> <span class="tk-num">1em</span>;</span><span class="ln">}</span><span class="ln">.<span class="tk-var">btn-lg</span> {</span><span class="ln">  <span class="tk-prop">font-size</span>: <span class="tk-num">1.25rem</span>; <span class="tk-com">/* padding auto-scales to 0.625rem 1.25rem */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>If the padding were declared in <code>rem</code> instead, every button size would need to redeclare its padding. With <code>em</code>, the padding is bound to the font-size — change one, get the other for free. The same logic applies to <code>line-height</code> values when expressed as unitless multiples, to <code>border-radius</code> when you want the curve to scale with text size, and to icon sizing inside a button where the icon should grow with the surrounding text.</p>
+
+      <p>The project's <code>Button.svelte</code> doesn't use this pattern — it uses fixed <code>--h: 44px</code> heights with hardcoded sizes. That's a defensible choice for a design system where button sizes are explicitly enumerated (sm/md/lg/xl). The <code>em</code> pattern wins when sizes are open-ended.</p>
+
+      <h3>When <code>px</code> is right · three specific cases</h3>
+      <p><code>rem</code> is the default for spacing, type, and most properties. There are three places <code>px</code> is the correct call:</p>
+
+      <ol>
+        <li><strong>Hairlines.</strong> <code>border: 1px solid var(--border-default)</code>. A 1px border at a 20px root size is still 1px — and that's what you want; the user setting a larger font doesn't want thicker borders. Using <code>0.0625rem</code> here would scale the border with the user's font preference, producing visibly thicker outlines than the designer intended.</li>
+        <li><strong>Small <code>border-radius</code> values where the curve matters.</strong> The project's radius scale uses <code>px</code>:
+          <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · radii</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* === Radii === */</span></span><span class="ln"><span class="tk-prop">--radius-xs</span>: <span class="tk-num">4px</span>;</span><span class="ln"><span class="tk-prop">--radius-sm</span>: <span class="tk-num">6px</span>;</span><span class="ln"><span class="tk-prop">--radius-md</span>: <span class="tk-num">10px</span>;</span><span class="ln"><span class="tk-prop">--radius-lg</span>: <span class="tk-num">16px</span>;</span><span class="ln"><span class="tk-prop">--radius-xl</span>: <span class="tk-num">22px</span>;</span><span class="ln"><span class="tk-prop">--radius-2xl</span>: <span class="tk-num">32px</span>;</span><span class="ln"><span class="tk-prop">--radius-full</span>: <span class="tk-num">9999px</span>;</span></code></pre></div>
+          A 6px corner on a small badge would become 7.5px at a 20px root — a visible difference. The 4px radius would become 5px, the curve subtly tighter. For small components that designer-tested at specific sizes, <code>px</code> is the unit of truth.
+        </li>
+        <li><strong>Media-query breakpoints.</strong> <code>@media (min-width: 768px)</code>. Browsers compute media queries against actual CSS pixels, not against root-relative <code>rem</code> values, and the breakpoint should fire at the same viewport width regardless of the user's font preference. The project's breakpoint tokens are <code>px</code>:
+          <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · breakpoints</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--bp-sm</span>: <span class="tk-num">480px</span>;</span><span class="ln"><span class="tk-prop">--bp-md</span>: <span class="tk-num">768px</span>;</span><span class="ln"><span class="tk-prop">--bp-lg</span>: <span class="tk-num">1024px</span>;</span><span class="ln"><span class="tk-prop">--bp-xl</span>: <span class="tk-num">1280px</span>;</span><span class="ln"><span class="tk-prop">--bp-2xl</span>: <span class="tk-num">1536px</span>;</span><span class="ln"><span class="tk-prop">--bp-3xl</span>: <span class="tk-num">1920px</span>;</span><span class="ln"><span class="tk-prop">--bp-4xl</span>: <span class="tk-num">2560px</span>;</span></code></pre></div>
+        </li>
+      </ol>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the accessibility math</div>
+        <p>The default browser font size is 16px. About <strong>15% of desktop users</strong> override it to 18px, 20px, or larger — sometimes for vision reasons, sometimes because they prefer it. If your spacing tokens are <code>px</code>, those users get the same tight padding regardless of how they configured their browser; if your spacing tokens are <code>rem</code>, those users get a roomier interface that matches their preference. Choosing <code>rem</code> over <code>px</code> for spacing is <strong>the single highest-leverage accessibility decision in a design system</strong>. It's not visible to most users — and that's the point.</p>
+      </div>
+
+      <h3>The viewport-units evolution · <code>vh</code> was wrong on mobile</h3>
+      <p>Before 2022, the canonical "make this section fill the screen" pattern was <code>min-height: 100vh</code>. It shipped in millions of sites and broke in subtle ways on mobile browsers. The reason: <strong>mobile browsers have URL bars and toolbars that appear and disappear during scroll</strong>. When the user starts scrolling, the URL bar collapses, and the viewport <em>grows</em> by 50–100px. CSS had to decide: does <code>100vh</code> mean the smaller viewport (URL bar showing) or the larger one (URL bar hidden)?</p>
+
+      <p>The answer the spec settled on: <code>vh</code> = the <strong>large</strong> viewport. Which means using <code>100vh</code> as a section height on mobile typically clips the bottom of the content behind the URL bar on first paint, then "uncovers" it as the user scrolls. Designers shipped workarounds for years (<code>height: calc(100vh - 60px)</code>, JavaScript that recomputed on resize).</p>
+
+      <p>CSS Values Level 4 introduced three sibling units that disambiguate this explicitly. Quoting MDN directly:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · CSS length</div>
+        <p><strong>svh</strong> (small viewport height): "When you want the smallest possible viewport in response to browser interfaces expanding dynamically… The small viewport size allows the content you design to fill the entire viewport when browser interfaces are expanded."</p>
+        <p><strong>lvh</strong> (large viewport height): "When you want the largest possible viewport in response to browser interfaces retracting dynamically… <code>vh</code> is equivalent to <code>lvh</code>."</p>
+        <p><strong>dvh</strong> (dynamic viewport height): "When you want the viewport to be automatically sized in response to browser interfaces dynamically expanding or retracting."</p>
+      </div>
+
+      <p>The project's reset uses <code>dvh</code> on the body:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/reset.css · body block</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-var">body</span> {</span><span class="ln">  <span class="tk-prop">-webkit-font-smoothing</span>: antialiased;</span><span class="ln">  <span class="tk-prop">-moz-osx-font-smoothing</span>: grayscale;</span><span class="ln">  <span class="tk-prop">text-rendering</span>: optimizeLegibility;</span><span class="ln">  <span class="tk-prop">line-height</span>: <span class="tk-var">var</span>(--leading-normal);</span><span class="ln">  <span class="tk-prop">font-family</span>: <span class="tk-var">var</span>(--font-body);</span><span class="ln">  <span class="tk-prop">font-size</span>: <span class="tk-var">var</span>(--text-base);</span><span class="ln">  <span class="tk-prop">color</span>: <span class="tk-var">var</span>(--ink-100);</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-var">var</span>(--surface-0);</span><span class="ln">  <span class="tk-prop">overflow-x</span>: hidden;</span><span class="ln">  <span class="tk-prop">min-height</span>: <span class="tk-num">100dvh</span>;</span><span class="ln">}</span></code></pre></div>
+
+      <p><code>100dvh</code> means: <em>the body's minimum height tracks the visible viewport at all times.</em> When the user scrolls and the URL bar collapses, the body grows. When the URL bar re-appears, the body shrinks. The dashboard sidebar's <code>height: 100dvh</code> works the same way — the sidebar stays glued to the visible viewport edges regardless of scroll state.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · the dvh repaint cost</div>
+        <p>MDN's own docs flag the trade-off: <em>"using viewport-percentage units based on the dynamic viewport size can cause the content to resize while a user is scrolling a page. This can lead to degradation of the user interface and cause a performance hit."</em> If you have an element that uses <code>dvh</code> AND that element triggers expensive layout (large grids, complex Flexbox, transforms), the page can jank during scroll-induced URL-bar collapse. The fix is usually to switch that specific element to <code>svh</code> (commits to the small size; no resize during scroll) or <code>lvh</code> (commits to the large size). Use <code>dvh</code> where the visible-area-tracking is genuinely needed (full-screen overlays, sticky chrome); use <code>svh</code>/<code>lvh</code> where the size only needs to be correct at one of the two states.</p>
+      </div>
+
+      <h3>The <code>ch</code> unit · readable paragraph widths</h3>
+      <p>One unit gets almost no attention but is the right answer for a specific common problem: <strong>setting a maximum reading width for text blocks</strong>. The <code>ch</code> unit equals the width of the digit "0" in the current font. For most proportional fonts, a column of <code>65ch</code> works out to roughly 65 characters per line — which research has held up for decades as the comfortable reading length for English prose.</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">example · ch for readable paragraphs</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-var">article</span> <span class="tk-var">p</span> {</span><span class="ln">  <span class="tk-prop">max-width</span>: <span class="tk-num">65ch</span>; <span class="tk-com">/* ~65 characters per line, font-aware */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>Compare with the alternatives: <code>max-width: 600px</code> is font-blind (a wide font like Georgia hits 50 chars at 600px; a narrow font like Inter hits 80); <code>max-width: 38rem</code> is root-relative but still font-blind. <code>65ch</code> reads correctly in every font you might swap in. The project doesn't use this everywhere — it could; long-form prose in the legal pages and about page would benefit.</p>
+
+      <h3>Container-relative units · <code>cqi</code> for component-aware sizing</h3>
+      <p><code>cqi</code> (container query inline size) is to <code>cqw</code> what <code>vw</code> is to viewport width — except the dimension comes from the nearest <em>containment</em> context, not the viewport. <code>cqi</code> respects the writing direction (inline = horizontal in English, vertical in Japanese); <code>cqw</code> is purely physical.</p>
+
+      <p>The use case: typography that scales with its container, not the viewport. A heading inside a card should be larger when the card is wide and smaller when the card is narrow, regardless of how big the viewport happens to be. Mechanics covered in <a href="#ch-6">Chapter 6</a>; the unit family is listed here for completeness.</p>
+
+      <h3>The decision tree · which unit, when</h3>
+      <p>If you remember nothing else from this chapter:</p>
+
+      <div class="diagram">SPACING (margin, padding, gap)
+  └── rem    (scales with user accessibility preference)
+
+TYPOGRAPHY (font-size)
+  └── rem    (same reason, plus see Ch 3 for fluid type with clamp)
+
+ELEMENT HEIGHTS that should match the visible mobile viewport
+  └── dvh    (or svh/lvh if dvh causes scroll jank)
+
+ELEMENT HEIGHTS that match a parent
+  └── %      (with a parent that has an explicit height)
+
+CONTEXT-RELATIVE PADDING that should scale with element's own font-size
+  └── em     (single-level; never nest)
+
+HAIRLINES, small radii, breakpoints
+  └── px     (fixed, accessibility-independent)
+
+READABLE PARAGRAPH WIDTHS
+  └── ch     (font-aware character count)
+
+CONTAINER-RELATIVE SIZING
+  └── cqi    (see Ch 6)</div>
+
+      <p>The whole point of design tokens is that you make this decision <em>once</em> for each kind of value, then every consumer reads from the token. The next chapter shows how <code>clamp()</code>, <code>min()</code>, and <code>max()</code> add a layer on top of these units — making values respond fluidly across viewport sizes without media-query stairstepping.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-1"><div class="dir">← Prev</div><div class="ttl">The cascade &amp; @layer</div></a>
+        <a class="next" href="#ch-3"><div class="dir">Next →</div><div class="ttl">The fluid trinity</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
