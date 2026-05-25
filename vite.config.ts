@@ -14,13 +14,11 @@ export default defineConfig({
 		// minifier-only mode runs too late in the pipeline and
 		// `@media (--bp-md)` references never expand.
 		//
-		// Side effect: Lightning CSS now sees Svelte's `:global()`
-		// pseudo-class during preprocessing and logs ~60 "global
-		// pseudo-class not recognized" notices. These are cosmetic —
-		// Svelte's own compiler strips :global() correctly before
-		// the CSS reaches the browser; the built CSS has zero
-		// :global() references. Cannot suppress without forking
-		// Vite's plugin pipeline; living with the noise.
+		// Svelte's `:global(...)` syntax — which Lightning CSS would
+		// otherwise warn about ~60 times per build — is masked to a
+		// custom pseudo-class `:--svelte-global(...)` by the Svelte
+		// pre-preprocessor in svelte.config.js, then restored by the
+		// post-preprocessor before Svelte's scoping compiler runs.
 		transformer: 'lightningcss',
 		lightningcss: {
 			drafts: {

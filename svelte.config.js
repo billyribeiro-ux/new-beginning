@@ -4,38 +4,40 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const isProd = process.env.NODE_ENV === 'production';
 
 /**
- * Three transforms on every Svelte <style> block, BEFORE vitePreprocess
- * hands it to Lightning CSS:
+ * CSS pipeline for every Svelte <style> block. Runs as two preprocessors
+ * straddling vitePreprocess (which is where Lightning CSS lives):
  *
- *   1. Declare the canonical @layer priority order. Every CSS chunk
- *      the browser parses must establish the same cascade. SvelteKit
- *      can emit route-specific <link> tags BEFORE the global
- *      stylesheet (cache state, network order, HTTP/2 multiplexing),
- *      and CSS @layer ordering is set by FIRST encounter — once
- *      the browser sees `@layer components{...}` without a prior
- *      priority declaration, `components` becomes the lowest layer
- *      and any later-declared layers (reset/tokens/base/utilities)
- *      land HIGHER. Result: utility classes start beating components,
- *      layout breaks intermittently. Declaring the priority in every
- *      file (subsequent re-declarations are no-ops) prevents this.
+ *   pre  → vitePreprocess (Lightning CSS) → post → Svelte compile
  *
- *   2. Prepend the canonical @custom-media breakpoint declarations.
- *      Lightning CSS resolves @custom-media within a single file
- *      only, so each component needs its own copy.
+ * Pre-pass (`cssPrePreprocessor`):
+ *   1. Inject the canonical @layer priority declaration. Every CSS chunk
+ *      the browser parses must establish the same cascade — SvelteKit
+ *      can emit route-specific <link> tags BEFORE the global stylesheet
+ *      (cache state, network order, HTTP/2 multiplexing), and CSS @layer
+ *      ordering is set by FIRST encounter. Without this in every chunk,
+ *      `@layer components{...}` arrives first, becomes the lowest-priority
+ *      layer, and utilities then beat component-local declarations.
+ *   2. Inject the canonical @custom-media breakpoint declarations.
+ *      Lightning CSS resolves @custom-media within a single file only.
+ *   3. Wrap user content in `@layer components { ... }`.
+ *   4. Rewrite Svelte's `:global(...)` syntax to a custom pseudo-class
+ *      `:--svelte-global(...)` that Lightning CSS accepts silently —
+ *      Lightning CSS warns ~60 times per build on unrecognized `:global`,
+ *      and the post-pass restores the original syntax before Svelte's
+ *      scoping compiler runs.
  *
- *   3. Wrap the user's content in `@layer components { ... }` so
- *      component-local styles live in the components layer of the
- *      cascade declared in (1).
+ * Post-pass (`cssPostPreprocessor`):
+ *   • Rewrite `:--svelte-global(...)` back to `:global(...)` so Svelte's
+ *     scoping pass produces correctly-unscoped selectors in the output.
  *
- * Why a Svelte preprocessor and not a Vite plugin: vitePreprocess
- * runs Lightning CSS inside Svelte's preprocessor pipeline, so by
- * the time Vite's plugin transform hooks see the .svelte file, the
- * CSS has already been parsed and any unknown at-rules have already
- * errored. Injection has to happen here, ahead of vitePreprocess.
+ * Why a Svelte preprocessor and not a Vite plugin: vitePreprocess runs
+ * Lightning CSS inside Svelte's preprocessor pipeline, so Vite's own
+ * plugin transform hooks see the .svelte file AFTER Lightning CSS has
+ * already parsed it. Injection has to happen here.
  *
- * Keep aligned with src/lib/styles/breakpoints.css (which carries
- * the same declarations for global imports) and the --bp-* CSS
- * variables in src/lib/styles/tokens.css (for JS-side reads).
+ * Keep CSS_FOUNDATION aligned with src/lib/styles/breakpoints.css
+ * (which carries the same declarations for global imports) and the
+ * --bp-* CSS variables in src/lib/styles/tokens.css (for JS-side reads).
  */
 const CSS_FOUNDATION = `
 @layer reset, tokens, base, utilities, components, overrides;
@@ -53,18 +55,29 @@ const CSS_FOUNDATION = `
 `;
 
 /** @type {import('svelte/compiler').PreprocessorGroup} */
-const cssArchitecturePreprocessor = {
-	name: 'tradeflex-css-architecture',
+const cssPrePreprocessor = {
+	name: 'tradeflex-css-pre',
+	style({ content }) {
+		const masked = content.replace(/:global\b/g, ':--svelte-global');
+		return {
+			code: `${CSS_FOUNDATION}\n@layer components {\n${masked}\n}\n`
+		};
+	}
+};
+
+/** @type {import('svelte/compiler').PreprocessorGroup} */
+const cssPostPreprocessor = {
+	name: 'tradeflex-css-post',
 	style({ content }) {
 		return {
-			code: `${CSS_FOUNDATION}\n@layer components {\n${content}\n}\n`
+			code: content.replace(/:--svelte-global\b/g, ':global')
 		};
 	}
 };
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [cssArchitecturePreprocessor, vitePreprocess()],
+	preprocess: [cssPrePreprocessor, vitePreprocess(), cssPostPreprocessor],
 	kit: {
 		adapter: adapter(),
 		alias: {
