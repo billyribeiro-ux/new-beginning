@@ -527,6 +527,156 @@ CONTAINER-RELATIVE SIZING
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 3 ============================ -->
+    <section id="ch-3">
+      <p class="eyebrow">Chapter 03</p>
+      <h2>The fluid trinity · <code>clamp()</code>, <code>min()</code>, <code>max()</code> · with the math</h2>
+      <p class="lede">Before <code>clamp()</code>, "responsive typography" meant a stair-step of media-query overrides — type at 16px below 768px, 18px between 768 and 1280, 20px above. Six values per breakpoint, hand-tuned, often forgotten in spacing tokens. <code>clamp()</code> collapses that into one declaration that smoothly interpolates across the entire viewport range. The project uses it <strong>40 distinct times</strong>. Until you can derive the middle argument from a target, you're cargo-culting it.</p>
+
+      <h3>The three arguments, what each does</h3>
+      <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clamp">MDN reference</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · clamp()</div>
+        <p>"The <code>clamp(min, val, max)</code> function accepts three comma-separated expressions as its parameters."</p>
+        <p><strong>min</strong>: "the lower bound in the range of allowed values. If the preferred value is less than this value, the minimum value will be used."</p>
+        <p><strong>val</strong> (preferred): "the expression whose value will be used as long as the result is between the minimum and maximum values."</p>
+        <p><strong>max</strong>: "the largest (most positive) expression value to which the value of the property will be assigned if the preferred value is greater than this upper bound."</p>
+        <p>And the formal equivalence: "<code>clamp(MIN, VAL, MAX)</code> is resolved as <code>max(MIN, min(VAL, MAX))</code>."</p>
+      </div>
+
+      <p>That last quote is the mental model. The preferred value is what you'd <em>like</em>; the min and max are guardrails. The browser evaluates the preferred at the current viewport, then clamps it to whichever guardrail it would have exceeded.</p>
+
+      <h3>The middle argument is the only one that does work</h3>
+      <p>The min and max bounds are static — they don't change as the viewport resizes. The middle argument is the only one that's <em>fluid</em>, typically as a function of viewport width (<code>vw</code>) or a sum like <code>0.95rem + 0.2vw</code>. The shape of every <code>clamp()</code> in this project follows the same template:</p>
+
+      <div class="diagram">clamp( FLOOR ,  PREFERRED(vw) ,  CEILING )
+       │       │                 │
+       │       │                 └── biggest the value ever gets
+       │       └── the formula the browser interpolates with
+       └── smallest the value ever gets</div>
+
+      <p>The preferred argument is where the engineering happens. Get it right and the value scales smoothly between floor and ceiling. Get it wrong and the value either flat-lines (always at one of the bounds) or flips through the bounds chaotically at small viewport changes.</p>
+
+      <h3>Deriving the preferred argument · the algebra</h3>
+      <p>The project's type scale is the cleanest example to dissect. Quoting <code>tokens.css</code> directly:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · fluid type scale</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--text-2xs</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">0.625rem</span>, <span class="tk-num">0.6rem + 0.1vw</span>, <span class="tk-num">0.6875rem</span>);</span><span class="ln"><span class="tk-prop">--text-xs</span>:  <span class="tk-fn">clamp</span>(<span class="tk-num">0.75rem</span>,  <span class="tk-num">0.72rem + 0.12vw</span>, <span class="tk-num">0.8125rem</span>);</span><span class="ln"><span class="tk-prop">--text-sm</span>:  <span class="tk-fn">clamp</span>(<span class="tk-num">0.875rem</span>, <span class="tk-num">0.84rem + 0.15vw</span>, <span class="tk-num">0.9375rem</span>);</span><span class="ln"><span class="tk-prop">--text-base</span>:<span class="tk-fn">clamp</span>(<span class="tk-num">1rem</span>,     <span class="tk-num">0.95rem + 0.2vw</span>,   <span class="tk-num">1.0625rem</span>);</span><span class="ln"><span class="tk-prop">--text-md</span>:  <span class="tk-fn">clamp</span>(<span class="tk-num">1.0625rem</span>,<span class="tk-num">1rem + 0.25vw</span>,    <span class="tk-num">1.125rem</span>);</span><span class="ln"><span class="tk-prop">--text-lg</span>:  <span class="tk-fn">clamp</span>(<span class="tk-num">1.125rem</span>, <span class="tk-num">1.05rem + 0.3vw</span>,  <span class="tk-num">1.25rem</span>);</span><span class="ln"><span class="tk-prop">--text-xl</span>:  <span class="tk-fn">clamp</span>(<span class="tk-num">1.25rem</span>,  <span class="tk-num">1.15rem + 0.4vw</span>,  <span class="tk-num">1.5rem</span>);</span><span class="ln"><span class="tk-prop">--text-2xl</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">1.5rem</span>,   <span class="tk-num">1.35rem + 0.6vw</span>,  <span class="tk-num">1.875rem</span>);</span><span class="ln"><span class="tk-prop">--text-3xl</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">1.875rem</span>, <span class="tk-num">1.6rem + 1vw</span>,     <span class="tk-num">2.5rem</span>);</span><span class="ln"><span class="tk-prop">--text-4xl</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">2.25rem</span>,  <span class="tk-num">1.85rem + 1.6vw</span>,  <span class="tk-num">3.25rem</span>);</span></code></pre></div>
+
+      <p>Take <code>--text-base</code> and walk through what it produces at three viewports (assuming the default 16px root, so 1rem = 16px):</p>
+
+      <table>
+        <thead><tr><th>Viewport</th><th>Preferred = <code>0.95rem + 0.2vw</code></th><th>Clamped to</th></tr></thead>
+        <tbody>
+          <tr><td>320px (small phone)</td><td>15.2px + 0.64px = 15.84px</td><td><strong>16px</strong> (floor kicks in)</td></tr>
+          <tr><td>768px (tablet)</td><td>15.2px + 1.54px = 16.74px</td><td><strong>16.74px</strong> (preferred wins)</td></tr>
+          <tr><td>1280px (laptop)</td><td>15.2px + 2.56px = 17.76px</td><td><strong>17px</strong> (ceiling = 1.0625rem)</td></tr>
+          <tr><td>1920px (4K)</td><td>15.2px + 3.84px = 19.04px</td><td><strong>17px</strong> (still ceiling)</td></tr>
+        </tbody>
+      </table>
+
+      <p>Reading this table: the base font hits the floor (16px) on phones, smoothly grows across tablet and small laptop, and saturates at 17px on anything larger. The growth between the floor and ceiling is exactly 1px over a viewport range of ~512px. That's a <em>1px increase per 500px of viewport growth</em> — barely noticeable to the user, which is the point. Body text should feel stable, not visibly resize as you scroll or resize the window.</p>
+
+      <h3>Why the <code>vw</code> coefficient is small (and why it has to be)</h3>
+      <p>The naive "fluid type" tutorial on the internet writes things like <code>clamp(1rem, 5vw, 2rem)</code> — middle term entirely viewport-based. Walk through what that produces:</p>
+
+      <table>
+        <thead><tr><th>Viewport</th><th>Preferred = <code>5vw</code></th><th>Clamped to</th></tr></thead>
+        <tbody>
+          <tr><td>320px</td><td>16px</td><td><strong>16px</strong></td></tr>
+          <tr><td>400px</td><td>20px</td><td><strong>20px</strong></td></tr>
+          <tr><td>640px</td><td>32px</td><td><strong>32px</strong> (ceiling!)</td></tr>
+          <tr><td>1920px</td><td>96px</td><td><strong>32px</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p>Body text balloons from 16px to 32px over a viewport change of just 320px. That's a 100% font-size growth — visually it's like the page is breathing. The ceiling kicks in at 640px and the text stays glued there for every viewport above. A 1920px monitor renders body text the same size as a 640px viewport. That's not "responsive"; it's flailing.</p>
+
+      <p>The <strong>L7 derivation</strong>: the middle term should <em>barely</em> exit the floor and ceiling at the breakpoints you care about, producing a slow, almost imperceptible scaling between them. The two-component formula <code>floor_value + small_vw</code> achieves this — the constant term anchors the starting size, the small <code>vw</code> coefficient adds gradual growth as the viewport widens.</p>
+
+      <h4>The exact algebra to derive your own</h4>
+      <p>If you want the value to be <em>exactly</em> <code>V<sub>min</sub></code> at viewport <code>W<sub>min</sub></code> and <em>exactly</em> <code>V<sub>max</sub></code> at viewport <code>W<sub>max</sub></code>:</p>
+
+      <div class="diagram">slope_per_px = (V_max − V_min) / (W_max − W_min)
+intercept    = V_min − (slope_per_px × W_min)
+
+preferred = intercept + slope_per_px × 100vw
+
+Example: --text-base
+  V_min = 16px at W_min = 320px (smallest reasonable phone)
+  V_max = 17px at W_max = 1280px (where ceiling should saturate)
+
+  slope_per_px = (17 − 16) / (1280 − 320)  = 1 / 960 ≈ 0.00104 per px
+  intercept    = 16 − (0.00104 × 320)       = 16 − 0.333 ≈ 15.67px
+
+  preferred = 15.67px + 0.104vw
+            = 0.98rem + 0.104vw    (close to the project's 0.95rem + 0.2vw)</div>
+
+      <p>The project's actual values aren't a strict mathematical derivation — they're hand-tuned for visual rhythm. But the shape (small constant in rem plus small vw multiplier) is the pattern. If you understand the algebra, you can reverse-engineer any third-party design system's fluid scale and adjust it to your own anchor points.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the type-scale relationship</div>
+        <p>Each step in the project's type scale uses a slightly larger <code>vw</code> coefficient: <code>0.1vw</code> for the smallest, <code>1.6vw</code> for the largest. That's deliberate — bigger type benefits from <em>more</em> viewport-relative growth, because a hero headline at 36px on a laptop should feel proportionally larger at 52px on a desktop, while body text at 16px should stay at 17px. The ratio of growth (~50% increase in scale steps as you go up) is what gives a fluid type scale its visual harmony. Cut and paste a scale from a tutorial and you get visually-broken hierarchy at the extremes.</p>
+      </div>
+
+      <h3><code>min()</code> and <code>max()</code> as standalone</h3>
+      <p><code>clamp()</code> is the famous one, but its building blocks have independent use. <code>min(a, b)</code> returns whichever of <code>a</code> and <code>b</code> is smaller; <code>max(a, b)</code> returns whichever is larger. Used standalone, they let you write rules that adapt without media queries.</p>
+
+      <h4><code>min()</code> for readable paragraphs that never overflow</h4>
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">example · min() for max-width</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-var">article</span> <span class="tk-var">p</span> {</span><span class="ln">  <span class="tk-prop">max-width</span>: <span class="tk-fn">min</span>(<span class="tk-num">100%</span>, <span class="tk-num">65ch</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>Reads as: <em>"this paragraph's width is whichever is smaller: 100% of its container, or 65 characters of text."</em> In a wide container the paragraph caps at 65ch (readable); in a narrow container it fills 100% (no overflow). One declaration, behavior that adapts to context.</p>
+
+      <h4><code>max()</code> for the iOS safe-area + minimum gutter</h4>
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">example · max() for safe-area-aware padding</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">container</span> {</span><span class="ln">  <span class="tk-prop">padding-inline</span>: <span class="tk-fn">max</span>(<span class="tk-num">1rem</span>, <span class="tk-fn">env</span>(safe-area-inset-left));</span><span class="ln">}</span></code></pre></div>
+
+      <p>Reads as: <em>"padding is whichever is larger: 1rem of breathing room, or the iOS notch's safe-area inset."</em> On a regular screen the padding is 1rem; on a notched iPhone in landscape, the padding expands to clear the notch automatically. No media query, no JS, no platform-specific branches.</p>
+
+      <h3>The project's section padding · fluid spacing matters too</h3>
+      <p>Fluid type without fluid spacing produces visually broken pages — your headings scale up but the gap between sections doesn't, and at 1920px the rhythm collapses. The project applies the same <code>clamp()</code> pattern to spacing:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/utilities.css · section padding scale</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">section</span> {</span><span class="ln">  <span class="tk-prop">padding-block</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">4rem</span>, <span class="tk-num">8vw</span>, <span class="tk-num">8rem</span>);</span><span class="ln">  <span class="tk-prop">position</span>: relative;</span><span class="ln">}</span><span class="ln">.<span class="tk-var">section-sm</span> {</span><span class="ln">  <span class="tk-prop">padding-block</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">2.5rem</span>, <span class="tk-num">5vw</span>, <span class="tk-num">4.5rem</span>);</span><span class="ln">}</span><span class="ln">.<span class="tk-var">section-lg</span> {</span><span class="ln">  <span class="tk-prop">padding-block</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">5rem</span>, <span class="tk-num">10vw</span>, <span class="tk-num">10rem</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>Each section variant uses a pure <code>vw</code>-driven middle term (no constant added) because the section padding is intentionally <em>more</em> reactive to viewport width than typography. At 320px a section is 25.6px of vertical padding (clamped to the 64px floor); at 768px it's 61.4px (still clamped to the floor); at 1024px it's 81.9px (preferred wins); at 1600px it's 128px (clamped to the 128px ceiling). The middle term is doing real work between 1024 and 1600px — which is the desktop range where the design needs to breathe more as the canvas widens.</p>
+
+      <p>And the container's <strong>horizontal</strong> gutter follows the same pattern:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · container gutter</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--container-gutter</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">1rem</span>, <span class="tk-num">3vw</span>, <span class="tk-num">2.5rem</span>);</span></code></pre></div>
+
+      <p>16px gutter on phones, scaling to 40px on desktop. Every <code>.container</code> on the site reads from this token. Change it once, every page's horizontal padding updates everywhere.</p>
+
+      <h3>Browser support · this is 2026 CSS</h3>
+      <p><code>clamp()</code>, <code>min()</code>, and <code>max()</code> shipped in all major browsers in <strong>April 2020</strong>. <code>dvh</code>/<code>svh</code>/<code>lvh</code> (which combine well with <code>clamp()</code>) shipped in <strong>2022</strong>. There's no progressive-enhancement story to worry about — every browser your users have actually runs this. The "what if the browser doesn't support it" callout you'll see in older tutorials no longer applies.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · <code>clamp()</code> in negative-margin contexts</div>
+        <p>If you use <code>clamp()</code> with a negative middle argument (e.g., for negative margins or offsets), the semantics flip in non-obvious ways: <code>min</code> becomes <em>the most negative</em>, <code>max</code> becomes <em>the least negative</em>. The argument names assume positive values. Re-read the MDN math (<code>clamp(MIN, VAL, MAX) = max(MIN, min(VAL, MAX))</code>) and you'll see it still holds, but readability suffers. For negative-direction fluid values, prefer writing <code>negative-margin: calc(0px - clamp(0.5rem, 2vw, 1rem))</code> — the clamp stays in its natural positive form, and the negation is explicit at the use site.</p>
+      </div>
+
+      <h3>Summary · what to take away</h3>
+      <ul>
+        <li><code>clamp(min, preferred, max)</code> is three arguments: floor, formula, ceiling. The middle one is the only one that does work; the outer two are guardrails.</li>
+        <li>The formula is typically <code>constant_rem + small_vw</code>. The constant anchors the value at the floor; the small <code>vw</code> adds gradual growth.</li>
+        <li>If the value is supposed to be exactly <code>V<sub>min</sub></code> at viewport <code>W<sub>min</sub></code> and <code>V<sub>max</sub></code> at <code>W<sub>max</sub></code>, the slope is <code>(V<sub>max</sub> − V<sub>min</sub>) / (W<sub>max</sub> − W<sub>min</sub>)</code>.</li>
+        <li>Larger type tolerates a larger <code>vw</code> coefficient; body type should stay close to its floor.</li>
+        <li><code>min()</code> alone is the canonical <code>max-width: min(100%, 65ch)</code> pattern.</li>
+        <li><code>max()</code> alone is the canonical iOS-safe-area-aware padding pattern.</li>
+        <li>Fluid spacing matters as much as fluid type — without both, the page's rhythm breaks at the extremes.</li>
+      </ul>
+
+      <p>The next chapter is about color — specifically, why the project uses hex/rgba instead of <code>oklch()</code> despite oklch being objectively better for ramp generation, and how <code>color-mix()</code> eliminates the need for separate <code>--success</code> / <code>--success-bg</code> token pairs.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-2"><div class="dir">← Prev</div><div class="ttl">Length units</div></a>
+        <a class="next" href="#ch-4"><div class="dir">Next →</div><div class="ttl">Color systems</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
