@@ -677,6 +677,163 @@ Example: --text-base
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 4 ============================ -->
+    <section id="ch-4">
+      <p class="eyebrow">Chapter 04</p>
+      <h2>Color systems · <code>oklch</code>, <code>color-mix</code>, and why the project still uses hex</h2>
+      <p class="lede">The color tokens in this project are 100% hex and rgba — no <code>oklch()</code>, no <code>color-mix()</code>. By 2026 standards that's a defensible regression, not an oversight. This chapter explains why the modern color functions are objectively better for ramp generation, why a one-designer project legitimately picks the older format anyway, and how <code>color-mix()</code> would eliminate half the semantic-color tokens if migration were on the table. The trade-off is real and worth understanding before you copy it.</p>
+
+      <h3>The state of the project · everything in hex and rgba</h3>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · color tokens</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* === Color: surfaces (dark canvas) === */</span></span><span class="ln"><span class="tk-prop">--surface-0</span>: <span class="tk-str">#0a0a0b</span>;</span><span class="ln"><span class="tk-prop">--surface-1</span>: <span class="tk-str">#111114</span>;</span><span class="ln"><span class="tk-prop">--surface-2</span>: <span class="tk-str">#17171c</span>;</span><span class="ln"><span class="tk-prop">--surface-3</span>: <span class="tk-str">#1f1f26</span>;</span><span class="ln"><span class="tk-prop">--surface-4</span>: <span class="tk-str">#2a2a33</span>;</span><span class="ln"><span class="tk-prop">--surface-elevated</span>: <span class="tk-str">#1c1c22</span>;</span><span class="ln"><span class="tk-prop">--surface-overlay</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">10, 10, 11, 0.72</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* === Color: gold/amber primary (9-step ramp) === */</span></span><span class="ln"><span class="tk-prop">--gold-100</span>: <span class="tk-str">#faedcc</span>;</span><span class="ln"><span class="tk-prop">--gold-200</span>: <span class="tk-str">#f8e1a8</span>;</span><span class="ln"><span class="tk-prop">--gold-300</span>: <span class="tk-str">#f5d08a</span>;</span><span class="ln"><span class="tk-prop">--gold-400</span>: <span class="tk-str">#e8b660</span>;</span><span class="ln"><span class="tk-prop">--gold-500</span>: <span class="tk-str">#d4a24c</span>;</span><span class="ln"><span class="tk-prop">--gold-600</span>: <span class="tk-str">#b0832f</span>;</span><span class="ln"><span class="tk-prop">--gold-700</span>: <span class="tk-str">#876320</span>;</span><span class="ln"><span class="tk-prop">--gold-800</span>: <span class="tk-str">#5d4416</span>;</span><span class="ln"><span class="tk-prop">--gold-900</span>: <span class="tk-str">#34270d</span>;</span></code></pre></div>
+
+      <p>Nine gold steps, six surface steps, six ink steps, four semantic colors — about 30 hex/rgba tokens total. They were hand-picked in a design tool (probably Figma) and copy-pasted into the file. No automation, no ramp generation, no perceptual-uniformity guarantees. And visually, they work — the dark canvas reads correctly, the gold accents feel premium, the semantic colors are distinguishable.</p>
+
+      <p>So why is this a "defensible regression"? Because if you were writing this design system from scratch in 2026, you would use <code>oklch()</code> — and the result would be measurably better in three specific ways. Understanding those three ways is the point of this chapter, even if the project itself doesn't take that path.</p>
+
+      <h3>What <code>oklch()</code> is, and why it changes the math</h3>
+      <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch">MDN reference</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · oklch()</div>
+        <p>"<code>oklch()</code> is the cylindrical form of <code>oklab()</code>, using the same <code>L</code> axis, but with polar Chroma (<code>C</code>) and Hue (<code>h</code>) coordinates."</p>
+        <p>"The <code>L</code> in <code>oklch()</code> is the <strong>perceived</strong> lightness, which refers to the 'brightness' we visually perceive with our eyes. This is different from the <code>L</code> in <code>hsl()</code>, where it represents lightness as compared to other colors."</p>
+      </div>
+
+      <p>Three arguments: <strong>L</strong> (lightness, 0–1 or 0%–100%), <strong>C</strong> (chroma, ~0–0.4 in practice), <strong>H</strong> (hue, 0–360 degrees). The breakthrough is the L axis — when you write <code>oklch(60% 0.18 75)</code>, the 60% means "this color appears 60% as bright as pure white to the human eye." When you write <code>hsl(45 80% 60%)</code>, the 60% means "this is 60% of the way between max-dark and max-light <em>in the HSL coordinate system</em>," which has no relationship to perceptual brightness.</p>
+
+      <p>The consequence: in HSL or RGB, two colors with the same L (or same average RGB intensity) can look <em>wildly</em> different in brightness to the eye. Yellow and blue at the same HSL lightness — yellow appears much brighter. In <code>oklch()</code>, two colors at the same L value <em>do</em> appear equally bright. That's what "perceptually uniform" means.</p>
+
+      <h3>What that buys you · principled ramp generation</h3>
+      <p>Take the project's nine-step gold ramp. In hex, each step is a hand-picked value with no enforced relationship to its neighbors. There's no mathematical guarantee that <code>--gold-300</code> is exactly twice as bright as <code>--gold-600</code>; you'd have to load each into a color analyzer to find out. If a designer ever needs a tenth step — say, <code>--gold-50</code> for an ultra-light tint — there's no formula. They eyeball it.</p>
+
+      <p>In <code>oklch()</code>, you'd write the ramp like this:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · oklch ramp</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Same hue (75deg, gold), same chroma (0.13), L varies linearly */</span></span><span class="ln"><span class="tk-prop">--gold-100</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">95%</span> <span class="tk-num">0.06</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-200</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">88%</span> <span class="tk-num">0.10</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-300</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">81%</span> <span class="tk-num">0.13</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-400</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">74%</span> <span class="tk-num">0.15</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-500</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">67%</span> <span class="tk-num">0.16</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-600</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">55%</span> <span class="tk-num">0.15</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-700</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">43%</span> <span class="tk-num">0.13</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-800</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">31%</span> <span class="tk-num">0.10</span> <span class="tk-num">75</span>);</span><span class="ln"><span class="tk-prop">--gold-900</span>: <span class="tk-fn">oklch</span>(<span class="tk-num">19%</span> <span class="tk-num">0.06</span> <span class="tk-num">75</span>);</span></code></pre></div>
+
+      <p>Three things become true that weren't true before. First, the hue is locked to one value (75°) so every step is unambiguously the <em>same family</em> of gold. Second, the L axis steps down in roughly equal perceptual units (95 → 88 → 81 → ...) so adjacent steps look like they sit on a uniform gradient. Third, the chroma rises toward the middle and drops at the ends — which mirrors how humans perceive saturation: it's hard to make a near-white or near-black look "vivid," so chroma drops at the extremes.</p>
+
+      <p>The killer feature: <strong>need a new step? Compute it.</strong> A <code>--gold-50</code> would be <code>oklch(98% 0.03 75)</code> — same hue, slightly higher L than 100, slightly lower chroma. No designer needed. The system extends itself.</p>
+
+      <h3>So why is this project using hex?</h3>
+      <p>Three reasons, all defensible for the project's specific context, none of which would justify hex over oklch for a multi-designer team:</p>
+
+      <h4>Reason 1 · designer-tool handoff</h4>
+      <p>Figma's color picker speaks hex and HSL natively. <code>oklch()</code> support arrived in Figma in 2024 but isn't the default — a designer dropping a swatch on the canvas gets hex back unless they actively reconfigure. For a project where one person designs <em>and</em> codes, switching to oklch means an extra translation step every time a color enters the design tool from the code (or vice versa). The translation can be automated (browsers' DevTools convert seamlessly), but it's friction. For a multi-designer team where designers never touch CSS, this argument disappears — give them an oklch-aware tool and they're fine.</p>
+
+      <h4>Reason 2 · git-diff readability</h4>
+      <p><code>#e8b660</code> is a six-character token. <code>oklch(74% 0.15 75)</code> is fifteen characters with three semantically-distinct parameters. In a code review, "the gold-400 changed from <code>#e8b660</code> to <code>#e6b25e</code>" reads instantly. "<code>oklch(74% 0.15 75)</code> → <code>oklch(72% 0.14 75)</code>" requires a moment to spot which of three values shifted. Hex is the lingua franca of color in design-engineering discussions; oklch is more accurate but less universally legible.</p>
+
+      <h4>Reason 3 · the rgba escape hatch was already needed</h4>
+      <p>The project's transparency tokens use <code>rgba()</code>, not modern alpha syntax:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · borders &amp; transparency</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--border-subtle</span>:  <span class="tk-fn">rgba</span>(<span class="tk-num">248, 246, 241, 0.06</span>);</span><span class="ln"><span class="tk-prop">--border-default</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">248, 246, 241, 0.1</span>);</span><span class="ln"><span class="tk-prop">--border-strong</span>:  <span class="tk-fn">rgba</span>(<span class="tk-num">248, 246, 241, 0.18</span>);</span><span class="ln"><span class="tk-prop">--border-gold</span>:    <span class="tk-fn">rgba</span>(<span class="tk-num">212, 162, 76, 0.32</span>);</span></code></pre></div>
+
+      <p>Three of those four are the <em>same color</em> (the project's <code>--ink-100: #f8f6f1</code> as 248/246/241) at four different opacities. In modern CSS, that would be <code>color-mix(in oklch, var(--ink-100) 6%, transparent)</code> — but only if <code>--ink-100</code> were already in oklch. Mixing hex with oklch produces well-defined results (the browser converts), but the cognitive load of "is this token oklch or hex?" is real. Either commit fully or stay fully — and the project chose to stay fully in hex/rgba.</p>
+
+      <h3>What <code>color-mix()</code> would eliminate</h3>
+      <p>Even without migrating to oklch, the project could use <code>color-mix()</code> to halve its semantic-color token count. Quoting MDN:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · color-mix()</div>
+        <p>"The <code>&lt;color-interpolation-method&gt;</code> specifies what interpolation method should be used to mix the colors. It consists of the <code>in</code> keyword and the color space the colors should be mixed in."</p>
+        <p>"This example demonstrates adding transparency to a color by mixing any color with <code>transparent</code>."</p>
+      </div>
+
+      <p>The pattern: <code>color-mix(in oklch, var(--base) 12%, transparent)</code>. Mix any color with <code>transparent</code> at a given percentage and you get that color at that opacity — but with one critical advantage over <code>rgba()</code>: the source color can be a token reference. Compare:</p>
+
+      <div class="split">
+        <div class="col">
+          <h5>Current · two tokens per semantic color</h5>
+          <pre style="font-family:var(--font-mono);font-size:12px;color:var(--ink-200);background:none;padding:0">--success: #5dbb78;
+--success-bg: rgba(93, 187, 120, 0.12);
+--warning: #e0a93c;
+--warning-bg: rgba(224, 169, 60, 0.12);
+--danger: #d96868;
+--danger-bg: rgba(217, 104, 104, 0.12);
+--info: #6ea8d6;
+--info-bg: rgba(110, 168, 214, 0.12);</pre>
+          <p>8 tokens, each <code>-bg</code> manually kept in sync with its base RGB.</p>
+        </div>
+        <div class="col">
+          <h5>Modern · one token, mixed at use site</h5>
+          <pre style="font-family:var(--font-mono);font-size:12px;color:var(--ink-200);background:none;padding:0">--success: #5dbb78;
+--warning: #e0a93c;
+--danger:  #d96868;
+--info:    #6ea8d6;
+
+/* At use site: */
+background: color-mix(
+  in oklch,
+  var(--success) 12%,
+  transparent
+);</pre>
+          <p>4 tokens. Change <code>--success</code> and every background tint follows automatically. No drift possible.</p>
+        </div>
+      </div>
+
+      <p>The cost of this refactor would be one file (rewrite the 8 tokens to 4 + a helper) and a search-and-replace across the codebase (every <code>var(--success-bg)</code> use site becomes <code>color-mix(in oklch, var(--success) 12%, transparent)</code>). About 30 minutes of work for a permanent reduction in maintenance burden. The reason the project hasn't done it yet: the existing tokens work, and the migration is in the "nice to have" backlog, not the "shipping blocker" critical path.</p>
+
+      <h3>The dark-canvas trick · why ink isn't pure white</h3>
+      <p>One color decision in this project deserves a callout because it's a load-bearing detail most readers won't notice. The body text token:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · ink scale</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--ink-100</span>: <span class="tk-str">#f8f6f1</span>;   <span class="tk-com">/* warm off-white, NOT #ffffff */</span></span><span class="ln"><span class="tk-prop">--ink-200</span>: <span class="tk-str">#d8d3c6</span>;</span><span class="ln"><span class="tk-prop">--ink-300</span>: <span class="tk-str">#a39e8f</span>;</span><span class="ln"><span class="tk-prop">--ink-400</span>: <span class="tk-str">#74705f</span>;</span><span class="ln"><span class="tk-prop">--ink-500</span>: <span class="tk-str">#4f4b3f</span>;</span><span class="ln"><span class="tk-prop">--ink-600</span>: <span class="tk-str">#2f2c25</span>;</span></code></pre></div>
+
+      <p>And the canvas:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · surface scale (extract)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--surface-0</span>: <span class="tk-str">#0a0a0b</span>;   <span class="tk-com">/* near-black with a hint of blue */</span></span></code></pre></div>
+
+      <p>Pure white on pure black (<code>#fff</code> on <code>#000</code>) is uncomfortable to read for long sessions. The white "glows" against the black, creating chromatic aberration on most monitors. Designers have known this for decades — the fix is to soften both ends of the contrast: warm the white slightly (the project uses <code>#f8f6f1</code>, a creamy off-white with red and green channels above blue), and pull the black slightly off pure (the project's <code>#0a0a0b</code> has blue marginally higher than red and green, a cool near-black). The contrast ratio stays high enough for accessibility (we'll check that next) but the eye relaxes.</p>
+
+      <p>The chromatic relationship matters too. The off-white leans <strong>warm</strong> (more red/green, less blue) and the near-black leans <strong>cool</strong> (more blue). Warm-on-cool is the opposite of "burning" — it's the calmest possible relationship between text and background. Reverse it (cool white on warm black) and the eye strains. This is one of those details that's invisible when done right and obvious when wrong.</p>
+
+      <h3>WCAG contrast math · the constraint everyone forgets</h3>
+      <p>Every color choice has to clear an accessibility floor. WCAG 2.2 defines two levels:</p>
+
+      <table>
+        <thead><tr><th>Level</th><th>Body text (14pt regular / 18pt bold)</th><th>Large text (18pt regular / 14pt bold)</th><th>UI components / graphics</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AA</strong> (minimum)</td><td>4.5:1</td><td>3:1</td><td>3:1</td></tr>
+          <tr><td><strong>AAA</strong> (enhanced)</td><td>7:1</td><td>4.5:1</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <p>The project's body text — <code>--ink-200: #d8d3c6</code> on <code>--surface-0: #0a0a0b</code> — has a contrast ratio of roughly <strong>13.5:1</strong>, comfortably above even AAA. The eyebrow text — <code>--gold-400: #e8b660</code> on the same surface — clocks <strong>11.2:1</strong>, also AAA. The lowest contrast in the regular text stack is muted body copy — <code>--ink-300: #a39e8f</code> on <code>--surface-0</code> — at roughly <strong>7.5:1</strong>, still passing AAA. <code>--ink-400</code> is for hints and fineprint only; at <strong>4.8:1</strong> it passes AA for body text but should never be the only carrier of meaning.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the audit you should do once</div>
+        <p>Every project should run its token pairs through a WCAG contrast calculator <em>once</em> when the design system is locked, and document the pass/fail for each pair. This costs about an hour. The output is a one-page table that every PR can be checked against. When a designer requests "make the muted text a bit lighter," you can immediately answer "that'll drop to 3.9:1 and fail AA." Without the table, those conversations devolve into "it looks fine to me," which is the worst conversation in design.</p>
+      </div>
+
+      <h3>What about <code>oklch()</code>'s relative-color syntax?</h3>
+      <p>The most powerful oklch feature isn't even mentioned above: <strong>relative colors</strong>. CSS Color Level 5 lets you derive a color from another color by modifying just one channel:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">CSS Color Level 5 · relative oklch</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Take --gold-500's hue and chroma, but force L to 30% → an exact darker variant */</span></span><span class="ln"><span class="tk-prop">--gold-500-dark</span>: <span class="tk-fn">oklch</span>(<span class="tk-kw">from</span> <span class="tk-var">var</span>(--gold-500) <span class="tk-num">30%</span> c h);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Take --gold-500 but desaturate it for a disabled state */</span></span><span class="ln"><span class="tk-prop">--gold-500-muted</span>: <span class="tk-fn">oklch</span>(<span class="tk-kw">from</span> <span class="tk-var">var</span>(--gold-500) l <span class="tk-fn">calc</span>(c * <span class="tk-num">0.5</span>) h);</span></code></pre></div>
+
+      <p>The <code>l</code>, <code>c</code>, <code>h</code> identifiers reference the source color's channels — you can use them verbatim, replace them, or compute from them. This eliminates entire categories of token: hover/active/disabled variants don't need their own declarations; they're derived. The project doesn't use this yet. If you were starting fresh today, you would.</p>
+
+      <h3>Summary · the migration story for a hypothetical Phase-2</h3>
+      <ol>
+        <li><strong>The hex tokens stay valid forever.</strong> They render correctly. No browser will ever stop supporting them. There's no urgency.</li>
+        <li><strong>The first realistic migration is <code>color-mix()</code> for the <code>-bg</code> tokens.</strong> 30 minutes, halves the semantic-color token count, eliminates a drift surface. High-value, low-risk.</li>
+        <li><strong>Full <code>oklch()</code> migration is a multi-hour rewrite</strong> that produces visually-identical output but unlocks principled ramp generation, relative-color derivation, and perceptual uniformity. Pay for itself the second a designer requests a new color step.</li>
+        <li><strong>If you're starting a new design system in 2026, start in <code>oklch()</code>.</strong> The arguments above ("hex is easier to read") become weaker every quarter as tooling catches up.</li>
+      </ol>
+
+      <p>The next chapter is the case study you've already heard about: how the project's breakpoint tokens were broken (declared as CSS variables but never referenceable from <code>@media</code>), the three failed approaches to single-source breakpoints, and the working pipeline.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-3"><div class="dir">← Prev</div><div class="ttl">The fluid trinity</div></a>
+        <a class="next" href="#ch-5"><div class="dir">Next →</div><div class="ttl">Single-source breakpoints</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
