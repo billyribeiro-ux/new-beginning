@@ -245,7 +245,7 @@
 	.rating .muted {
 		color: var(--ink-400);
 		font-weight: var(--weight-regular);
-		margin-left: 4px;
+		margin-inline-start: 4px;
 	}
 	h1 {
 		font-family: var(--font-display);

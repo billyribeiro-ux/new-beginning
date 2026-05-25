@@ -69,7 +69,7 @@
 	}
 	.prose :global(ul),
 	.prose :global(ol) {
-		padding-left: var(--space-6);
+		padding-inline-start: var(--space-6);
 		color: var(--ink-200);
 		font-size: var(--text-md);
 		line-height: var(--leading-relaxed);

@@ -490,7 +490,7 @@
 		margin: 0 0 var(--space-3);
 	}
 	.bullets {
-		padding-left: var(--space-5);
+		padding-inline-start: var(--space-5);
 		color: var(--ink-200);
 		font-size: var(--text-sm);
 		display: flex;

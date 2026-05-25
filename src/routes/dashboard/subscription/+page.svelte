@@ -335,7 +335,7 @@
 		font-size: var(--text-sm);
 	}
 	.banner-action {
-		margin-left: auto;
+		margin-inline-start: auto;
 		background: var(--warning);
 		color: var(--surface-0);
 		padding: 4px 10px;

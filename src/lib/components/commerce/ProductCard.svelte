@@ -249,7 +249,7 @@
 	.rating .count {
 		color: var(--ink-400);
 		font-weight: var(--weight-regular);
-		margin-left: 4px;
+		margin-inline-start: 4px;
 	}
 
 	.name {
@@ -297,7 +297,7 @@
 	}
 	.highlights li {
 		position: relative;
-		padding-left: var(--space-5);
+		padding-inline-start: var(--space-5);
 		font-size: var(--text-xs);
 		color: var(--ink-300);
 	}

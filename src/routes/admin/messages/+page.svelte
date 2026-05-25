@@ -272,7 +272,7 @@
 		border-radius: var(--radius-full);
 		font-weight: var(--weight-bold);
 		font-size: 10px;
-		margin-right: var(--space-2);
+		margin-inline-end: var(--space-2);
 	}
 	.from a {
 		color: var(--gold-300);

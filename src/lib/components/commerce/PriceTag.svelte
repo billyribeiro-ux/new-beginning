@@ -52,7 +52,7 @@
 	.symbol {
 		font-size: 0.55em;
 		color: var(--ink-300);
-		margin-right: 2px;
+		margin-inline-end: 2px;
 		font-weight: var(--weight-regular);
 	}
 	.whole {

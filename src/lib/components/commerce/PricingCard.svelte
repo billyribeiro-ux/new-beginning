@@ -174,7 +174,7 @@
 	.save {
 		color: var(--success);
 		font-weight: var(--weight-semibold);
-		margin-left: var(--space-1);
+		margin-inline-start: var(--space-1);
 	}
 
 	.features {
