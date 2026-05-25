@@ -1332,6 +1332,164 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 8 ============================ -->
+    <section id="ch-8">
+      <p class="eyebrow">Chapter 08</p>
+      <h2>Logical properties · <code>margin-inline-start</code> over <code>margin-left</code></h2>
+      <p class="lede">CSS shipped logical properties in 2020. Most projects still write <code>margin-left</code> and <code>padding-right</code>. Both work in left-to-right English; only one of them works in Arabic, Hebrew, or any vertical writing mode. The migration costs nothing — same character count, same visual result in LTR — and earns the project automatic correctness in 30+ writing systems for free. This chapter is the 9-file audit that converted the codebase, and the one case (<code>margin-left: auto</code> for flex push-to-end) that requires a moment of thought.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commit</div>
+        <p><code>8db73b9</code> · <em>css(rtl): replace 10 raw margin/padding-left/right with logical properties</em> — 9 files touched, 10 declarations updated, identical LTR visual, mirrored automatically in RTL.</p>
+      </div>
+
+      <h3>The mental model · inline axis vs block axis</h3>
+      <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values">MDN's logical properties reference</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · CSS logical properties</div>
+        <p>"<strong>Inline dimension</strong>: parallel to the flow of text within a line, i.e., the horizontal dimension in horizontal writing modes, and the vertical dimension in vertical writing modes. For standard English text, it is the horizontal dimension."</p>
+        <p>"<strong>Block dimension</strong>: perpendicular to the flow of text within a line, i.e., the vertical dimension in horizontal writing modes, and the horizontal dimension in vertical writing modes. For standard English text, it is the vertical dimension."</p>
+        <p>"The start of a line is not always the left side of a line. Different writing systems operate in various directions."</p>
+      </div>
+
+      <p>Logical properties are named relative to the <em>flow of text</em>, not the user's screen. <code>margin-inline-start</code> is the margin on whichever side the text starts — left in English, right in Arabic. <code>margin-block-end</code> is the margin on whichever side the next block of text comes — bottom in English, bottom in Arabic (the block axis works the same in both horizontal writing modes), but rightward in traditional vertical Japanese.</p>
+
+      <p>The mapping for standard horizontal-tb writing mode:</p>
+
+      <table>
+        <thead><tr><th>Physical</th><th>Logical (LTR)</th><th>Logical (RTL)</th></tr></thead>
+        <tbody>
+          <tr><td><code>margin-left</code></td><td><code>margin-inline-start</code></td><td><code>margin-inline-end</code></td></tr>
+          <tr><td><code>margin-right</code></td><td><code>margin-inline-end</code></td><td><code>margin-inline-start</code></td></tr>
+          <tr><td><code>margin-top</code></td><td><code>margin-block-start</code></td><td><code>margin-block-start</code></td></tr>
+          <tr><td><code>margin-bottom</code></td><td><code>margin-block-end</code></td><td><code>margin-block-end</code></td></tr>
+          <tr><td><code>border-left</code></td><td><code>border-inline-start</code></td><td><code>border-inline-end</code></td></tr>
+          <tr><td><code>left</code> / <code>right</code></td><td><code>inset-inline-start</code> / <code>inset-inline-end</code></td><td>mirrored</td></tr>
+        </tbody>
+      </table>
+
+      <p>The block-axis mappings (<code>top</code>/<code>bottom</code>) stay physical-ish because <em>both</em> LTR and RTL still flow lines downward. Logical only matters when you switch to a vertical writing mode (<code>writing-mode: vertical-rl</code>), which is rare. The big leverage from logical properties is the inline axis — the one that flips between LTR and RTL.</p>
+
+      <h3>The 10 sites · what got migrated</h3>
+      <p>Before <code>8db73b9</code>, the codebase had 10 places where directional spacing was bound to physical left/right. The migration is mechanical — same property, same value, different name. The 9 files touched:</p>
+
+      <table>
+        <thead><tr><th>File</th><th>What changed</th></tr></thead>
+        <tbody>
+          <tr><td><code>commerce/PriceTag.svelte</code></td><td><code>margin-right: 2px</code> → <code>margin-inline-end: 2px</code> (the currency symbol's gap before the digits)</td></tr>
+          <tr><td><code>commerce/PricingCard.svelte</code></td><td><code>margin-left: var(--space-1)</code> → <code>margin-inline-start: var(--space-1)</code> (the "Save X%" tag next to the price)</td></tr>
+          <tr><td><code>commerce/ProductCard.svelte</code></td><td>Two changes: rating count <code>margin-left: 4px</code> + highlights bullet <code>padding-left: var(--space-5)</code></td></tr>
+          <tr><td><code>marketing/LegalPage.svelte</code></td><td><code>padding-left: var(--space-6)</code> on list items (indented bullets)</td></tr>
+          <tr><td><code>routes/indicators/[slug]/+page.svelte</code></td><td><code>margin-left: 4px</code> on a rating-count span</td></tr>
+          <tr><td><code>routes/admin/messages/+page.svelte</code></td><td><code>margin-right: var(--space-2)</code> on an inline badge</td></tr>
+          <tr><td><code>routes/dashboard/subscription/+page.svelte</code></td><td><code>margin-left: auto</code> → <code>margin-inline-start: auto</code> (see flex callout below)</td></tr>
+          <tr><td><code>routes/dashboard/courses/[slug]/+page.svelte</code></td><td><code>padding-left: var(--space-5)</code> on a curriculum list</td></tr>
+          <tr><td><code>routes/courses/[slug]/+page.svelte</code></td><td><code>margin-left: 4px</code> on a rating count</td></tr>
+        </tbody>
+      </table>
+
+      <p>Sample diff from <code>PriceTag</code> — same character count, same visual:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/commerce/PriceTag.svelte (diff)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">  .<span class="tk-var">symbol</span> {</span><span class="ln">    <span class="tk-prop">font-size</span>: <span class="tk-num">0.55em</span>;</span><span class="ln">    <span class="tk-prop">color</span>: <span class="tk-var">var</span>(--ink-300);</span><span class="ln"><span class="tk-com">-   margin-right: 2px;</span></span><span class="ln"><span class="tk-fn">+   margin-inline-end: 2px;</span></span><span class="ln">    <span class="tk-prop">font-weight</span>: <span class="tk-var">var</span>(--weight-regular);</span><span class="ln">  }</span></code></pre></div>
+
+      <p>The currency symbol (<code>$</code>) sits before the digits in LTR. In Arabic — where numbers still read left-to-right but the surrounding text reads right-to-left — the symbol moves to the other side of the digit cluster automatically. <code>margin-inline-end</code> always means "the side away from where the next character would go," so the gap stays between the symbol and the digits regardless of writing direction.</p>
+
+      <h3>The flex push-to-end case · the one site that needed thought</h3>
+      <p>The dashboard subscription banner had this:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/routes/dashboard/subscription/+page.svelte (diff)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">  .<span class="tk-var">banner-action</span> {</span><span class="ln"><span class="tk-com">-   margin-left: auto;</span></span><span class="ln"><span class="tk-fn">+   margin-inline-start: auto;</span></span><span class="ln">    <span class="tk-prop">background</span>: <span class="tk-var">var</span>(--warning);</span><span class="ln">    <span class="tk-com">/* ... */</span></span><span class="ln">  }</span></code></pre></div>
+
+      <p>The <code>margin: auto</code> trick on a flex item pushes it to one end of the flex container. <code>margin-left: auto</code> on a flex item in a row pushes it to the right edge — the item is "pushed away from the start." The logical equivalent is <code>margin-inline-start: auto</code> — same intent: "push away from the start."</p>
+
+      <p>This is the spot where it's easy to grab the wrong logical property by reflex. <em>"It was on the left, so it must be inline-start"</em> — but the flex semantics are about the side the margin is <em>on</em>, not the direction it pushes. <code>margin-left: auto</code> means "I have a giant left margin that consumes all the space" — the item ends up on the right. <code>margin-inline-start: auto</code> preserves that exactly: the item still ends up on the inline-end side, which is the right in LTR and the left in RTL. The flex layout mirrors correctly.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · don't translate by visual position</div>
+        <p>If you find yourself thinking <em>"the item was on the right, so I need margin-inline-end"</em>, stop. The auto-margin is on the side <em>away</em> from where the item ends up. Translate the original property name (left → inline-start, right → inline-end) directly, not the visual outcome. The flex semantics carry over identically — that's the whole point of logical properties.</p>
+      </div>
+
+      <h3>The shorthand forms · <code>margin-inline</code>, <code>padding-block</code>, etc.</h3>
+      <p>The audit didn't introduce these because the existing project code already used them in 51 places. They're the two-axis shorthands:</p>
+
+      <table>
+        <thead><tr><th>Shorthand</th><th>Expands to</th><th>Common use</th></tr></thead>
+        <tbody>
+          <tr><td><code>margin-inline: auto</code></td><td>start + end both <code>auto</code></td><td>Centering with <code>max-width</code></td></tr>
+          <tr><td><code>padding-inline: 2rem</code></td><td>start + end both <code>2rem</code></td><td>Horizontal page gutters</td></tr>
+          <tr><td><code>padding-block: 4rem 8rem</code></td><td>start = <code>4rem</code>, end = <code>8rem</code></td><td>Asymmetric vertical padding</td></tr>
+          <tr><td><code>inset-inline: 0</code></td><td>start + end both <code>0</code></td><td>Stretch absolutely-positioned element edge-to-edge horizontally</td></tr>
+          <tr><td><code>border-block: 1px solid var(--border)</code></td><td>Top + bottom border</td><td>Section dividers without the side borders</td></tr>
+        </tbody>
+      </table>
+
+      <p>The project's containers use <code>margin-inline: auto</code> and <code>padding-inline: var(--container-gutter)</code> in three places (the three <code>.container</code> variants). The <code>.section</code> utility uses <code>padding-block: clamp(4rem, 8vw, 8rem)</code>. The <code>border-block</code> shorthand appears 10 times for section dividers. The shorthands aren't novel; they're just the same logical properties at axis-level instead of side-level.</p>
+
+      <h3>When physical still wins (the rare case)</h3>
+      <p>Three contexts where physical properties remain correct:</p>
+
+      <dl>
+        <dt>Visual-effect properties that don't care about writing direction</dt>
+        <dd>Shadow offsets — <code>box-shadow: 4px 8px 16px rgba(...)</code>. The X/Y here are about lighting direction (where the light is coming from), not about reading direction. Even in RTL, the design might want light from the upper-left. Logical isn't an upgrade here.</dd>
+        <dt>Transform translations with explicit visual intent</dt>
+        <dd><code>transform: translateX(-50%)</code> for centering. This is purely about pixel-shifting the element; it has nothing to do with text flow. <code>transform: translate(start, ...)</code> doesn't exist; physical X/Y is the only option.</dd>
+        <dt>Truly viewport-relative positions</dt>
+        <dd>An absolutely-positioned tooltip pinned to <code>top: 50%; left: 50%</code> as a centering hack. <code>top</code> and <code>left</code> here are about screen coordinates. <code>inset-block-start</code> would still work, but the physical names read clearly for this specific intent and the design isn't being mirrored.</dd>
+      </dl>
+
+      <p>The discipline: <strong>directional spacing and borders always go logical</strong>; <strong>visual effects that aren't text-flow-relative can stay physical</strong>. The 10 sites in the project's commit were all in the first bucket.</p>
+
+      <h3>What the migration actually buys you</h3>
+      <p>The honest answer: <strong>nothing visible until the day you ship an Arabic locale</strong>. The project doesn't currently render in RTL. The migration didn't change a single pixel for any user today.</p>
+
+      <p>What it bought instead is <em>option value</em>. If the project ever adds an Arabic translation (the trading desk has Middle Eastern members) or a Hebrew one, the codebase mirrors automatically. There are no per-component RTL stylesheets to maintain, no <code>html[dir="rtl"] .foo { margin-right: 4px }</code> override blocks. The toolchain doesn't even need an RTL processor (the canonical PostCSS RTL plugins exist precisely because most codebases <em>haven't</em> migrated to logical properties — they're a back-fix for projects too far gone to update individually).</p>
+
+      <p>The cost was <strong>10 lines of diff in 9 files</strong>. Lowest-leverage migration in the audit by raw line count; highest-leverage in terms of future flexibility per character of CSS changed.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the convention that pays once it lands</div>
+        <p>Every new component added to the codebase after <code>8db73b9</code> is now written in logical properties by reflex. The team's CSS muscle memory shifted. Two months from now, no one will remember the migration — they'll just write <code>margin-inline-end</code> automatically. That's the real value: <strong>the migration was a one-time cost to change a habit</strong>, and the habit pays compound interest in every subsequent component. The Arabic locale never has to happen for the value to be realized; the value <em>is</em> the consistency.</p>
+      </div>
+
+      <h3>How to migrate your own codebase · the one-grep audit</h3>
+      <p>If you're sitting on a codebase that hasn't done this yet, the audit is two commands:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — find every physical directional property</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">grep -rnE "(margin|padding|border|inset)-(left|right):" src/</span>
+<span class="out">src/components/foo.svelte:23:  margin-left: var(--space-4);</span>
+<span class="out">src/components/bar.svelte:67:  padding-right: 12px;</span>
+<span class="out"># ... etc</span>
+<span class="prompt">$</span> <span class="cmd"># Convert: -left → -inline-start, -right → -inline-end</span></pre></div>
+
+      <p>That grep produces the work list. Each replacement is mechanical: <code>left</code> becomes <code>inline-start</code>, <code>right</code> becomes <code>inline-end</code>. The only judgment calls are flex auto-margins (translate the property name, not the visual outcome — pitfall above) and visual-effect properties (leave them alone). For a codebase the size of this project, the full migration takes ~20 minutes including review. For a larger codebase, write a codemod and review the diff.</p>
+
+      <h3>The properties that don't exist yet</h3>
+      <p>One footnote for future-proofing: as of 2026, <strong>writing-mode-aware <code>border-radius</code> doesn't exist as a logical property</strong>. You still write <code>border-top-left-radius</code>, not <code>border-start-start-radius</code>. The CSS Borders Level 4 working draft proposes <code>border-start-start-radius</code> / <code>border-end-end-radius</code> etc., but no browser implements them yet. If you ship an RTL locale and need rounded corners on specific sides, you currently have to use <code>html[dir="rtl"]</code> overrides or restructure the design to avoid asymmetric corners. The project doesn't have asymmetric corners; this footnote is for when you do.</p>
+
+      <h3>Summary · the substitution rules</h3>
+      <ul>
+        <li><code>margin-left</code> → <code>margin-inline-start</code></li>
+        <li><code>margin-right</code> → <code>margin-inline-end</code></li>
+        <li><code>padding-left</code> → <code>padding-inline-start</code></li>
+        <li><code>padding-right</code> → <code>padding-inline-end</code></li>
+        <li><code>border-left</code> → <code>border-inline-start</code></li>
+        <li><code>border-right</code> → <code>border-inline-end</code></li>
+        <li><code>left</code> / <code>right</code> (positioning) → <code>inset-inline-start</code> / <code>inset-inline-end</code></li>
+        <li><strong>Auto-margins translate by property name, not visual outcome</strong></li>
+        <li><strong>Visual-effect properties (box-shadow, transform) stay physical</strong></li>
+        <li><strong>Block axis (top/bottom)</strong> is the same in LTR and RTL — only worth converting if you might eventually use vertical writing modes</li>
+      </ul>
+
+      <p>The next chapter steps out of the "audit" thread and into a topic the project handles well by default but is worth examining carefully: motion. Cubic-bezier easing curves, the <code>prefers-reduced-motion</code> media query, GSAP vs CSS keyframes — when to reach for which tool, and why the project's motion never makes anyone seasick.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-7"><div class="dir">← Prev</div><div class="ttl">@supports &amp; backdrop-filter</div></a>
+        <a class="next" href="#ch-9"><div class="dir">Next →</div><div class="ttl">Motion &amp; reduced-motion</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
