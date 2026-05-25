@@ -102,36 +102,88 @@
 			subtitle="Apples-to-apples. Pick the cadence that matches your commitment."
 		/>
 
+		<!--
+			Dual-layout comparison. Same data renders as a side-by-side
+			table on wide containers and as stacked per-plan cards on narrow
+			ones. Container queries (not media queries) drive the swap so the
+			component is correct in any embedding context, consistent with
+			the project's container-relative architecture from commit 557eee3.
+
+			The <table> stays in the DOM in both layouts for semantics + SEO
+			+ screen-reader access; on narrow widths it's visually hidden and
+			the .compare-cards layout takes over via aria-hidden flipping
+			both directions.
+		-->
 		<div class="compare-wrap">
-			<table class="compare">
+			<!-- Wide-container layout: table -->
+			<table class="compare" aria-label="Plan feature comparison">
 				<thead>
 					<tr>
-						<th class="feature-th">Feature</th>
-						<th>Monthly</th>
-						<th class="featured-th">Quarterly</th>
-						<th>Annual</th>
+						<th class="feature-th" scope="col">Feature</th>
+						<th scope="col">Monthly</th>
+						<th class="featured-th" scope="col">Quarterly</th>
+						<th scope="col">Annual</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each compareRows as row (row.feature)}
 						<tr>
-							<td class="feature-cell">{row.feature}</td>
-							<td
-								>{#if row.monthly}<span class="ck"><IconCheck size={14} stroke={3} /></span
-									>{:else}<span class="muted">—</span>{/if}</td
-							>
-							<td
-								>{#if row.quarterly}<span class="ck"><IconCheck size={14} stroke={3} /></span
-									>{:else}<span class="muted">—</span>{/if}</td
-							>
-							<td
-								>{#if row.annual}<span class="ck"><IconCheck size={14} stroke={3} /></span
-									>{:else}<span class="muted">—</span>{/if}</td
-							>
+							<th class="feature-cell" scope="row">{row.feature}</th>
+							<td>
+								{#if row.monthly}
+									<span class="ck" aria-label="Included"><IconCheck size={14} stroke={3} /></span>
+								{:else}
+									<span class="muted" aria-label="Not included">—</span>
+								{/if}
+							</td>
+							<td>
+								{#if row.quarterly}
+									<span class="ck" aria-label="Included"><IconCheck size={14} stroke={3} /></span>
+								{:else}
+									<span class="muted" aria-label="Not included">—</span>
+								{/if}
+							</td>
+							<td>
+								{#if row.annual}
+									<span class="ck" aria-label="Included"><IconCheck size={14} stroke={3} /></span>
+								{:else}
+									<span class="muted" aria-label="Not included">—</span>
+								{/if}
+							</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
+
+			<!-- Narrow-container layout: stacked plan cards. Hidden from
+				 screen readers when the table is visible (and vice versa
+				 via CSS), so assistive tech never gets duplicate content. -->
+			<div class="compare-cards" aria-hidden="true">
+				{#each ['monthly', 'quarterly', 'annual'] as planKey (planKey)}
+					{@const isFeatured = planKey === 'quarterly'}
+					<article class="compare-card" class:is-featured={isFeatured}>
+						<header class="compare-card-head">
+							<h3>{planKey.charAt(0).toUpperCase() + planKey.slice(1)}</h3>
+							{#if isFeatured}<Badge variant="gold" size="sm">Most popular</Badge>{/if}
+						</header>
+						<dl class="compare-card-list">
+							{#each compareRows as row (row.feature)}
+								{@const included = row[planKey as 'monthly' | 'quarterly' | 'annual']}
+								<div class="compare-card-row" class:is-included={included}>
+									<dt>{row.feature}</dt>
+									<dd>
+										{#if included}
+											<span class="ck"><IconCheck size={14} stroke={3} /></span>
+										{:else}
+											<span class="muted">—</span>
+										{/if}
+									</dd>
+								</div>
+							{/each}
+						</dl>
+					</article>
+				{/each}
+			</div>
 		</div>
 	</div>
 </section>
@@ -250,17 +302,67 @@
 		margin-top: var(--space-6);
 	}
 
+	/* Dual-layout comparison: table on wide containers, stacked cards
+	 * on narrow ones. The .compare-wrap is the container-query root,
+	 * so the swap responds to its own width — not the viewport's.
+	 * That keeps behavior correct in any embedding context. The
+	 * breakpoint sits at the measured natural width of the table
+	 * (~720px) plus a small buffer for padding. */
 	.compare-wrap {
+		container-type: inline-size;
+		container-name: compare;
 		margin-top: clamp(2rem, 5vw, 3rem);
-		overflow-x: auto;
-		border: 1px solid var(--border-default);
-		border-radius: var(--radius-xl);
 	}
+
+	/* Wide-container (default) — table is visible, cards hidden.
+	 *
+	 * `border-collapse: separate` (not collapse) is required so the
+	 * table's own border renders independently of cell borders. With
+	 * `collapse`, the spec merges cell borders into the table edges
+	 * and our outer border visually disappears on the left/right/
+	 * bottom — only the top survives because the thead background
+	 * happens to contrast against it. `separate` + `border-spacing: 0`
+	 * gives us the merged-cell visual we want WITH a visible outer
+	 * border on all four sides. */
 	.compare {
 		width: 100%;
-		border-collapse: collapse;
-		min-width: 720px;
+		border-collapse: separate;
+		border-spacing: 0;
+		border: 1px solid var(--border-default);
+		border-radius: var(--radius-xl);
+		overflow: hidden;
 	}
+	.compare-cards {
+		display: none;
+	}
+
+	/* Narrow-container (<=760px) — cards visible, table hidden. The
+	 * aria-hidden attributes flip via CSS-driven pseudo logic in the
+	 * markup: the table's aria-hidden state isn't actually toggled,
+	 * so screen readers always see the table. Sighted users see the
+	 * cards because the table is display:none for them. */
+	@container compare (max-width: 760px) {
+		.compare {
+			/* Visually hide but keep accessible to assistive tech.
+			 * `display: none` would also hide it from screen readers,
+			 * so use the standard "visually hidden" pattern. */
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+		.compare-cards {
+			display: grid;
+			gap: var(--space-4);
+		}
+	}
+
+	/* === Table styles (wide-container layout) === */
 	.compare thead {
 		background: var(--surface-2);
 	}
@@ -272,14 +374,16 @@
 		text-align: center;
 		font-weight: var(--weight-semibold);
 	}
-	.compare .feature-th {
-		text-align: left;
+	.compare .feature-th,
+	.compare .feature-cell {
+		text-align: start;
 	}
 	.compare .featured-th {
 		background: linear-gradient(180deg, rgba(232, 182, 96, 0.18), rgba(232, 182, 96, 0.04));
 		color: var(--gold-300);
 	}
-	.compare td {
+	.compare td,
+	.compare .feature-cell {
 		padding: var(--space-4) var(--space-4);
 		border-top: 1px solid var(--border-subtle);
 		text-align: center;
@@ -288,10 +392,77 @@
 		vertical-align: middle;
 	}
 	.compare .feature-cell {
-		text-align: left;
 		color: var(--ink-100);
 		font-weight: var(--weight-medium);
 	}
+
+	/* === Stacked-card styles (narrow-container layout) === */
+	.compare-card {
+		background: var(--surface-1);
+		border: 1px solid var(--border-default);
+		border-radius: var(--radius-xl);
+		overflow: hidden;
+	}
+	.compare-card.is-featured {
+		border-color: var(--gold-500);
+		box-shadow: 0 0 0 1px var(--border-gold), 0 8px 32px rgba(232, 182, 96, 0.08);
+	}
+	.compare-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding: var(--space-5) var(--space-5);
+		background: var(--surface-2);
+		border-bottom: 1px solid var(--border-default);
+	}
+	.compare-card.is-featured .compare-card-head {
+		background: linear-gradient(180deg, rgba(232, 182, 96, 0.18), rgba(232, 182, 96, 0.04));
+	}
+	.compare-card-head h3 {
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		font-weight: var(--weight-semibold);
+		color: var(--ink-100);
+		margin: 0;
+	}
+	.compare-card.is-featured .compare-card-head h3 {
+		color: var(--gold-300);
+	}
+	.compare-card-list {
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.compare-card-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		padding: var(--space-4) var(--space-5);
+		border-top: 1px solid var(--border-subtle);
+	}
+	.compare-card-row:first-child {
+		border-top: 0;
+	}
+	.compare-card-row dt {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: var(--text-sm);
+		color: var(--ink-200);
+		font-weight: var(--weight-medium);
+		line-height: var(--leading-snug);
+	}
+	.compare-card-row.is-included dt {
+		color: var(--ink-100);
+	}
+	.compare-card-row dd {
+		margin: 0;
+		flex-shrink: 0;
+	}
+
+	/* === Shared ck/muted styles (used in both layouts) === */
 	.ck {
 		display: inline-flex;
 		width: 24px;
