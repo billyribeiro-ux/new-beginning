@@ -91,10 +91,16 @@
 	.backdrop {
 		position: absolute;
 		inset: 0;
+		/* --surface-overlay is rgba(10, 10, 11, 0.72) — usable as a
+		 * plain dimming overlay where backdrop-filter is unavailable. */
 		background: var(--surface-overlay);
-		backdrop-filter: blur(12px) saturate(140%);
-		-webkit-backdrop-filter: blur(12px) saturate(140%);
 		border: 0;
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.backdrop {
+			backdrop-filter: blur(12px) saturate(140%);
+			-webkit-backdrop-filter: blur(12px) saturate(140%);
+		}
 	}
 	.dialog {
 		position: relative;

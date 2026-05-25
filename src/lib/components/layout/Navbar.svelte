@@ -121,14 +121,23 @@
 		position: sticky;
 		top: 0;
 		z-index: var(--z-sticky);
-		background: rgba(10, 10, 11, 0.4);
-		backdrop-filter: blur(20px) saturate(140%);
-		-webkit-backdrop-filter: blur(20px) saturate(140%);
+		/* Opaque fallback for browsers without backdrop-filter — a
+		 * see-through navbar at 40% opacity over scrolling content
+		 * is unreadable; the fallback uses the scrolled-state
+		 * background to keep the bar visible from the start. */
+		background: rgba(10, 10, 11, 0.82);
 		border-bottom: 1px solid transparent;
 		transition:
 			background var(--dur-base) var(--ease-out),
 			border-color var(--dur-base) var(--ease-out),
 			box-shadow var(--dur-base) var(--ease-out);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.navbar {
+			background: rgba(10, 10, 11, 0.4);
+			backdrop-filter: blur(20px) saturate(140%);
+			-webkit-backdrop-filter: blur(20px) saturate(140%);
+		}
 	}
 	.navbar.is-scrolled {
 		background: rgba(10, 10, 11, 0.82);
@@ -263,11 +272,17 @@
 		left: 0;
 		right: 0;
 		z-index: var(--z-sticky);
+		/* 96% opaque is fine as a standalone background — the blur
+		 * is a polish layer where supported. */
 		background: rgba(10, 10, 11, 0.96);
-		backdrop-filter: blur(24px);
-		-webkit-backdrop-filter: blur(24px);
 		border-bottom: 1px solid var(--border-default);
 		padding: var(--space-4);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.mobile-overlay {
+			backdrop-filter: blur(24px);
+			-webkit-backdrop-filter: blur(24px);
+		}
 	}
 	.mobile-overlay ul {
 		list-style: none;

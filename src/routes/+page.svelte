@@ -491,11 +491,18 @@
 
 	.lm-form-card {
 		padding: var(--space-7);
-		background: rgba(10, 10, 11, 0.6);
-		backdrop-filter: blur(12px);
+		/* Opaque fallback for browsers without backdrop-filter. */
+		background: var(--surface-1);
 		border: 1px solid var(--border-default);
 		border-radius: var(--radius-xl);
 		position: relative;
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.lm-form-card {
+			background: rgba(10, 10, 11, 0.6);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+		}
 	}
 	.lm-form-card h3 {
 		font-family: var(--font-display);

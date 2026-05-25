@@ -154,10 +154,16 @@
 	.backdrop {
 		position: absolute;
 		inset: 0;
+		/* --surface-overlay is 72% opaque — usable as a plain
+		 * dimming overlay where backdrop-filter is unavailable. */
 		background: var(--surface-overlay);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
 		border: 0;
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.backdrop {
+			backdrop-filter: blur(8px);
+			-webkit-backdrop-filter: blur(8px);
+		}
 	}
 	.drawer {
 		position: absolute;

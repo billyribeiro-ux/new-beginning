@@ -87,13 +87,18 @@
 		justify-content: space-between;
 		gap: var(--space-4);
 		padding: var(--space-5) clamp(1rem, 3vw, 2rem);
+		/* 80% opaque already; blur is polish where supported. */
 		background: rgba(17, 17, 20, 0.8);
-		backdrop-filter: blur(20px);
-		-webkit-backdrop-filter: blur(20px);
 		border-bottom: 1px solid var(--border-default);
 		position: sticky;
 		top: 0;
 		z-index: var(--z-sticky);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.dh {
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+		}
 	}
 	.title {
 		font-family: var(--font-display);

@@ -111,11 +111,18 @@
 		position: relative;
 		z-index: 1;
 		padding: var(--space-7);
-		background: rgba(10, 10, 11, 0.5);
-		backdrop-filter: blur(12px);
+		/* Opaque fallback for browsers without backdrop-filter. */
+		background: var(--surface-1);
 		border: 1px solid var(--border-default);
 		border-radius: var(--radius-xl);
 		max-width: 520px;
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.quote {
+			background: rgba(10, 10, 11, 0.5);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+		}
 	}
 	.rating {
 		display: flex;
@@ -151,10 +158,17 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: var(--space-4);
 		padding: var(--space-5);
-		background: rgba(10, 10, 11, 0.4);
-		backdrop-filter: blur(12px);
+		/* Opaque fallback for browsers without backdrop-filter. */
+		background: var(--surface-1);
 		border: 1px solid var(--border-default);
 		border-radius: var(--radius-lg);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.trust {
+			background: rgba(10, 10, 11, 0.4);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+		}
 	}
 	.trust > div {
 		display: flex;

@@ -246,6 +246,7 @@
 	.chart-card {
 		position: relative;
 		padding: var(--space-6);
+		/* 90–95% opaque gradient already; blur is a polish layer. */
 		background: linear-gradient(160deg, rgba(31, 31, 38, 0.9), rgba(17, 17, 20, 0.95));
 		border: 1px solid var(--border-default);
 		border-radius: var(--radius-2xl);
@@ -253,7 +254,12 @@
 			var(--shadow-elev-4),
 			inset 0 1px 0 rgba(255, 255, 255, 0.04);
 		overflow: hidden;
-		backdrop-filter: blur(20px);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.chart-card {
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+		}
 	}
 	.chart-card::before {
 		content: '';

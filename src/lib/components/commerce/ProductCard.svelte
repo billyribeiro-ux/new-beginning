@@ -171,8 +171,8 @@
 		align-items: center;
 		gap: var(--space-1);
 		padding: 4px 10px;
-		background: rgba(0, 0, 0, 0.55);
-		backdrop-filter: blur(6px);
+		/* Opaque fallback for browsers without backdrop-filter. */
+		background: rgba(0, 0, 0, 0.85);
 		color: var(--ink-100);
 		font-size: 10px;
 		text-transform: uppercase;
@@ -181,6 +181,13 @@
 		border-radius: var(--radius-full);
 		width: max-content;
 		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.cover-kind {
+			background: rgba(0, 0, 0, 0.55);
+			backdrop-filter: blur(6px);
+			-webkit-backdrop-filter: blur(6px);
+		}
 	}
 	.kind-icon {
 		display: inline-flex;
@@ -201,11 +208,18 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
-		backdrop-filter: blur(6px);
+		/* Opaque fallback for browsers without backdrop-filter. */
+		background: rgba(0, 0, 0, 0.8);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: var(--radius-full);
 		color: var(--ink-200);
+	}
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+		.bookmark {
+			background: rgba(0, 0, 0, 0.5);
+			backdrop-filter: blur(6px);
+			-webkit-backdrop-filter: blur(6px);
+		}
 	}
 	.bookmark:hover {
 		color: var(--gold-300);
