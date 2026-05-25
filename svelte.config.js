@@ -4,30 +4,42 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const isProd = process.env.NODE_ENV === 'production';
 
 /**
- * Two transforms on every Svelte <style> block, BEFORE vitePreprocess
+ * Three transforms on every Svelte <style> block, BEFORE vitePreprocess
  * hands it to Lightning CSS:
  *
- *   1. Prepend the canonical @custom-media breakpoint declarations.
- *      Lightning CSS resolves @custom-media within a single file
- *      only, so each component needs its own copy. Keep aligned
- *      with the --bp-* CSS variables in src/lib/styles/tokens.css
- *      (those exist for JS-side reads via getComputedStyle).
+ *   1. Declare the canonical @layer priority order. Every CSS chunk
+ *      the browser parses must establish the same cascade. SvelteKit
+ *      can emit route-specific <link> tags BEFORE the global
+ *      stylesheet (cache state, network order, HTTP/2 multiplexing),
+ *      and CSS @layer ordering is set by FIRST encounter — once
+ *      the browser sees `@layer components{...}` without a prior
+ *      priority declaration, `components` becomes the lowest layer
+ *      and any later-declared layers (reset/tokens/base/utilities)
+ *      land HIGHER. Result: utility classes start beating components,
+ *      layout breaks intermittently. Declaring the priority in every
+ *      file (subsequent re-declarations are no-ops) prevents this.
  *
- *   2. Wrap the block in `@layer components { ... }`. The cascade
- *      order is declared once in src/app.css; component styles
- *      live in the `components` layer so that utility classes from
- *      $lib/styles/utilities.css (in the `utilities` layer) always
- *      lose to component-local declarations. Without this wrapper,
- *      cascade ordering between components and utilities would
- *      depend on source/bundle order — unpredictable.
+ *   2. Prepend the canonical @custom-media breakpoint declarations.
+ *      Lightning CSS resolves @custom-media within a single file
+ *      only, so each component needs its own copy.
+ *
+ *   3. Wrap the user's content in `@layer components { ... }` so
+ *      component-local styles live in the components layer of the
+ *      cascade declared in (1).
  *
  * Why a Svelte preprocessor and not a Vite plugin: vitePreprocess
  * runs Lightning CSS inside Svelte's preprocessor pipeline, so by
  * the time Vite's plugin transform hooks see the .svelte file, the
  * CSS has already been parsed and any unknown at-rules have already
  * errored. Injection has to happen here, ahead of vitePreprocess.
+ *
+ * Keep aligned with src/lib/styles/breakpoints.css (which carries
+ * the same declarations for global imports) and the --bp-* CSS
+ * variables in src/lib/styles/tokens.css (for JS-side reads).
  */
-const CUSTOM_MEDIA = `
+const CSS_FOUNDATION = `
+@layer reset, tokens, base, utilities, components, overrides;
+
 @custom-media --bp-sm (min-width: 480px);
 @custom-media --bp-md (min-width: 768px);
 @custom-media --bp-lg (min-width: 1024px);
@@ -45,7 +57,7 @@ const cssArchitecturePreprocessor = {
 	name: 'tradeflex-css-architecture',
 	style({ content }) {
 		return {
-			code: `${CUSTOM_MEDIA}\n@layer components {\n${content}\n}\n`
+			code: `${CSS_FOUNDATION}\n@layer components {\n${content}\n}\n`
 		};
 	}
 };

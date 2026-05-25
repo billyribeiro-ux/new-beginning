@@ -19,5 +19,3 @@
 @import '$lib/styles/typography.css' layer(base);
 @import '$lib/styles/utilities.css' layer(utilities);
 @import '$lib/styles/animations.css' layer(utilities);
-
-@layer reset, tokens, base, utilities, components, overrides;
