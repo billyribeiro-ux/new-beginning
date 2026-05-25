@@ -72,6 +72,14 @@
 
 <style>
 	.pricing-card {
+		/* Container-relative: the "featured card lifts above siblings"
+		 * effect only reads correctly when the card has room. Tying
+		 * the lift to its own width (not the viewport) means it
+		 * behaves correctly in a 3-up grid AND in a single-column
+		 * dashboard sidebar. */
+		container-type: inline-size;
+		container-name: pricing-card;
+
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -97,7 +105,10 @@
 		box-shadow: var(--glow-gold-strong);
 		transform: scale(1.02);
 	}
-	@media (--bp-lg-down) {
+	/* Disable the featured-card lift when the card itself is narrow,
+	 * regardless of viewport. Stacked single-column layouts always
+	 * see flat cards even on a 4K screen. */
+	@container pricing-card (max-width: 28rem) {
 		.is-featured {
 			transform: none;
 		}

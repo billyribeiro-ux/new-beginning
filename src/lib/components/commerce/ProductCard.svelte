@@ -102,6 +102,12 @@
 
 <style>
 	.card {
+		/* Container-relative: responsive to its own width, not the
+		 * viewport's. Lets the card render the same in a 2-up grid,
+		 * a 3-up grid, or solo in a sidebar without media queries. */
+		container-type: inline-size;
+		container-name: product-card;
+
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -263,6 +269,17 @@
 		gap: var(--space-2);
 		padding: var(--space-4) 0;
 		border-block: 1px dashed var(--border-default);
+	}
+	/* When the card itself is wide enough — regardless of viewport —
+	 * the highlights split into two columns. This fires in a 2-up
+	 * marketing grid on a 1280px laptop, but stays single-column in
+	 * a sidebar slot at the same viewport width. */
+	@container product-card (min-width: 24rem) {
+		.highlights {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			column-gap: var(--space-4);
+		}
 	}
 	.highlights li {
 		position: relative;

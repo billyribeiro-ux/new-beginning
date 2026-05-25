@@ -172,6 +172,13 @@
 
 <style>
 	.dt-wrap {
+		/* Container-relative: the table's chrome (search box, count,
+		 * pager) reflows based on the table's own width — not the
+		 * viewport's. A table embedded in a narrow dashboard column
+		 * gets the stacked layout even on a wide screen. */
+		container-type: inline-size;
+		container-name: data-table;
+
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
@@ -181,6 +188,17 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-3);
+	}
+	/* Stack the toolbar vertically when the table is narrow so the
+	 * search box keeps full width instead of squeezing to a sliver. */
+	@container data-table (max-width: 32rem) {
+		.toolbar {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.search {
+			max-width: none;
+		}
 	}
 	.search {
 		position: relative;
@@ -275,6 +293,15 @@
 		align-items: center;
 		font-size: var(--text-xs);
 		color: var(--ink-400);
+	}
+	/* In narrow tables the pager's count + buttons collide; stack
+	 * them so the buttons get their own row and remain tappable. */
+	@container data-table (max-width: 26rem) {
+		.pager {
+			flex-direction: column;
+			gap: var(--space-3);
+			align-items: stretch;
+		}
 	}
 	.pager button {
 		padding: var(--space-2) var(--space-3);

@@ -91,6 +91,12 @@
 
 <style>
 	.stat-card {
+		/* Container-relative: in a tight dashboard column the sparkline
+		 * would overlap the value; container queries hide it cleanly
+		 * regardless of viewport width. */
+		container-type: inline-size;
+		container-name: stat-card;
+
 		position: relative;
 		padding: var(--space-5) var(--space-6);
 		background: var(--surface-1);
@@ -173,6 +179,14 @@
 		width: 100px;
 		height: 36px;
 		opacity: 0.6;
+	}
+	/* Below ~15rem (240px) the sparkline can't fit alongside the value
+	 * without overlapping; hide it. The card still tells the same
+	 * story via the delta percent in the footer. */
+	@container stat-card (max-width: 15rem) {
+		.spark {
+			display: none;
+		}
 	}
 	.dot {
 		position: absolute;
