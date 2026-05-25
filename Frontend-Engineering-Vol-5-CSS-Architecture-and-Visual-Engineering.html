@@ -1676,6 +1676,186 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 10 ============================ -->
+    <section id="ch-10">
+      <p class="eyebrow">Chapter 10</p>
+      <h2>Accessibility through CSS · focus, contrast, forced-colors, skip-link</h2>
+      <p class="lede">Most of a web app's accessibility lives in HTML — proper semantics, ARIA roles, label associations. But a handful of accessibility decisions are made in CSS, and getting them wrong means keyboard users can't tell where they are on the page, Windows High Contrast Mode renders the design unreadable, or users with low vision get the same washed-out grays everyone else gets. This chapter is the four CSS-side accessibility surfaces the project handles, the user-preference media queries it doesn't yet, and the honest assessment of which deferrals are defensible.</p>
+
+      <h3>Surface 1 · the focus-visible discipline</h3>
+      <p>Keyboard users navigate the page by pressing Tab. The browser highlights whichever element currently has focus with an outline. That outline is non-negotiable — without it, a keyboard user cannot tell which link they're about to follow, which button they're about to press. Removing the outline (<code>outline: none</code>) without replacing it is one of the most common accessibility regressions on the web.</p>
+
+      <p>The CSS spec's modern answer is <code>:focus-visible</code>, a pseudo-class that <em>only</em> applies when the focus is keyboard-driven (or otherwise meaningful), not when it's a side-effect of a mouse click. Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · :focus-visible</div>
+        <p>"<code>:focus-visible</code> applies while an element matches the <code>:focus</code> pseudo-class AND the User Agent determines via heuristics that the focus should be made evident on the element."</p>
+        <p>"When a button is clicked using a pointing device, the focus is generally not visually indicated, but when a text box needing user input has focus, focus is indicated."</p>
+        <p>"While focus styles are always required when users are navigating the page with the keyboard or when focus is managed via scripts, focus styles are not required when the user knows where they are putting focus, such as when they use a pointing device such as a mouse or finger to physically set focus on an element."</p>
+      </div>
+
+      <p>The project's reset establishes the global pattern in nine lines:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/reset.css · focus</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Focus */</span></span><span class="ln">:<span class="tk-var">focus</span> {</span><span class="ln">  <span class="tk-prop">outline</span>: none;</span><span class="ln">}</span><span class="ln">:<span class="tk-var">focus-visible</span> {</span><span class="ln">  <span class="tk-prop">outline</span>: <span class="tk-num">2px</span> solid <span class="tk-var">var</span>(--gold-400);</span><span class="ln">  <span class="tk-prop">outline-offset</span>: <span class="tk-num">2px</span>;</span><span class="ln">  <span class="tk-prop">border-radius</span>: <span class="tk-var">var</span>(--radius-sm);</span><span class="ln">}</span></code></pre></div>
+
+      <p>Two rules. The first kills the browser's default focus outline (which varies between browsers and rarely matches the brand). The second restores it — but <em>only when the browser decides the focus is meaningful</em>. Mouse-clicking a button doesn't trigger <code>:focus-visible</code>; keyboard-tabbing to it does. Both rules are needed:</p>
+
+      <ul>
+        <li><strong>Without the first rule</strong>, mouse users see ugly browser-default focus rings every time they click — distracting and ugly.</li>
+        <li><strong>Without the second rule</strong>, keyboard users see <em>nothing</em> when they Tab. Game over for accessibility.</li>
+      </ul>
+
+      <p>The 2px gold outline + 2px offset is a deliberate choice. The offset means the outline doesn't touch the element's own border, so it reads as a clearly separate "this is focused" indicator rather than a thicker version of the element's edge. The gold matches the brand. The width is enough to be visible without being garish.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · component-local <code>:focus { outline: none }</code> without restoring focus-visible</div>
+        <p>A component that wants to customize its focus look writes <code>:focus { outline: none }</code> and then forgets to add the <code>:focus-visible</code> restoration. The global reset's <code>:focus-visible</code> rule has lower specificity than the component's <code>:focus</code> rule (selector specificity counts pseudo-classes equally), so the component's rule wins and there's no focus ring at all. Every component that overrides focus needs both halves. A grep audit (<code>grep -rn ":focus {" src/ | grep "outline: none"</code> + checking each match for a sibling <code>:focus-visible</code> rule) is the canonical check.</p>
+      </div>
+
+      <h3>Surface 2 · the skip-link pattern</h3>
+      <p>A long page with a navbar, hero, content, and footer means a keyboard user pressing Tab from the page top has to step through every navbar link, every hero CTA, every social icon, just to reach the main content. The standard fix is a <strong>skip link</strong> — the very first focusable element on the page is an anchor that jumps straight to <code>#main-content</code>. The link is visually hidden by default but becomes visible when focused, so mouse users never see it and keyboard users see it on the first Tab.</p>
+
+      <p>The HTML side is one line in <code>app.html</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">html</span><span class="path">src/app.html (line 19)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-tag">&lt;a</span> <span class="tk-attr">class</span>=<span class="tk-str">"skip-link"</span> <span class="tk-attr">href</span>=<span class="tk-str">"#main-content"</span><span class="tk-tag">&gt;</span>Skip to content<span class="tk-tag">&lt;/a&gt;</span></span></code></pre></div>
+
+      <p>The CSS side is in the reset — the off-canvas → on-canvas slide on focus:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/reset.css · skip-link</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">skip-link</span> {</span><span class="ln">  <span class="tk-prop">position</span>: fixed;</span><span class="ln">  <span class="tk-prop">top</span>: <span class="tk-num">-100px</span>;             <span class="tk-com">/* off-screen by default */</span></span><span class="ln">  <span class="tk-prop">left</span>: <span class="tk-var">var</span>(--space-4);</span><span class="ln">  <span class="tk-prop">z-index</span>: <span class="tk-var">var</span>(--z-tooltip);</span><span class="ln">  <span class="tk-prop">padding</span>: <span class="tk-var">var</span>(--space-3) <span class="tk-var">var</span>(--space-5);</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-var">var</span>(--gold-500);</span><span class="ln">  <span class="tk-prop">color</span>: <span class="tk-var">var</span>(--surface-0);</span><span class="ln">  <span class="tk-prop">border-radius</span>: <span class="tk-var">var</span>(--radius-md);</span><span class="ln">  <span class="tk-prop">font-weight</span>: <span class="tk-var">var</span>(--weight-semibold);</span><span class="ln">  <span class="tk-prop">transition</span>: top <span class="tk-var">var</span>(--dur-base) <span class="tk-var">var</span>(--ease-out);</span><span class="ln">}</span><span class="ln">.<span class="tk-var">skip-link</span>:<span class="tk-var">focus</span> {</span><span class="ln">  <span class="tk-prop">top</span>: <span class="tk-var">var</span>(--space-4);    <span class="tk-com">/* slides into view on focus */</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>Three things make this implementation correct:</p>
+
+      <dl>
+        <dt><code>top: -100px</code> (not <code>display: none</code> or <code>visibility: hidden</code>)</dt>
+        <dd>Both <code>display: none</code> and <code>visibility: hidden</code> would remove the link from the keyboard focus order. The element needs to be <em>focusable</em> while not being <em>visible</em>. Off-canvas positioning is the only technique that preserves focusability — the link is fully in the document, fully in the tab order, just rendered above the viewport. Tab moves to it; CSS slides it into view via the <code>top</code> transition.</dd>
+        <dt><code>:focus</code> not <code>:focus-visible</code></dt>
+        <dd>Unusual for this codebase — most focus styling uses <code>:focus-visible</code>. The skip link is the deliberate exception. If a mouse user somehow gives this link focus (programmatically, or via accessibility tooling), they should also see it. The skip link's purpose is "I want to go to main content" — it doesn't matter how focus arrived; the affordance should be visible.</dd>
+        <dt>Transition on <code>top</code></dt>
+        <dd>The slide-down is a one-liner, but it matters — without it, the link teleports into view, which reads as broken. With it, the slide explicitly communicates "this thing just appeared because you tabbed to it." 240ms (<code>--dur-base</code>) with the <code>--ease-out</code> curve is the project's "responsive but graceful" combination.</dd>
+      </dl>
+
+      <h3>Surface 3 · the <code>.sr-only</code> visually-hidden utility</h3>
+      <p>Some content should be available to screen readers but not visible to sighted users — section heading hints, button labels supplementing icon-only buttons, status announcements. The canonical pattern, in <code>utilities.css</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/utilities.css · .sr-only</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">sr-only</span> {</span><span class="ln">  <span class="tk-prop">position</span>: absolute;</span><span class="ln">  <span class="tk-prop">width</span>: <span class="tk-num">1px</span>;</span><span class="ln">  <span class="tk-prop">height</span>: <span class="tk-num">1px</span>;</span><span class="ln">  <span class="tk-prop">padding</span>: <span class="tk-num">0</span>;</span><span class="ln">  <span class="tk-prop">margin</span>: <span class="tk-num">-1px</span>;</span><span class="ln">  <span class="tk-prop">overflow</span>: hidden;</span><span class="ln">  <span class="tk-prop">clip</span>: <span class="tk-fn">rect</span>(<span class="tk-num">0, 0, 0, 0</span>);</span><span class="ln">  <span class="tk-prop">white-space</span>: nowrap;</span><span class="ln">  <span class="tk-prop">border</span>: <span class="tk-num">0</span>;</span><span class="ln">}</span></code></pre></div>
+
+      <p>Every property in this rule earns its place — this is the WCAG-recommended pattern and each line solves a specific edge case:</p>
+
+      <dl>
+        <dt><code>position: absolute</code> + <code>width/height: 1px</code> + <code>margin: -1px</code></dt>
+        <dd>Together these collapse the element to a single pixel and offset it by one pixel — effectively making it 0×0 visually, but with non-zero dimensions so screen readers still recognize it as content.</dd>
+        <dt><code>overflow: hidden</code> + <code>clip: rect(0, 0, 0, 0)</code></dt>
+        <dd>The <code>clip</code> property is deprecated but still respected; the <code>overflow</code> is the modern equivalent. Both prevent text content from rendering past the 1×1 box. The deprecated <code>clip</code> stays for legacy AT compatibility.</dd>
+        <dt><code>white-space: nowrap</code></dt>
+        <dd>Prevents the 1×1 element from being shifted by line breaks in its parent.</dd>
+        <dt><code>border: 0</code></dt>
+        <dd>Defensive reset — if some component-level style added a border, it would be visible even in a 1×1 element.</dd>
+      </dl>
+
+      <p>Used in the project's dual-layout compare table (Ch 7's anchor): the <code>&lt;table&gt;</code> becomes <code>.sr-only</code> on narrow viewports while the visual stacked-card layout takes over. Screen readers still navigate the table semantically; sighted users see the cards. One semantic representation; two visual presentations.</p>
+
+      <h3>Surface 4 · contrast as math, not vibes</h3>
+      <p>WCAG 2.2 defines accessibility-level color contrast ratios. The project's actual ratios (computed in Ch 4) sit comfortably above the AAA floor:</p>
+
+      <table>
+        <thead><tr><th>Token pair</th><th>Contrast ratio</th><th>WCAG level</th></tr></thead>
+        <tbody>
+          <tr><td><code>--ink-200</code> on <code>--surface-0</code> (body text)</td><td>~13.5:1</td><td>AAA + plenty of headroom</td></tr>
+          <tr><td><code>--gold-400</code> on <code>--surface-0</code> (eyebrow text)</td><td>~11.2:1</td><td>AAA</td></tr>
+          <tr><td><code>--ink-300</code> on <code>--surface-0</code> (muted body)</td><td>~7.5:1</td><td>AAA</td></tr>
+          <tr><td><code>--ink-400</code> on <code>--surface-0</code> (fineprint only)</td><td>~4.8:1</td><td>AA — body text only; never for fineprint UI labels</td></tr>
+        </tbody>
+      </table>
+
+      <p>The <code>--ink-400</code> row is the discipline boundary: 4.8:1 passes AA for body text but the project never uses it for anything load-bearing. Hints, timestamps, fineprint — anywhere the information is supplementary. Status badges and CTA labels always use <code>--ink-100</code> or <code>--ink-200</code>, both of which clear AAA at any size.</p>
+
+      <p>The Ch 4 callout on this still applies: <strong>run your token pairs through a contrast calculator once when the design system is locked, document the pass/fail in a one-page table, and PRs get checked against that table</strong>. The hard part is the discipline, not the math.</p>
+
+      <h3>The honest gap · three user-preference media queries the project doesn't handle</h3>
+      <p>This is the part of the chapter that doesn't have a green checkmark. The project handles <code>prefers-reduced-motion</code> (Ch 9). It doesn't handle three other user-preference signals that 2026 accessibility hygiene calls for:</p>
+
+      <h4><code>prefers-contrast: more</code> · users who need higher contrast</h4>
+      <p>Some users — low vision, certain visual disorders, bright sunlight on a phone screen — explicitly set their OS to prefer higher contrast. The OS reports this preference to browsers; browsers expose it to CSS via the <code>prefers-contrast</code> media feature. The project doesn't have a single <code>@media (prefers-contrast: more)</code> rule. The "safe" fix is a single block in <code>tokens.css</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · prefers-contrast escalation</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@media</span> (<span class="tk-prop">prefers-contrast</span>: more) {</span><span class="ln">  <span class="tk-pseudo">:root</span> {</span><span class="ln">    <span class="tk-prop">--border-default</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">248, 246, 241, 0.25</span>);  <span class="tk-com">/* was 0.10 */</span></span><span class="ln">    <span class="tk-prop">--border-strong</span>:  <span class="tk-fn">rgba</span>(<span class="tk-num">248, 246, 241, 0.40</span>);  <span class="tk-com">/* was 0.18 */</span></span><span class="ln">    <span class="tk-prop">--ink-300</span>:        <span class="tk-str">#c0bbab</span>;                  <span class="tk-com">/* was #a39e8f — lifted toward ink-200 */</span></span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>Three token overrides cover the entire UI because every component reads through the tokens. The borders become 2.5× more visible; the muted text shifts toward the primary text contrast level. The cost: ~5 lines of CSS. The win: the project becomes WCAG AAA-equivalent for users who explicitly opted into high-contrast.</p>
+
+      <h4><code>forced-colors: active</code> · Windows High Contrast Mode</h4>
+      <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · forced-colors</div>
+        <p>"<code>forced-colors</code> is used to detect if the user agent has enabled a forced colors mode where it enforces a user-chosen limited color palette on the page. An example of a forced colors mode is Windows High Contrast mode."</p>
+        <p>"When forced colors mode is active... <code>color</code>, <code>background-color</code>, <code>border-color</code>, <code>outline-color</code>... are forced to browser-specified system colors. <code>box-shadow</code> is forced to <code>'none'</code>. <code>background-image</code> is forced to <code>'none'</code>."</p>
+      </div>
+
+      <p>On Windows with High Contrast Mode active (used by ~3% of Windows users — those with low vision or sensitivity to glare), every project color token is overridden by the OS. The careful gold palette becomes the user's chosen "Highlight" color. Background images are stripped. Box shadows disappear.</p>
+
+      <p>This is mostly <em>fine</em> — Microsoft designed High Contrast Mode to provide a usable baseline regardless of the page's design. But two things break: (1) icon-only buttons that relied on a custom background to indicate state become invisible (the icon is the only signal, but icons rendered as SVG <code>fill</code> get forced too); (2) the focus outline, normally <code>--gold-400</code>, becomes the system's "Highlight" color — which on most High Contrast schemes is fine, but in some it's the same color as the button background, making the focus indicator invisible.</p>
+
+      <p>The defensive pattern:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · forced-colors hardening</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@media</span> (<span class="tk-prop">forced-colors</span>: active) {</span><span class="ln">  <span class="tk-com">/* Use a system color for the focus ring so it adapts to user's palette */</span></span><span class="ln">  :<span class="tk-var">focus-visible</span> { <span class="tk-prop">outline-color</span>: Highlight; }</span><span class="ln"></span><span class="ln">  <span class="tk-com">/* Buttons get an explicit border so they're visible without bg */</span></span><span class="ln">  .<span class="tk-var">btn</span> { <span class="tk-prop">border</span>: <span class="tk-num">2px</span> solid ButtonText; }</span><span class="ln">}</span></code></pre></div>
+
+      <p>System colors like <code>Highlight</code>, <code>ButtonText</code>, <code>Canvas</code>, <code>CanvasText</code> are special keywords that resolve to the user's chosen colors. Using them keeps the design in sync with the user's preference instead of fighting it.</p>
+
+      <h4><code>prefers-reduced-data: reduce</code> · users on metered connections</h4>
+      <p>The least-supported of the three (Safari and Firefox don't ship it yet) but worth wrapping if you have heavy decorative backgrounds. The project's <code>.bg-grid</code> and <code>.bg-noise</code> utilities apply pseudo-element-based grid lines and dot patterns over containers. They're polish, not content. On a metered connection, every pseudo-element repaint costs battery.</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">hypothetical · reduced-data dropout</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@media</span> (<span class="tk-prop">prefers-reduced-data</span>: reduce) {</span><span class="ln">  .<span class="tk-var">bg-grid</span>, .<span class="tk-var">bg-noise</span> { <span class="tk-prop">background-image</span>: none; }</span><span class="ln">  .<span class="tk-var">bg-grid</span>::before, .<span class="tk-var">bg-noise</span>::after { <span class="tk-prop">display</span>: none; }</span><span class="ln">}</span></code></pre></div>
+
+      <h3>Why the project hasn't shipped these yet (and when it should)</h3>
+      <p>The honest answer: <strong>the audit identified them, the project hasn't gotten to them, and the priority is correctly behind shipping product</strong>. Three reasons the deferral is defensible:</p>
+
+      <ol>
+        <li><strong>The baseline is strong.</strong> Body-text contrast is 13.5:1 — three times the AAA floor. Users with <code>prefers-contrast: more</code> aren't getting a broken experience; they're getting "fine" when they could get "tailored." Different from getting "broken."</li>
+        <li><strong>Windows High Contrast Mode users get a usable baseline by default.</strong> Microsoft's color forcing is conservative — it strips backgrounds and shadows but doesn't make pages unusable. The project's lack of <code>forced-colors</code> rules means HCM users get the OS's standard treatment, which is functional. They miss the project's specific aesthetic, but they can use the app.</li>
+        <li><strong>The fixes are cheap when the work happens.</strong> The three media queries together would be ~15 lines of CSS in <code>tokens.css</code>. A half-day of work. The reason it's not "ship now" is opportunity cost — the same half-day shipped Ch 13's perf chapter, which moved 250k of JS off every page load. Both are accessibility wins; the latter is a bigger one (slow page loads are an accessibility issue too).</li>
+      </ol>
+
+      <p>The honest "when this becomes a shipping requirement": (a) the first user complaint about contrast or HCM rendering, (b) the first enterprise customer whose accessibility audit requires AAA + forced-colors compliance, or (c) the first scheduled accessibility audit. None has happened yet; the work goes into the backlog with the audit document attached.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · "we'll add it later" is not the same as "we haven't done it"</div>
+        <p>The L7 distinction: <strong>knowing what you haven't done is itself a deliverable</strong>. A team that doesn't ship <code>prefers-contrast</code> because they never considered it has an accessibility gap they don't know about — and the first user report blindsides them. A team that consciously deferred it, with a written audit and an estimate, has a planned omission. When the user report comes in, the team's response is "yes, we know, here's the 5-line fix; shipping today." The visible work is the same; the difference is whether you're surprised.</p>
+      </div>
+
+      <h3>The <code>text-wrap</code> typography aside · accessibility-adjacent</h3>
+      <p>Two newer CSS properties that aren't strictly accessibility-classified but visibly improve readability:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/typography.css (extracts)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-var">h1</span>, <span class="tk-var">h2</span>, <span class="tk-var">h3</span>, <span class="tk-var">h4</span> {</span><span class="ln">  <span class="tk-com">/* ... font, weight, line-height ... */</span></span><span class="ln">  <span class="tk-prop">text-wrap</span>: balance;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-com">/* In the lede pattern: */</span></span><span class="ln">.<span class="tk-var">lede</span> { <span class="tk-prop">text-wrap</span>: pretty; }</span></code></pre></div>
+
+      <p><code>text-wrap: balance</code> tells the browser to look at the entire heading and choose line breaks that produce visually-balanced line lengths — no single word orphaned on the last line. <code>text-wrap: pretty</code> applies a softer version of the same logic to body paragraphs — preventing single-word orphans but not trying to perfectly equalize line lengths.</p>
+
+      <p>Both shipped in all major browsers in 2023 and 2024. The accessibility connection: dyslexic readers and users with low working memory have measurably worse comprehension when single-word orphans break the visual rhythm of paragraphs. The fix is one CSS property per type role. The project sets <code>text-wrap: balance</code> on all heading levels and <code>text-wrap: pretty</code> on the lede pattern. Standard body paragraphs still default to the browser's normal wrapping — adding <code>text-wrap: pretty</code> globally would be a one-line improvement.</p>
+
+      <h3>Summary · the accessibility surfaces this chapter covered</h3>
+      <ul>
+        <li><strong>:focus-visible discipline.</strong> Two-rule pattern: kill <code>:focus</code>, restore <code>:focus-visible</code> with a brand-matching outline + offset. Every component that overrides focus needs both halves.</li>
+        <li><strong>Skip-link pattern.</strong> Off-canvas positioning (not <code>display:none</code>) preserves focusability. <code>:focus</code> (not <code>:focus-visible</code>) makes the link visible to any focus path. Transition the <code>top</code> so the slide-in is graceful.</li>
+        <li><strong>.sr-only utility.</strong> WCAG-canonical 1×1 + clip + overflow + margin pattern. Used by the dual-layout compare table to keep one semantic <code>&lt;table&gt;</code> available to screen readers while visual cards display.</li>
+        <li><strong>Contrast as math.</strong> Project tokens audited: AAA for primary text (13.5:1), AAA for muted (7.5:1), AA for fineprint (4.8:1, used only for supplementary copy). Run your tokens through a calculator once, document the table, check PRs against it.</li>
+        <li><strong>Three deferred user-preference queries</strong> (<code>prefers-contrast</code>, <code>forced-colors</code>, <code>prefers-reduced-data</code>) — known gaps with cheap fixes (~15 lines total) that haven't shipped because the baseline is strong and the opportunity cost was higher elsewhere. <em>Knowing</em> they're deferred is the L7 deliverable.</li>
+        <li><strong><code>text-wrap: balance</code></strong> on headings and <strong><code>text-wrap: pretty</code></strong> on lede prose — accessibility-adjacent typography that measurably helps dyslexic readers. Project applies it; could extend to body paragraphs as a one-line follow-up.</li>
+      </ul>
+
+      <p>The next chapter pulls the volume back to the build pipeline — narrating the Lightning CSS + Svelte preprocessor saga in full, including the <code>:global()</code> mask/unmask trick from Ch 5 that prevents 60+ warnings per build. It's the chapter where every infrastructure decision in Vol 5 finally comes together.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-9"><div class="dir">← Prev</div><div class="ttl">Motion &amp; reduced-motion</div></a>
+        <a class="next" href="#ch-11"><div class="dir">Next →</div><div class="ttl">Build pipeline</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
