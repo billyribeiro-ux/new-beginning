@@ -834,6 +834,199 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 5 ============================ -->
+    <section id="ch-5">
+      <p class="eyebrow">Chapter 05</p>
+      <h2>Single-source breakpoints · three failed attempts, the working pipeline</h2>
+      <p class="lede">CSS Cascade has had custom properties since 2017. CSS Media Queries Level 5 added <code>@custom-media</code> at-rules so those breakpoints could be referenced from <code>@media</code> queries. The two should obviously connect — declare your breakpoints once, reference them everywhere. They don't. Browsers shipped one half, draft-tracked the other, and the project's first attempt to bridge them produced three consecutive failed builds before the working pipeline emerged. This chapter is the diagnosis, the false starts, and the four-line solution that actually shipped.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commit</div>
+        <p><code>affc7b5</code> · <em>css(infra): single-source breakpoints via @custom-media</em> — the migration that landed after three failures.</p>
+      </div>
+
+      <h3>The starting state · "tokens" that aren't tokens</h3>
+      <p>Before <code>affc7b5</code>, the project's <code>tokens.css</code> had this block:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css (BEFORE)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* === Breakpoints (reference only — use @media directly) === */</span></span><span class="ln"><span class="tk-prop">--bp-sm</span>: <span class="tk-num">480px</span>;</span><span class="ln"><span class="tk-prop">--bp-md</span>: <span class="tk-num">768px</span>;</span><span class="ln"><span class="tk-prop">--bp-lg</span>: <span class="tk-num">1024px</span>;</span><span class="ln"><span class="tk-prop">--bp-xl</span>: <span class="tk-num">1280px</span>;</span><span class="ln"><span class="tk-prop">--bp-2xl</span>: <span class="tk-num">1536px</span>;</span><span class="ln"><span class="tk-prop">--bp-3xl</span>: <span class="tk-num">1920px</span>;</span><span class="ln"><span class="tk-prop">--bp-4xl</span>: <span class="tk-num">2560px</span>;</span></code></pre></div>
+
+      <p>The comment said the quiet part out loud: <em>"reference only — use @media directly."</em> Custom properties cannot be used inside <code>@media</code> queries. The CSS spec defines <code>@media</code> conditions as static expressions evaluated at parse time; <code>var(--bp-md)</code> resolves at <em>cascade</em> time, which is after parse. So <code>@media (min-width: var(--bp-md))</code> is invalid CSS — silently ignored by every browser.</p>
+
+      <p>The "tokens" were documentation. Components couldn't use them. Every breakpoint reference across 42 source files was a hardcoded <code>768px</code>, <code>1024px</code>, etc. The "tokens" existed to remind developers what the sanctioned values were — but nothing enforced that. An audit found the drift:</p>
+
+      <table>
+        <thead><tr><th>Hardcoded value found in components</th><th>Sanctioned in tokens.css?</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td><code>640px</code></td><td>No — closest sanctioned is 480 or 768</td><td><strong>11 components</strong></td></tr>
+          <tr><td><code>1440px</code></td><td>No — closest sanctioned is 1280 or 1536</td><td><strong>1 component</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p>12 violations of a convention that had no enforcement mechanism. The fix had to do two things: (a) make the tokens <em>actually referenceable</em> from <code>@media</code>, and (b) snap the 12 outliers to the closest sanctioned values. The harder problem is (a).</p>
+
+      <h3>The right answer · <code>@custom-media</code>, but with caveats</h3>
+      <p>CSS Media Queries Level 5 (still a working draft as of 2026) defines <code>@custom-media</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">CSS Media Queries Level 5 syntax</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@custom-media</span> --<span class="tk-var">bp-md</span> (<span class="tk-prop">min-width</span>: <span class="tk-num">768px</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Now this works: */</span></span><span class="ln"><span class="tk-kw">@media</span> (--<span class="tk-var">bp-md</span>) {</span><span class="ln">  .<span class="tk-var">card</span> { <span class="tk-prop">grid-template-columns</span>: <span class="tk-num">1fr 1fr</span>; }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The browser substitutes the named declaration into the <code>@media</code> query at parse time. Exactly what we want. The catch: <strong>no browser implements <code>@custom-media</code> natively</strong> as of 2026. It has to be compiled away by a build tool before the browser sees the CSS. The project uses <a href="https://lightningcss.dev/">Lightning CSS</a> via Vite, which supports the draft behind a feature flag. The flag exists. The path to actually enabling it across this SvelteKit + Svelte 5 + Vite + Lightning CSS stack — that's what took three attempts.</p>
+
+      <h3>Attempt 1 · the obvious solution that doesn't compile</h3>
+      <p>First attempt: declare the custom-media map directly in Vite's config, the way you'd configure any other Lightning CSS option.</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">vite.config.ts (attempt 1 — FAILED)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">export default</span> <span class="tk-fn">defineConfig</span>({</span><span class="ln">  <span class="tk-prop">css</span>: {</span><span class="ln">    <span class="tk-prop">transformer</span>: <span class="tk-str">'lightningcss'</span>,</span><span class="ln">    <span class="tk-prop">lightningcss</span>: {</span><span class="ln">      <span class="tk-prop">drafts</span>: { <span class="tk-prop">customMedia</span>: <span class="tk-bool">true</span> },</span><span class="ln">      <span class="tk-prop">customMedia</span>: {  <span class="tk-com">// ← does this work?</span></span><span class="ln">        <span class="tk-str">'--bp-md'</span>: <span class="tk-str">'(min-width: 768px)'</span>,</span><span class="ln">        <span class="tk-com">/* etc */</span></span><span class="ln">      }</span><span class="ln">    }</span><span class="ln">  }</span><span class="ln">});</span></code></pre></div>
+
+      <p>TypeScript complained immediately: <code>customMedia</code> is not a valid property on Vite's <code>LightningCSSOptions</code> type. Reading <a href="https://github.com/parcel-bundler/lightningcss/blob/master/node/index.d.ts">Lightning CSS's own type definitions</a> on disk:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">node_modules/lightningcss/node/index.d.ts (extract)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">export interface</span> <span class="tk-typ">Drafts</span> {</span><span class="ln">  <span class="tk-com">/** Whether to enable @custom-media rules. */</span></span><span class="ln">  <span class="tk-prop">customMedia</span>?: <span class="tk-typ">boolean</span></span><span class="ln">}</span></code></pre></div>
+
+      <p>The boolean <code>drafts.customMedia</code> enables Lightning CSS's <em>parser</em> to recognize <code>@custom-media</code> declarations <em>found in CSS source files</em>. There is no JavaScript-side map for declaring custom media programmatically. The TypeScript type wasn't wrong — the runtime really doesn't accept that field. <strong>Attempt 1 was a category error</strong>: I was looking for a feature that doesn't exist.</p>
+
+      <h3>Attempt 2 · a custom Vite plugin that prepends declarations to every CSS file</h3>
+      <p>If Lightning CSS only resolves <code>@custom-media</code> declarations that appear in the same CSS source, the workaround is to inject them at the top of every CSS file. A custom Vite plugin can hook the <code>transform</code> step:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">vite.config.ts (attempt 2 — FAILED)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">function</span> <span class="tk-fn">customMediaPlugin</span>(): <span class="tk-typ">Plugin</span> {</span><span class="ln">  <span class="tk-kw">return</span> {</span><span class="ln">    <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex:custom-media'</span>,</span><span class="ln">    <span class="tk-prop">enforce</span>: <span class="tk-str">'pre'</span>,</span><span class="ln">    <span class="tk-fn">transform</span>(<span class="tk-var">code</span>, <span class="tk-var">id</span>) {</span><span class="ln">      <span class="tk-kw">if</span> (!<span class="tk-var">id</span>.<span class="tk-fn">endsWith</span>(<span class="tk-str">'.css'</span>) &amp;&amp; !<span class="tk-var">id</span>.<span class="tk-fn">includes</span>(<span class="tk-str">'?svelte&amp;type=style'</span>)) <span class="tk-kw">return</span> <span class="tk-kw">null</span>;</span><span class="ln">      <span class="tk-kw">return</span> { <span class="tk-prop">code</span>: <span class="tk-typ">CUSTOM_MEDIA</span> + <span class="tk-var">code</span>, <span class="tk-prop">map</span>: <span class="tk-kw">null</span> };</span><span class="ln">    }</span><span class="ln">  };</span><span class="ln">}</span></code></pre></div>
+
+      <p>The plugin matched both real <code>.css</code> files and Svelte's per-component virtual style imports (the <code>?svelte&type=style&lang.css</code> query string). It should have worked. The build failed instantly with the same error as before:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — build error</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm build</span>
+<span class="err">RolldownError: [lightningcss] Custom media query --bp-md is not defined</span>
+<span class="err">  at src/lib/components/marketing/Hero.svelte (during preprocess)</span></pre></div>
+
+      <p>The diagnosis took a while. The reason the plugin didn't fire: <strong>SvelteKit's <code>vitePreprocess</code> runs Lightning CSS inside Svelte's own preprocessor pipeline</strong>, which executes <em>before</em> Vite's plugin <code>transform</code> hooks see the file. By the time Vite would call my plugin on a <code>.svelte</code> file, Svelte had already invoked Lightning CSS on the <code>&lt;style&gt;</code> block, and Lightning CSS had already errored on the unknown <code>--bp-md</code>.</p>
+
+      <p>The lesson: <strong>vite-plugin-svelte processes <code>.svelte</code> files through its own LSP-aware pipeline that doesn't intersect with Vite's standard plugin hooks</strong>. Anything that needs to modify the CSS inside a <code>&lt;style&gt;</code> block must happen <em>inside</em> Svelte's preprocessor chain, not in a Vite plugin.</p>
+
+      <h3>Attempt 3 · a Svelte preprocessor running AFTER <code>vitePreprocess</code></h3>
+      <p>Svelte preprocessors can be chained. If <code>vitePreprocess</code> runs Lightning CSS, and I need the <code>@custom-media</code> declarations to be available <em>during</em> that Lightning CSS pass, then a custom preprocessor needs to inject them <em>before</em> <code>vitePreprocess</code> runs.</p>
+
+      <p>The first version got the chain order backwards:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js (attempt 3 — FAILED, wrong order)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">customMediaPreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-custom-media'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">return</span> { <span class="tk-prop">code</span>: <span class="tk-typ">CUSTOM_MEDIA</span> + <span class="tk-var">content</span> };</span><span class="ln">  }</span><span class="ln">};</span><span class="ln"></span><span class="ln"><span class="tk-kw">export default</span> {</span><span class="ln">  <span class="tk-prop">preprocess</span>: [<span class="tk-fn">vitePreprocess</span>(), <span class="tk-var">customMediaPreprocessor</span>]  <span class="tk-com">// ← vitePreprocess FIRST</span></span><span class="ln">};</span></code></pre></div>
+
+      <p>Same error. Svelte's <code>preprocess</code> array runs in order — but the order is left-to-right. With <code>vitePreprocess()</code> first in the array, Lightning CSS still saw the raw source before my preprocessor injected anything.</p>
+
+      <p>Swap the order:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js (attempt 3, fixed order — STILL FAILED)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">  <span class="tk-prop">preprocess</span>: [<span class="tk-var">customMediaPreprocessor</span>, <span class="tk-fn">vitePreprocess</span>()]</span></code></pre></div>
+
+      <p>Build succeeded on the first run. Then a different error appeared on the second build:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — new error after attempt 3</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm build</span>
+<span class="err">[lightningcss] 'global' is not recognized as a valid pseudo-class. Did you mean '::global' (pseudo-element) or is this a typo?</span>
+<span class="err">  src/lib/components/marketing/Hero.svelte:186:13</span>
+<span class="err">    186 |   .trust li :global(svg) {</span></pre></div>
+
+      <p>Now Lightning CSS was processing the <code>&lt;style&gt;</code> block <em>before</em> Svelte's own compiler had a chance to strip the <code>:global()</code> syntax. <code>:global()</code> is a Svelte-specific selector that the Svelte compiler removes during its scoping pass; Lightning CSS doesn't know it exists. Adding the <code>@custom-media</code> declarations to the source had succeeded — but it had also moved Lightning CSS earlier in the pipeline than the Svelte compiler.</p>
+
+      <p>This was the third dead end. Each attempt fixed the previous error and introduced a new one. The pattern: <strong>any change to <em>when</em> Lightning CSS runs disturbs other parts of the Svelte pipeline that depend on the original timing</strong>.</p>
+
+      <h3>The working pipeline · three preprocessors, surgically ordered</h3>
+      <p>The solution that landed is conceptually different from the three failures. Instead of moving Lightning CSS around, it <em>brackets</em> Lightning CSS with two custom preprocessors — one before, one after — that mask the problematic syntax in each direction.</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js · CSS_FOUNDATION (the shared injection)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">CSS_FOUNDATION</span> = <span class="tk-str">`</span></span><span class="ln"><span class="tk-str">@layer reset, tokens, base, utilities, components, overrides;</span></span><span class="ln"><span class="tk-str"></span></span><span class="ln"><span class="tk-str">@custom-media --bp-sm (min-width: 480px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-md (min-width: 768px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-lg (min-width: 1024px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-xl (min-width: 1280px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-2xl (min-width: 1536px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-3xl (min-width: 1920px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-4xl (min-width: 2560px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-sm-down (max-width: 479.98px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-md-down (max-width: 767.98px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-lg-down (max-width: 1023.98px);</span></span><span class="ln"><span class="tk-str">`</span>;</span></code></pre></div>
+
+      <p>Note the dual responsibility: the foundation block declares both the <code>@layer</code> priority order (per Chapter 1) <em>and</em> the breakpoint <code>@custom-media</code> declarations. Both are needed in every CSS chunk; both share the same injection mechanism. Bundling them is a maintenance win.</p>
+
+      <p>The two preprocessors that bracket Lightning CSS:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js · the bracket pattern</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Pre-pass: inject foundation + mask :global() */</span></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">cssPrePreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-css-pre'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">const</span> <span class="tk-var">masked</span> = <span class="tk-var">content</span>.<span class="tk-fn">replace</span>(<span class="tk-str">/:global\b/g</span>, <span class="tk-str">':--svelte-global'</span>);</span><span class="ln">    <span class="tk-kw">return</span> {</span><span class="ln">      <span class="tk-prop">code</span>: <span class="tk-str">`${</span><span class="tk-var">CSS_FOUNDATION</span><span class="tk-str">}\n@layer components {\n${</span><span class="tk-var">masked</span><span class="tk-str">}\n}\n`</span></span><span class="ln">    };</span><span class="ln">  }</span><span class="ln">};</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Post-pass: unmask :global() so Svelte's compiler sees it */</span></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">cssPostPreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-css-post'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">return</span> { <span class="tk-prop">code</span>: <span class="tk-var">content</span>.<span class="tk-fn">replace</span>(<span class="tk-str">/:--svelte-global\b/g</span>, <span class="tk-str">':global'</span>) };</span><span class="ln">  }</span><span class="ln">};</span><span class="ln"></span><span class="ln"><span class="tk-kw">export default</span> {</span><span class="ln">  <span class="tk-prop">preprocess</span>: [<span class="tk-var">cssPrePreprocessor</span>, <span class="tk-fn">vitePreprocess</span>(), <span class="tk-var">cssPostPreprocessor</span>]</span><span class="ln">};</span></code></pre></div>
+
+      <p>The pre-pass does two things: prepend the foundation block (gives Lightning CSS what it needs) <em>and</em> rewrite <code>:global(</code> to <code>:--svelte-global(</code> (a custom pseudo-class Lightning CSS accepts silently). The post-pass undoes the masking before Svelte's compiler runs. Lightning CSS in the middle sees: known custom-media declarations, no unknown pseudo-class. Svelte's compiler at the end sees: clean CSS with <code>:global()</code> intact, ready to be scoped.</p>
+
+      <div class="callout why">
+        <div class="label">Why the mask works · CSS Selectors L4 forward-compatibility</div>
+        <p>CSS Selectors Level 4 specifies that any pseudo-class starting with <code>:--</code> is reserved for "custom pseudo-classes" and parsers should accept them silently if not recognized. That's the design escape hatch for adding new pseudo-classes without breaking older parsers. Lightning CSS honors this — it sees <code>:--svelte-global(svg)</code>, doesn't know what it means, and passes it through unchanged. Then the post-pass rewrites it back. Net effect: zero Lightning CSS warnings, zero output difference, zero Svelte compiler confusion.</p>
+      </div>
+
+      <h3>Vite config · enable the draft, document the noise</h3>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">vite.config.ts (current)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">css</span>: {</span><span class="ln">  <span class="tk-com">/* Route CSS through Lightning CSS as the transformer so the</span></span><span class="ln"><span class="tk-com">   * @custom-media draft (Media Queries Level 5) resolves at</span></span><span class="ln"><span class="tk-com">   * build time. Without `transformer: 'lightningcss'` the</span></span><span class="ln"><span class="tk-com">   * minifier-only mode runs too late in the pipeline and</span></span><span class="ln"><span class="tk-com">   * `@media (--bp-md)` references never expand. */</span></span><span class="ln">  <span class="tk-prop">transformer</span>: <span class="tk-str">'lightningcss'</span>,</span><span class="ln">  <span class="tk-prop">lightningcss</span>: {</span><span class="ln">    <span class="tk-prop">drafts</span>: { <span class="tk-prop">customMedia</span>: <span class="tk-bool">true</span> }</span><span class="ln">  }</span><span class="ln">},</span></code></pre></div>
+
+      <p>Three lines of actual config. The comment block is longer than the config — that's intentional. The choice between <code>cssMinify: 'lightningcss'</code> (Vite default; runs Lightning CSS only at the final minify stage) and <code>transformer: 'lightningcss'</code> (runs Lightning CSS during the preprocess pass) determines whether <code>@custom-media</code> resolves. The minifier-only mode runs <em>after</em> Vite has already finalized the CSS, so any unresolved <code>@media (--bp-md)</code> queries get passed through to the browser as literal text — which the browser then ignores.</p>
+
+      <h3>The <code>--bp-*</code> custom properties · still in tokens.css for a reason</h3>
+      <p>The original CSS-variable tokens didn't go away. They live alongside the <code>@custom-media</code> declarations:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css (current)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* === Breakpoints (these CSS variables remain for JS-side reads — e.g.</span></span><span class="ln"><span class="tk-com"> * matchMedia(window.getComputedStyle(...)). CSS uses the parallel</span></span><span class="ln"><span class="tk-com"> * @custom-media declarations below.) === */</span></span><span class="ln"><span class="tk-prop">--bp-sm</span>: <span class="tk-num">480px</span>;</span><span class="ln"><span class="tk-prop">--bp-md</span>: <span class="tk-num">768px</span>;</span><span class="ln"><span class="tk-prop">--bp-lg</span>: <span class="tk-num">1024px</span>;</span><span class="ln"><span class="tk-prop">--bp-xl</span>: <span class="tk-num">1280px</span>;</span><span class="ln"><span class="tk-prop">--bp-2xl</span>: <span class="tk-num">1536px</span>;</span><span class="ln"><span class="tk-prop">--bp-3xl</span>: <span class="tk-num">1920px</span>;</span><span class="ln"><span class="tk-prop">--bp-4xl</span>: <span class="tk-num">2560px</span>;</span></code></pre></div>
+
+      <p>JavaScript code occasionally needs to read a breakpoint at runtime — typically for <code>window.matchMedia(...)</code> calls, or for layout calculations that need to know the current breakpoint. The pattern: <code>const bpMd = getComputedStyle(document.documentElement).getPropertyValue('--bp-md').trim();</code>. JavaScript cannot read <code>@custom-media</code> declarations because they're a build-time concept that gets stripped before the browser sees the CSS. So both forms coexist: the <code>@custom-media</code> declarations for CSS authors, the CSS variables for JavaScript readers.</p>
+
+      <p>The triple-source-of-truth (custom-media in <code>breakpoints.css</code>, custom-media in <code>svelte.config.js</code>'s <code>CSS_FOUNDATION</code>, custom properties in <code>tokens.css</code>) is the one open weakness of this design. Three files have to stay in sync. The comment block at the top of <code>breakpoints.css</code> spells this out:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/breakpoints.css (top comment)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Keep three sources in sync:</span></span><span class="ln"><span class="tk-com"> *   • this file (global stylesheets)</span></span><span class="ln"><span class="tk-com"> *   • svelte.config.js (Svelte component blocks)</span></span><span class="ln"><span class="tk-com"> *   • the --bp-* CSS variables in tokens.css (for JS-side reads) */</span></span></code></pre></div>
+
+      <p>The honest "this could be better" footnote: a single source-of-truth file (e.g., <code>breakpoints.json</code>) consumed by both build configs and the CSS via a custom Vite plugin would eliminate the drift surface entirely. That refactor is on the backlog, not on the critical path.</p>
+
+      <h3>The 12 outliers · what the migration actually changed</h3>
+      <p>Beyond enabling <code>@custom-media</code>, the <code>affc7b5</code> migration snapped the 12 hardcoded outliers to their nearest sanctioned values:</p>
+
+      <table>
+        <thead><tr><th>Was</th><th>Now</th><th>Why this is safer</th></tr></thead>
+        <tbody>
+          <tr><td><code>@media (min-width: 640px)</code> ×11</td><td><code>@media (--bp-md)</code> (768px)</td><td>640px isn't a real breakpoint; it sits between phone landscape and tablet portrait. Snapping to 768px aligns with where layouts actually need to change.</td></tr>
+          <tr><td><code>@media (min-width: 1440px)</code> ×1</td><td><code>@media (--bp-xl)</code> (1280px)</td><td>1440px is laptop-default but inconsistent with the project's other 1280px references. Snapping down means the rule fires earlier on common laptops, which matches the design intent.</td></tr>
+        </tbody>
+      </table>
+
+      <p>The snapping shifted layout behavior in two pixel ranges:</p>
+      <ul>
+        <li><strong>640–767px viewports</strong>: the 11 affected components now stay in their mobile layout 128px later than before. Mostly invisible — most users either have phones (≤640px) or proper tablets (≥768px), and the 640–767 range catches a small slice of devices.</li>
+        <li><strong>1280–1439px viewports</strong>: the one affected rule fires 160px earlier than before. The component this hit was a dashboard card that benefits from the earlier breakpoint — most laptops sit in this range.</li>
+      </ul>
+
+      <p>Both changes were tested visually post-migration. Neither produced a regression. The win — consistent breakpoint usage across 42 files — was worth the small behavior shift.</p>
+
+      <h3>Current usage · proof the migration shipped</h3>
+      <p>A simple grep proves the new system is being used everywhere:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — @custom-media references in src/</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">grep -rho "@media (--bp-[a-z0-9-]*)" src/ | sort | uniq -c | sort -rn</span>
+<span class="out">  30 @media (--bp-md)</span>
+<span class="out">  24 @media (--bp-lg)</span>
+<span class="out">  16 @media (--bp-xl)</span>
+<span class="out">   4 @media (--bp-lg-down)</span>
+<span class="out">   3 @media (--bp-md-down)</span>
+<span class="out">   2 @media (--bp-3xl)</span>
+<span class="out">   2 @media (--bp-2xl)</span>
+<span class="out">   1 @media (--bp-sm-down)</span>
+<span class="out">   1 @media (--bp-4xl)</span></pre></div>
+
+      <p>83 total references across 42 files, every one routing through a named breakpoint, zero hardcoded pixel values in <code>@media</code> queries. Any new component that tries to use <code>@media (min-width: 640px)</code> would be a visible review-time flag (one of these things is not like the others). The drift surface that the migration fixed cannot quietly grow back.</p>
+
+      <h3>What this chapter is really about</h3>
+      <p>The technical content above — Lightning CSS draft flags, Svelte preprocessor chains, the <code>:--svelte-global</code> mask — is honest documentation of a working system. But the chapter is also a case study in <em>how problem-solving actually goes</em> when you're integrating bleeding-edge tooling.</p>
+
+      <p>The three failed attempts weren't wasted; each one taught the constraint that ruled it out:</p>
+
+      <ol>
+        <li><strong>Attempt 1 (Vite config map) → "the feature you want doesn't exist."</strong> Lesson: always check the actual library's TypeScript types before assuming an option exists. The TypeScript error wasn't wrong; the feature really wasn't there.</li>
+        <li><strong>Attempt 2 (Vite plugin) → "vite-plugin-svelte has its own pipeline you can't intercept."</strong> Lesson: any tool that processes its own file extension (<code>.svelte</code>, <code>.vue</code>, <code>.tsx</code>) typically wraps standard build hooks inside its own. Modifying CSS inside <code>.svelte</code> files requires going through that tool's preprocessor system.</li>
+        <li><strong>Attempt 3 (Svelte preprocessor) → "Lightning CSS doesn't understand Svelte syntax."</strong> Lesson: any time you put a CSS processor in front of Svelte, you're processing Svelte-specific syntax (<code>:global()</code>, scoped class hashes) with a tool that doesn't know about Svelte. The fix is masking, not reordering.</li>
+      </ol>
+
+      <p>The Principal-L7 move isn't to predict the working solution on the first try — it's to <em>not commit half-baked attempts</em> while you're still in the failure cycle. The final pipeline shipped as one clean commit (<code>affc7b5</code>) after the failures had been narrowed down on a scratch branch. The git history shows a working migration, not the journey. That's a deliberate hygiene choice — the journey lives in this chapter, where it serves educational purpose, not in the commit log where it would just be noise.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-4"><div class="dir">← Prev</div><div class="ttl">Color systems</div></a>
+        <a class="next" href="#ch-6"><div class="dir">Next →</div><div class="ttl">Container queries</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
