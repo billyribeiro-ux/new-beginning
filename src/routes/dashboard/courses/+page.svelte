@@ -108,12 +108,12 @@
 		gap: var(--space-5);
 		margin-bottom: clamp(2rem, 4vw, 3rem);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.cards-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1440px) {
+	@media (--bp-xl) {
 		.cards-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}
@@ -218,7 +218,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.suggest-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}

@@ -148,7 +148,7 @@
 		margin-top: var(--space-6);
 		align-items: start;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-grid {
 			grid-template-columns: 1.1fr 1fr;
 		}
@@ -308,7 +308,7 @@
 		gap: clamp(2rem, 5vw, 4rem);
 		align-items: start;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.toc-grid {
 			grid-template-columns: 1fr 1.4fr;
 		}

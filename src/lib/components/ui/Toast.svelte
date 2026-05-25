@@ -128,7 +128,7 @@
 		background: var(--surface-3);
 	}
 
-	@media (max-width: 480px) {
+	@media (--bp-sm-down) {
 		.toast-stack {
 			left: var(--space-4);
 			right: var(--space-4);

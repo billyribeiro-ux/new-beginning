@@ -222,7 +222,7 @@
 		margin-top: var(--space-6);
 		align-items: start;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-grid {
 			grid-template-columns: 1.2fr 1fr;
 		}
@@ -464,7 +464,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-3);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.outcomes {
 			grid-template-columns: 1fr 1fr;
 		}

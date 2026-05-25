@@ -97,7 +97,7 @@
 		box-shadow: var(--glow-gold-strong);
 		transform: scale(1.02);
 	}
-	@media (max-width: 1023px) {
+	@media (--bp-lg-down) {
 		.is-featured {
 			transform: none;
 		}

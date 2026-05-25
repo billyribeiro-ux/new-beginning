@@ -182,7 +182,7 @@
 		margin-top: var(--space-6);
 		align-items: end;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-grid {
 			grid-template-columns: 1.4fr 1fr;
 		}
@@ -235,12 +235,12 @@
 		gap: var(--space-6);
 		align-items: stretch;
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.pricing-grid {
 			grid-template-columns: 1fr 1fr;
 		}
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.pricing-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

@@ -218,7 +218,7 @@
 		color: var(--ink-100);
 	}
 
-	@media (max-width: 1023px) {
+	@media (--bp-lg-down) {
 		.sidebar {
 			position: fixed;
 			top: 0;

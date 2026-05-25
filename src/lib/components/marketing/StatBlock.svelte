@@ -36,7 +36,7 @@
 		grid-template-columns: repeat(2, 1fr);
 		gap: var(--space-6);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.stats {
 			grid-template-columns: repeat(4, 1fr);
 		}

@@ -288,12 +288,12 @@
 		gap: var(--space-4);
 		margin-bottom: clamp(1.5rem, 3vw, 2rem);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.stats {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.stats {
 			grid-template-columns: repeat(4, 1fr);
 		}
@@ -305,7 +305,7 @@
 		gap: var(--space-4);
 		margin-bottom: clamp(1.5rem, 3vw, 2rem);
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.charts-row {
 			grid-template-columns: 1.4fr 1fr;
 		}
@@ -317,7 +317,7 @@
 		gap: var(--space-4);
 		margin-bottom: var(--space-4);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.grid-2 {
 			grid-template-columns: 1fr 1fr;
 		}

@@ -104,7 +104,7 @@
 	.variant-inline {
 		flex-direction: column;
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.variant-inline {
 			flex-direction: row;
 			align-items: stretch;

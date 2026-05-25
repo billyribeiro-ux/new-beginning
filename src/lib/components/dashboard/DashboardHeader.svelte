@@ -148,7 +148,7 @@
 		border: 1px solid var(--border-default);
 		border-radius: var(--radius-xs);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.search {
 			display: block;
 		}
@@ -211,7 +211,7 @@
 	.name {
 		display: none;
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.name {
 			display: inline;
 		}

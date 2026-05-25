@@ -161,7 +161,7 @@
 	.name {
 		display: none;
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.name {
 			display: inline;
 		}

@@ -305,7 +305,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.layout {
 			grid-template-columns: 1.6fr 1fr;
 		}
@@ -520,7 +520,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-3);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.change-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

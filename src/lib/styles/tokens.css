@@ -1,7 +1,24 @@
 /* ============================================================
  * TradeFlex Trading — Design Tokens
  * Dark canvas + gold/amber luxury palette.
+ *
+ * Use `@media (--bp-md)` etc. anywhere — never hardcode pixel
+ * widths in @media queries. Component <style> blocks get the
+ * same declarations prepended by a Svelte preprocessor in
+ * svelte.config.js; the two sources must stay in sync.
  * ============================================================ */
+
+/* === Custom media (single source of truth for breakpoints) === */
+@custom-media --bp-sm (min-width: 480px);
+@custom-media --bp-md (min-width: 768px);
+@custom-media --bp-lg (min-width: 1024px);
+@custom-media --bp-xl (min-width: 1280px);
+@custom-media --bp-2xl (min-width: 1536px);
+@custom-media --bp-3xl (min-width: 1920px);
+@custom-media --bp-4xl (min-width: 2560px);
+@custom-media --bp-sm-down (max-width: 479.98px);
+@custom-media --bp-md-down (max-width: 767.98px);
+@custom-media --bp-lg-down (max-width: 1023.98px);
 
 :root {
 	/* === Color: surfaces (dark canvas) === */
@@ -162,7 +179,9 @@
 	--dur-slower: 680ms;
 	--dur-cinematic: 1100ms;
 
-	/* === Breakpoints (reference only — use @media directly) === */
+	/* === Breakpoints (these CSS variables remain for JS-side reads — e.g.
+	 * matchMedia(window.getComputedStyle(...)). CSS uses the parallel
+	 * @custom-media declarations below.) === */
 	--bp-sm: 480px;
 	--bp-md: 768px;
 	--bp-lg: 1024px;
@@ -191,20 +210,20 @@
 	--sidebar-collapsed-width: 72px;
 }
 
-@media (min-width: 1536px) {
+@media (--bp-2xl) {
 	:root {
 		--container-max: 1440px;
 	}
 }
 
-@media (min-width: 1920px) {
+@media (--bp-3xl) {
 	:root {
 		--container-max: 1640px;
 		--navbar-height: 84px;
 	}
 }
 
-@media (min-width: 2560px) {
+@media (--bp-4xl) {
 	:root {
 		--container-max: 1840px;
 	}

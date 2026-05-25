@@ -36,7 +36,7 @@
 		flex: 1;
 		padding: clamp(1.5rem, 3vw, 2.5rem);
 	}
-	@media (max-width: 1023px) {
+	@media (--bp-lg-down) {
 		.shell {
 			grid-template-columns: 1fr;
 		}

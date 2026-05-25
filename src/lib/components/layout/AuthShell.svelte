@@ -53,7 +53,7 @@
 		grid-template-columns: 1fr;
 		background: var(--surface-0);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.auth-shell {
 			grid-template-columns: 1fr 1.05fr;
 		}
@@ -83,7 +83,7 @@
 		-webkit-mask-image: radial-gradient(ellipse at top right, black 30%, transparent 80%);
 		pointer-events: none;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.brand-side {
 			display: flex;
 		}

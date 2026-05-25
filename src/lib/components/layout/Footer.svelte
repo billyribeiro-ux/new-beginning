@@ -224,7 +224,7 @@
 		color: var(--ink-200);
 	}
 
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.footer-top {
 			grid-template-columns: 1.2fr 2fr;
 		}
@@ -232,7 +232,7 @@
 			grid-template-columns: repeat(3, 1fr);
 		}
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.footer-top {
 			grid-template-columns: 1.1fr 2fr 1.1fr;
 		}

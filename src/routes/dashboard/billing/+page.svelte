@@ -267,7 +267,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.layout {
 			grid-template-columns: 1fr 1fr;
 		}

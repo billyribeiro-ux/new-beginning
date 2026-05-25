@@ -245,7 +245,7 @@
 		display: inline-flex;
 	}
 
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.main-nav {
 			display: flex;
 		}

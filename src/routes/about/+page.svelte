@@ -244,12 +244,12 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.principles {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.principles {
 			grid-template-columns: repeat(3, 1fr);
 		}
@@ -293,7 +293,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.team-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

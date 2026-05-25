@@ -7,6 +7,14 @@ export default defineConfig({
 		port: 5173,
 		strictPort: false
 	},
+	css: {
+		transformer: 'lightningcss',
+		lightningcss: {
+			drafts: {
+				customMedia: true
+			}
+		}
+	},
 	build: {
 		target: 'es2022',
 		cssMinify: 'lightningcss',

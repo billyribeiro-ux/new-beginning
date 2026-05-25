@@ -375,7 +375,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.grid {
 			grid-template-columns: 1fr 1fr;
 		}
@@ -422,7 +422,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.form-grid {
 			grid-template-columns: 1fr 1fr;
 		}
@@ -520,7 +520,7 @@
 		gap: var(--space-5);
 		align-items: center;
 	}
-	@media (max-width: 640px) {
+	@media (--bp-md-down) {
 		.twofa {
 			grid-template-columns: 1fr;
 			text-align: center;

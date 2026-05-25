@@ -140,7 +140,7 @@
 		align-items: end;
 		padding-top: var(--space-6);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-grid {
 			grid-template-columns: 1.2fr 1fr;
 		}
@@ -203,12 +203,12 @@
 		gap: var(--space-6);
 		margin-top: clamp(2.5rem, 5vw, 4rem);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

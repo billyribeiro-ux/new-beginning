@@ -117,12 +117,12 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1536px) {
+	@media (--bp-2xl) {
 		.grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

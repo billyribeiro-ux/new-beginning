@@ -110,7 +110,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.row-2 {
 			grid-template-columns: 1fr 1fr;
 		}

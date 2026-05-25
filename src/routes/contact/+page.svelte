@@ -135,7 +135,7 @@
 		grid-template-columns: 1fr;
 		gap: clamp(2rem, 4vw, 3rem);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.contact-grid {
 			grid-template-columns: 1fr 1.4fr;
 		}

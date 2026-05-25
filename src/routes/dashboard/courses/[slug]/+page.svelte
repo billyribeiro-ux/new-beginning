@@ -216,7 +216,7 @@
 		gap: var(--space-5);
 		margin: calc(-1 * clamp(1.5rem, 3vw, 2.5rem));
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.layout {
 			grid-template-columns: 340px 1fr;
 		}

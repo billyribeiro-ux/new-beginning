@@ -144,7 +144,7 @@
 		gap: var(--space-3);
 		text-align: left;
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.next-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}

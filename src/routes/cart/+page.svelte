@@ -246,7 +246,7 @@
 		grid-template-columns: 1fr;
 		gap: clamp(2rem, 4vw, 3rem);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.layout {
 			grid-template-columns: 1.6fr 1fr;
 		}
@@ -363,12 +363,12 @@
 		background: rgba(217, 104, 104, 0.08);
 	}
 
-	@media (max-width: 767px) {
+	@media (--bp-md-down) {
 		.hide-sm {
 			display: none;
 		}
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.mobile-qty {
 			display: none;
 		}

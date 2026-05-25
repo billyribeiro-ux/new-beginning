@@ -168,7 +168,7 @@
 		position: relative;
 		z-index: 1;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-inner {
 			grid-template-columns: 1.05fr 1fr;
 		}

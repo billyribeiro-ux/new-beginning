@@ -321,12 +321,12 @@
 		margin-top: clamp(2.5rem, 5vw, 4rem);
 		align-items: stretch;
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.featured-grid {
 			grid-template-columns: 1fr 1fr;
 		}
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.featured-grid {
 			grid-template-columns: 1fr 1.05fr 1fr;
 		}
@@ -348,7 +348,7 @@
 		gap: clamp(2rem, 5vw, 4rem);
 		align-items: center;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.playbook-grid {
 			grid-template-columns: 1fr 1fr;
 		}
@@ -447,7 +447,7 @@
 		background: radial-gradient(ellipse at top, rgba(232, 182, 96, 0.18), transparent 60%);
 		pointer-events: none;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.lm-grid {
 			grid-template-columns: 1.2fr 1fr;
 		}

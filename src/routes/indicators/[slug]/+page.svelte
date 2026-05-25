@@ -222,7 +222,7 @@
 		margin-top: var(--space-6);
 		align-items: start;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.hero-grid {
 			grid-template-columns: 1.2fr 1fr;
 		}
@@ -398,7 +398,7 @@
 		grid-template-columns: 1fr;
 		gap: clamp(2rem, 5vw, 4rem);
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.specs-grid {
 			grid-template-columns: 1fr 1.4fr;
 		}
@@ -462,7 +462,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-6);
 	}
-	@media (min-width: 768px) {
+	@media (--bp-md) {
 		.two-col {
 			grid-template-columns: 1fr 1fr;
 		}

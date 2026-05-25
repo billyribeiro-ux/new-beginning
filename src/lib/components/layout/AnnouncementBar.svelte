@@ -70,7 +70,7 @@
 		color: var(--gold-200);
 		gap: 8px;
 	}
-	@media (max-width: 640px) {
+	@media (--bp-md-down) {
 		.cta {
 			display: none;
 		}

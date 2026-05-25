@@ -141,7 +141,7 @@
 		gap: var(--space-4);
 		min-height: 600px;
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.inbox {
 			grid-template-columns: 360px 1fr;
 		}

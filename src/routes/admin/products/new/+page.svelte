@@ -180,7 +180,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-5);
 	}
-	@media (min-width: 1280px) {
+	@media (--bp-xl) {
 		.grid {
 			grid-template-columns: 1.5fr 1fr;
 		}
@@ -207,7 +207,7 @@
 		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.form-grid {
 			grid-template-columns: 1fr 1fr;
 		}

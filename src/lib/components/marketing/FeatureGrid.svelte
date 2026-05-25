@@ -33,12 +33,12 @@
 		gap: var(--space-5);
 		grid-template-columns: 1fr;
 	}
-	@media (min-width: 640px) {
+	@media (--bp-md) {
 		.grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (min-width: 1024px) {
+	@media (--bp-lg) {
 		.cols-3 {
 			grid-template-columns: repeat(3, 1fr);
 		}
