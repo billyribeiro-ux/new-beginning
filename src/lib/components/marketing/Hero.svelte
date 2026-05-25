@@ -362,11 +362,19 @@
 		letter-spacing: var(--tracking-wider);
 		border-radius: var(--radius-xs);
 	}
+	/* Center the label on the rail line regardless of its rendered
+	 * height. A magic-number offset (e.g. `top: calc(18% - 12px)`)
+	 * breaks the moment font-size, padding, or line-height changes.
+	 * Anchoring the label to the rail's y-position and translating
+	 * back by half its own height is the canonical self-centering
+	 * pattern. */
 	.label-top {
-		top: calc(18% - 12px);
+		top: 18%;
+		transform: translateY(-50%);
 	}
 	.label-bottom {
-		bottom: calc(18% - 12px);
+		bottom: 18%;
+		transform: translateY(50%);
 	}
 
 	.chart-footer {
