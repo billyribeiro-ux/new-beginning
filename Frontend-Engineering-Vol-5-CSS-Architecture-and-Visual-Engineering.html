@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Frontend Engineering · Vol 5 — CSS Architecture &amp; Visual Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+:root{
+  --surface-0:#0a0a0b;--surface-1:#111114;--surface-2:#17171c;--surface-3:#1f1f26;--surface-4:#2a2a33;
+  --gold-200:#f8e1a8;--gold-300:#f5d08a;--gold-400:#e8b660;--gold-500:#d4a24c;--gold-600:#b0832f;
+  --ink-100:#f8f6f1;--ink-200:#d8d3c6;--ink-300:#a39e8f;--ink-400:#74705f;
+  --border-default:rgba(248,246,241,.1);--border-strong:rgba(248,246,241,.18);--border-gold:rgba(212,162,76,.32);
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',Menlo,monospace;
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;
+  --sidebar-w:320px;
+}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+body{font-family:var(--font-body);font-size:16px;line-height:1.65;color:var(--ink-200);background:var(--surface-0);-webkit-font-smoothing:antialiased;min-height:100dvh}
+::selection{background:var(--gold-500);color:var(--surface-0)}
+*{scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+a{color:var(--gold-300);text-decoration:none}
+a:hover{color:var(--gold-200)}
+:focus-visible{outline:2px solid var(--gold-400);outline-offset:2px;border-radius:4px}
+.skip-link{position:fixed;top:-100px;left:16px;z-index:9999;padding:12px 20px;background:var(--gold-500);color:var(--surface-0);border-radius:8px;font-weight:600;transition:top .2s}
+.skip-link:focus{top:16px}
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100dvh}
+@media (max-width:1024px){.shell{grid-template-columns:1fr}.sidebar{display:none}}
+.sidebar{position:sticky;top:0;height:100dvh;overflow-y:auto;border-right:1px solid var(--border-default);background:linear-gradient(180deg,var(--surface-1),var(--surface-0));padding:24px 20px}
+.sidebar .brand{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--ink-100);letter-spacing:-.01em;margin-bottom:4px}
+.sidebar .brand .accent{background:linear-gradient(135deg,#f5d08a,#e8b660 50%,#d4a24c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.sidebar .vol{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:600;margin-bottom:24px}
+.sidebar nav ol{list-style:none;counter-reset:chap;display:flex;flex-direction:column;gap:2px}
+.sidebar nav a{display:block;padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;color:var(--ink-300);counter-increment:chap;position:relative;line-height:1.4;transition:background .15s,color .15s}
+.sidebar nav a::before{content:counter(chap,decimal-leading-zero);font-family:var(--font-mono);font-size:11px;color:var(--ink-400);margin-right:10px;font-weight:500}
+.sidebar nav a:hover{background:var(--surface-2);color:var(--ink-100)}
+.sidebar nav a.active{background:var(--surface-2);color:var(--gold-300);box-shadow:inset 2px 0 0 var(--gold-500)}
+.sidebar nav .part{font-family:var(--font-body);font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);font-weight:600;margin:16px 12px 6px;padding-top:8px;border-top:1px dashed var(--border-default)}
+.sidebar nav .part:first-child{border-top:0;padding-top:0;margin-top:4px}
+.sidebar .series{margin-top:32px;padding-top:24px;border-top:1px solid var(--border-default)}
+.sidebar .series h4{font-family:var(--font-body);font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);margin-bottom:12px}
+.sidebar .series ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.sidebar .series li{font-size:13px;color:var(--ink-300);padding:6px 12px;border-radius:var(--radius-sm)}
+.sidebar .series li.done{color:var(--ink-300)}
+.sidebar .series li.done::after{content:' ✓';color:var(--gold-400)}
+.sidebar .series li.current{background:rgba(212,162,76,.08);color:var(--gold-300);border:1px solid var(--border-gold)}
+.sidebar .series li.future{color:var(--ink-400)}
+main{padding:48px clamp(20px,5vw,72px) 120px;max-width:920px;margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid var(--border-default)}
+.topbar .crumbs{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);font-weight:600}
+.topbar .crumbs .sep{margin:0 8px;color:var(--ink-400)}
+.topbar .crumbs .gold{color:var(--gold-400)}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;color:var(--ink-100);line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(2.25rem,1.85rem + 1.6vw,3.25rem);margin-bottom:24px}
+h2{font-size:clamp(1.75rem,1.4rem + 1vw,2.25rem);margin-top:64px;margin-bottom:20px;padding-top:8px}
+h3{font-size:1.4rem;margin-top:40px;margin-bottom:14px;color:var(--gold-300)}
+h4{font-size:1.1rem;margin-top:28px;margin-bottom:10px;color:var(--ink-100)}
+p{margin-bottom:16px;color:var(--ink-200);text-wrap:pretty}
+strong{color:var(--ink-100);font-weight:600}
+em{color:var(--gold-200);font-style:italic}
+ul,ol{margin:0 0 20px 24px}
+li{margin-bottom:8px;color:var(--ink-200)}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:600;margin-bottom:12px}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--gold-500)}
+.lede{font-size:1.15rem;line-height:1.65;color:var(--ink-200);margin-bottom:28px;border-left:2px solid var(--gold-500);padding-left:20px}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);color:var(--gold-200);padding:2px 6px;border-radius:4px;border:1px solid var(--border-default)}
+.code{position:relative;margin:20px 0 28px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default);background:var(--surface-1);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.code .head{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:8px 14px;border-bottom:1px solid var(--border-default);font-family:var(--font-mono);font-size:11px;color:var(--ink-300)}
+.code .head .lang{color:var(--gold-400);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.code .head .path{color:var(--ink-300);font-size:11px}
+.code .copy{background:none;border:1px solid var(--border-default);color:var(--ink-300);font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.code .copy:hover{background:var(--surface-3);color:var(--gold-300);border-color:var(--border-gold)}
+.code .copy.copied{color:var(--gold-300);border-color:var(--border-gold)}
+.code pre{margin:0;padding:18px 0;overflow-x:auto;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--ink-100);background:var(--surface-1);counter-reset:line}
+.code pre code{display:block;background:none;border:none;padding:0;color:inherit;font-size:inherit}
+.code .ln{display:block;padding:0 18px 0 60px;position:relative;white-space:pre}
+.code .ln::before{counter-increment:line;content:counter(line);position:absolute;left:0;width:46px;text-align:right;color:var(--ink-400);font-size:11px;font-weight:500;user-select:none}
+.code .ln:hover{background:rgba(212,162,76,.04)}
+.tk-kw{color:#e8b660}.tk-str{color:#9bd1a4}.tk-num{color:#d6a86e}.tk-com{color:#74705f;font-style:italic}.tk-fn{color:#f5d08a}.tk-typ{color:#a3c7e8}.tk-prop{color:#d8d3c6}.tk-tag{color:#e8b660}.tk-attr{color:#9bd1a4}.tk-punct{color:#a39e8f}.tk-var{color:#f8f6f1}.tk-bool{color:#d6a86e}.tk-rune{color:#e8b660;font-weight:600}
+.callout{margin:24px 0;padding:18px 22px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--surface-1);position:relative;border-left:3px solid var(--gold-500)}
+.callout .label{display:inline-flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold-400);font-weight:700;margin-bottom:10px}
+.callout p:last-child{margin-bottom:0}
+.callout.why{border-left-color:var(--gold-500)}
+.callout.pitfall{border-left-color:#d96868}
+.callout.pitfall .label{color:#d96868}
+.callout.ts{border-left-color:#6ea8d6}
+.callout.ts .label{color:#6ea8d6}
+.callout.term{border-left-color:#a3c7e8}
+.callout.term .label{color:#a3c7e8}
+.callout.rune{border-left-color:var(--gold-400);background:linear-gradient(135deg,rgba(245,208,138,.04),transparent)}
+.callout.rune .label{color:var(--gold-300)}
+.callout.commit{border-left-color:#9bd1a4;background:linear-gradient(135deg,rgba(155,209,164,.04),transparent)}
+.callout.commit .label{color:#9bd1a4}
+.callout.commit code{color:#9bd1a4;background:rgba(155,209,164,.08);border-color:rgba(155,209,164,.18)}
+.term{margin:20px 0 28px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default);background:#000;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.term .head{display:flex;align-items:center;gap:6px;background:#1a1a1a;padding:8px 14px;border-bottom:1px solid var(--border-default)}
+.term .head .dot{width:11px;height:11px;border-radius:50%;background:#444}
+.term .head .label{margin-left:12px;font-family:var(--font-mono);font-size:11px;color:#888}
+.term pre{margin:0;padding:18px 22px;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:#cfcfcf;overflow-x:auto}
+.term .prompt{color:var(--gold-400);font-weight:600;user-select:none}
+.term .cmd{color:#fff}
+.term .out{color:#888}
+.term .ok{color:#5dbb78}
+.term .err{color:#d96868}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14px;background:var(--surface-1);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-default)}
+th{text-align:left;padding:12px 14px;background:var(--surface-2);color:var(--gold-300);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border-default)}
+td{padding:12px 14px;border-bottom:1px solid var(--border-default);color:var(--ink-200);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td code{font-size:.85em}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:80px;padding-top:32px;border-top:1px solid var(--border-default)}
+.pager a{display:block;padding:18px 22px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--surface-1);transition:all .2s;color:var(--ink-200)}
+.pager a:hover{background:var(--surface-2);border-color:var(--border-gold);transform:translateY(-2px)}
+.pager .dir{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);font-weight:600;margin-bottom:6px}
+.pager .ttl{font-family:var(--font-display);font-size:16px;color:var(--gold-300);font-weight:600}
+.pager .prev{text-align:left}
+.pager .next{text-align:right}
+.pager .disabled{opacity:.35;pointer-events:none}
+.vol-end{margin-top:80px;padding:40px;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(245,208,138,.08),rgba(176,131,47,.02));border:1px solid var(--border-gold);text-align:center}
+.vol-end h3{font-family:var(--font-display);font-size:1.6rem;color:var(--gold-300);margin-top:0}
+.series-toc{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.series-toc .card{padding:18px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--surface-1)}
+.series-toc .card.done{opacity:.7}
+.series-toc .card.current{border-color:var(--gold-500);background:rgba(212,162,76,.06)}
+.series-toc .card.future{opacity:.55}
+.series-toc .num{font-family:var(--font-mono);font-size:11px;color:var(--gold-400);font-weight:600;letter-spacing:.1em}
+.series-toc .name{font-family:var(--font-display);font-size:16px;color:var(--ink-100);margin-top:4px;font-weight:600}
+.series-toc .status{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-400);margin-top:8px;font-weight:600}
+.series-toc .card.current .status{color:var(--gold-300)}
+.series-toc .card.done .status{color:var(--gold-400)}
+section{scroll-margin-top:24px}
+.hero{margin-bottom:48px}
+.hero .eyebrow{font-size:13px}
+.hero h1{font-size:clamp(2.5rem,2rem + 2.2vw,3.75rem)}
+dl{margin:18px 0 24px;padding:18px 22px;background:var(--surface-1);border-radius:var(--radius-md);border:1px solid var(--border-default)}
+dt{font-family:var(--font-mono);font-size:13px;color:var(--gold-300);font-weight:600;margin-bottom:4px;margin-top:14px}
+dt:first-child{margin-top:0}
+dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
+.diagram{margin:24px 0;padding:24px;background:var(--surface-1);border-radius:var(--radius-md);border:1px solid var(--border-default);font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--ink-200);overflow-x:auto;white-space:pre}
+.hl{background:rgba(232,182,96,.16);color:var(--gold-200);padding:1px 4px;border-radius:3px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0 28px}
+@media (max-width:768px){.split{grid-template-columns:1fr}}
+.split .col{padding:16px 18px;border-radius:var(--radius-md);background:var(--surface-1);border:1px solid var(--border-default)}
+.split .col h5{font-family:var(--font-display);font-size:14px;color:var(--gold-300);margin-bottom:8px}
+.split .col p{font-size:13px;margin-bottom:8px}
+.split .col code{font-size:.85em}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="shell">
+  <aside class="sidebar" aria-label="Chapter navigation">
+    <div class="brand"><span class="accent">Frontend</span> Engineering</div>
+    <div class="vol">Volume 5 · CSS Architecture</div>
+    <nav aria-label="Chapters">
+      <div class="part">Part I · Foundations</div>
+      <ol>
+        <li><a href="#ch-1">The cascade, specificity &amp; <code>@layer</code></a></li>
+        <li><a href="#ch-2">Length units</a></li>
+        <li><a href="#ch-3">The fluid trinity · <code>clamp/min/max</code></a></li>
+      </ol>
+      <div class="part">Part II · Architecture</div>
+      <ol start="4">
+        <li><a href="#ch-4">Color systems</a></li>
+        <li><a href="#ch-5">Single-source breakpoints</a></li>
+        <li><a href="#ch-6">Container queries</a></li>
+      </ol>
+      <div class="part">Part III · Robustness</div>
+      <ol start="7">
+        <li><a href="#ch-7"><code>@supports</code> &amp; <code>backdrop-filter</code></a></li>
+        <li><a href="#ch-8">Logical properties · RTL</a></li>
+        <li><a href="#ch-9">Motion &amp; reduced-motion</a></li>
+        <li><a href="#ch-10">Accessibility through CSS</a></li>
+      </ol>
+      <div class="part">Part IV · Performance</div>
+      <ol start="11">
+        <li><a href="#ch-11">Build pipeline · Lightning CSS</a></li>
+        <li><a href="#ch-12">Performance levers</a></li>
+        <li><a href="#ch-13">Tabler tree-shake · 12 MB → 2.8 MB</a></li>
+      </ol>
+      <div class="part">Part V · Meta</div>
+      <ol start="14">
+        <li><a href="#ch-14">The L7 mindset</a></li>
+      </ol>
+    </nav>
+    <div class="series">
+      <h4>The Series</h4>
+      <ul>
+        <li class="done">Vol 1 · Foundations</li>
+        <li class="done">Vol 2 · Reactivity</li>
+        <li class="done">Vol 3 · Components</li>
+        <li class="done">Vol 4 · Routes &amp; Data</li>
+        <li class="current">Vol 5 · CSS Architecture</li>
+      </ul>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div class="topbar">
+      <div class="crumbs"><span class="gold">Frontend Engineering</span><span class="sep">/</span>Volume 5<span class="sep">/</span>CSS Architecture &amp; Visual Engineering</div>
+      <div class="crumbs">14 chapters · the case-study volume</div>
+    </div>
+
+    <header class="hero">
+      <div class="eyebrow">Volume 5 of 5 · Case study</div>
+      <h1>CSS Architecture &amp; Visual Engineering</h1>
+      <p class="lede">Volumes 1–4 taught the language and structure of a SvelteKit + Svelte 5 app. This volume is the missing CSS layer — written from the perspective of having actually done the work, the failures included. Every chapter anchors to a specific commit in the project's git history. Every measurement comes from a real <code>pnpm build</code> of the repo, not generic textbook CSS.</p>
+      <p>The differentiator: this volume narrates the false starts. A cascade-ordering regression that broke production intermittently. Three failed attempts at single-source breakpoints before the working pipeline. A chart-label fix that solved a problem the user didn't have. An icon-library tree-shake that dropped client JS by 77% — once we figured out the wildcard-extension trap that wasn't in any doc. L7 isn't about not making mistakes; it's about catching them quickly, fixing them cleanly, and not pretending they didn't happen.</p>
+      <p>Fourteen chapters. Every <code>src/lib/styles/*.css</code> file. Every commit since <code>affc7b5</code>. Every measurement re-verified against the current build at write-time. If something in this volume disagrees with the code, the volume is wrong — open a PR.</p>
+    </header>
+
+    <!-- =========================================================
+         CHAPTER 1 placeholder — replaced in the next commit.
+         Subsequent chapters appended as separate commits, one
+         per chapter, to keep the volume reviewable in stages.
+         ========================================================= -->
+    <section id="ch-1">
+      <p class="eyebrow">Chapter 01</p>
+      <h2>The cascade, specificity, and <code>@layer</code></h2>
+      <p class="lede"><em>Coming in the next commit.</em></p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// Sidebar active-link tracking via IntersectionObserver.
+(function () {
+  const links = document.querySelectorAll('.sidebar nav a');
+  const sections = [...document.querySelectorAll('section[id]')];
+  const setActive = (id) => {
+    links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  };
+  const io = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort(
+          (a, b) =>
+            a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top
+        );
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
+  );
+  sections.forEach((s) => io.observe(s));
+  links.forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+      setActive(id);
+    });
+  });
+})();
+
+(function () {
+  document.querySelectorAll('.code .copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = btn.closest('.code');
+      if (!block) return;
+      const code = block.querySelector('pre');
+      if (!code) return;
+      const text = code.innerText;
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          btn.textContent = 'copied';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'copy';
+            btn.classList.remove('copied');
+          }, 1500);
+        })
+        .catch(() => {
+          btn.textContent = 'error';
+          setTimeout(() => (btn.textContent = 'copy'), 1500);
+        });
+      });
+    });
+})();
+</script>
+</body>
+</html>
