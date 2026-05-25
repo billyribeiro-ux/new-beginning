@@ -1174,6 +1174,164 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 7 ============================ -->
+    <section id="ch-7">
+      <p class="eyebrow">Chapter 07</p>
+      <h2>Progressive enhancement · <code>@supports</code> and the <code>backdrop-filter</code> defense</h2>
+      <p class="lede">In 2026, ~95% of users get <code>backdrop-filter: blur(20px)</code> rendering correctly. The other 5% — older Firefox, some Linux GPU stacks, certain enterprise-managed installations — see <em>nothing</em>. The navbar that was supposed to be a frosted-glass panel becomes a transparent strip with the page content readable through it; the modal's dimming backdrop becomes a clear pane. This isn't a bug Lighthouse catches. The fix is a four-line CSS pattern applied at every site, and the project does it 13 times.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commit</div>
+        <p><code>53bf081</code> · <em>css(a11y/compat): @supports fallbacks for every backdrop-filter site</em> — the audit that hardened 10 components + the .glass utility.</p>
+      </div>
+
+      <h3>The class of bug that ships silently</h3>
+      <p>Run the project's home page in a current Chrome on a desktop. The navbar is a beautifully translucent strip with a 20px blur of the page content scrolling underneath. Now run the same page in a browser without <code>backdrop-filter</code> support. Without an explicit fallback, the navbar's CSS declares:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">naive · what shipped before commit 53bf081</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">navbar</span> {</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">10, 10, 11, 0.4</span>);  <span class="tk-com">/* 40% opaque — supposed to be the blur's base */</span></span><span class="ln">  <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>In a browser that supports <code>backdrop-filter</code>, the 40% opaque background combines with the blur to produce frosted glass. In a browser that doesn't, the <code>backdrop-filter</code> declaration is silently dropped and you're left with a 40% opaque background <em>without blur</em> — a translucent strip with sharp content scrolling readably underneath. The navbar's text disappears against whatever color happens to be beneath it. Forms with sticky chrome become unreadable. Modal backdrops become panes of clear glass.</p>
+
+      <p>The user doesn't see "an error." They see a broken-looking site and bounce. You don't see "an error" in your monitoring. The CSS console doesn't warn — undeclared support is silent dropping, by spec design.</p>
+
+      <h3>What <code>@supports</code> is, exactly</h3>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · @supports</div>
+        <p>"The <code>@supports</code> CSS at-rule lets you specify CSS declarations that depend on a browser's support for CSS features. Using this at-rule is commonly called a <strong>feature query</strong>."</p>
+        <p>"@supports ( &lt;supports-condition&gt; ) { /* If the condition is true, use the CSS in this block. */ }"</p>
+        <p>"The <code>or</code> operator creates a new expression from the disjunction of two shorter expressions. It returns true if <strong>one or both</strong> of the shorter expressions is also true."</p>
+      </div>
+
+      <p>The semantics are simple: ask the browser <em>"can you do this property: value combination?"</em>. If yes, apply the rules inside the block. If no, ignore the block entirely. The atomicity is the point — there's no partial application.</p>
+
+      <h3>The canonical pattern · opaque default, upgrade on support</h3>
+      <p>Every site in the project follows the same four-line structure. The <code>.glass</code> utility in <code>utilities.css</code> is the cleanest expression:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/utilities.css · .glass utility</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">glass</span> {</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-var">var</span>(--surface-2);</span><span class="ln">  <span class="tk-prop">border</span>: <span class="tk-num">1px</span> solid <span class="tk-var">var</span>(--border-default);</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">@supports</span> (<span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) <span class="tk-kw">or</span> (<span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) {</span><span class="ln">  .<span class="tk-var">glass</span> {</span><span class="ln">    <span class="tk-prop">background</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">23, 23, 28, 0.6</span>);</span><span class="ln">    <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">    <span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The default (outside <code>@supports</code>) is a fully opaque <code>--surface-2</code> background plus a border. Looks like a solid card. Readable from byte one. Only when the browser confirms support does the rule upgrade: background becomes a 60% opaque rgba, and <code>backdrop-filter</code> adds the blur. The fallback users get a flat card; the modern-browser users get the glass effect. Both render correctly.</p>
+
+      <h3>Why <code>or</code> with <code>-webkit-backdrop-filter</code></h3>
+      <p>The condition is verbose for a reason. Safari shipped <code>backdrop-filter</code> behind the <code>-webkit-</code> prefix for years and only dropped the requirement in Safari 18 (late 2024). Older iOS devices stuck on iOS 16 — common on hand-me-down hardware — still need the prefixed form to detect support correctly. The <code>or</code> operator covers both:</p>
+
+      <table>
+        <thead><tr><th>Browser</th><th><code>backdrop-filter</code></th><th><code>-webkit-backdrop-filter</code></th><th><code>@supports</code> matches?</th></tr></thead>
+        <tbody>
+          <tr><td>Chrome 130+</td><td>✅ supported</td><td>✅ aliased</td><td>Yes</td></tr>
+          <tr><td>Safari 18+</td><td>✅ supported</td><td>✅ aliased</td><td>Yes</td></tr>
+          <tr><td>Safari 16 (iOS 16)</td><td>❌</td><td>✅ supported</td><td>Yes (via the OR branch)</td></tr>
+          <tr><td>Firefox 110+</td><td>✅ supported</td><td>❌</td><td>Yes</td></tr>
+          <tr><td>Older Firefox / GPU-fallback Linux</td><td>❌</td><td>❌</td><td>No → fallback wins</td></tr>
+        </tbody>
+      </table>
+
+      <p>The <code>or</code> isn't decoration. Drop the second condition and Safari 16 silently falls into the fallback branch — losing the glass effect on the audience most likely to expect it (Apple users with old phones).</p>
+
+      <h3>The fallback isn't always the same</h3>
+      <p>The trick that took the most thinking in <code>53bf081</code> wasn't <em>how</em> to write the pattern — it was <em>what to use as the fallback</em> at each of the 10 sites. There are three categories:</p>
+
+      <h4>Site type 1 · already-mostly-opaque surfaces</h4>
+      <p>The <code>AdminHeader</code> background was already <code>rgba(17, 17, 20, 0.85)</code> — 85% opaque. Without <code>backdrop-filter</code> it's already readable. The fallback is to keep the existing background and only <em>add</em> blur in the upgrade branch:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">AdminHeader.svelte · already-opaque fallback</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">ah</span> {</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">17, 17, 20, 0.85</span>);  <span class="tk-com">/* 85% opaque already; blur is polish where supported. */</span></span><span class="ln">}</span><span class="ln"><span class="tk-kw">@supports</span> (<span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) <span class="tk-kw">or</span> (<span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) {</span><span class="ln">  .<span class="tk-var">ah</span> { <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>); <span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>); }</span><span class="ln">}</span></code></pre></div>
+
+      <p>No background swap. Simpler, safer.</p>
+
+      <h4>Site type 2 · transparent-by-design surfaces</h4>
+      <p>The <code>Navbar</code> was supposed to be heavily translucent (40% opaque) <em>specifically because</em> the blur was carrying the visual weight. Without blur, 40% opacity is unreadable. The fallback can't just keep the original — it has to switch to a much-more-opaque value:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">Navbar.svelte · translucent-by-design needs new fallback</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">navbar</span> {</span><span class="ln">  <span class="tk-com">/* Opaque fallback for browsers without backdrop-filter — a</span></span><span class="ln"><span class="tk-com">   * see-through navbar at 40% opacity over scrolling content</span></span><span class="ln"><span class="tk-com">   * is unreadable; the fallback uses the scrolled-state</span></span><span class="ln"><span class="tk-com">   * background to keep the bar visible from the start. */</span></span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">10, 10, 11, 0.82</span>);</span><span class="ln">}</span><span class="ln"><span class="tk-kw">@supports</span> (<span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) <span class="tk-kw">or</span> (<span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) {</span><span class="ln">  .<span class="tk-var">navbar</span> {</span><span class="ln">    <span class="tk-prop">background</span>: <span class="tk-fn">rgba</span>(<span class="tk-num">10, 10, 11, 0.4</span>);  <span class="tk-com">/* the design's original 40% */</span></span><span class="ln">    <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">    <span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">20px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The fallback (82% opaque) deliberately matches the navbar's <em>scrolled-state</em> background — the state where the user has already started scrolling and the bar has darkened for legibility. Fallback users get a navbar that looks like the scrolled state from the start. It's not the design's most beautiful expression but it's <em>readable from byte one</em>, which is the only floor that matters.</p>
+
+      <h4>Site type 3 · dimming overlays with existing tokens</h4>
+      <p>The <code>Modal</code> backdrop was easiest. The project already had <code>--surface-overlay: rgba(10, 10, 11, 0.72)</code> — a token specifically for "a usable plain dimming overlay where blur isn't available." The fallback is just that token; the upgrade adds blur on top:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">Modal.svelte · dimming overlay with token-based fallback</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">backdrop</span> {</span><span class="ln">  <span class="tk-com">/* --surface-overlay is rgba(10, 10, 11, 0.72) — usable as a</span></span><span class="ln"><span class="tk-com">   * plain dimming overlay where backdrop-filter is unavailable. */</span></span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-var">var</span>(--surface-overlay);</span><span class="ln">}</span><span class="ln"><span class="tk-kw">@supports</span> (<span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) <span class="tk-kw">or</span> (<span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) {</span><span class="ln">  .<span class="tk-var">backdrop</span> {</span><span class="ln">    <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">12px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">    <span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">12px</span>) <span class="tk-fn">saturate</span>(<span class="tk-num">140%</span>);</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>Token-based fallbacks compose well — if you ever want to globally tweak how dark the dimming is, you change one variable and every modal backdrop follows.</p>
+
+      <h3>The 13 sites · what got hardened</h3>
+      <p>The audit covered every <code>backdrop-filter</code> usage in <code>src/</code>:</p>
+
+      <table>
+        <thead><tr><th>Site</th><th>Surface type</th><th>Fallback strategy</th></tr></thead>
+        <tbody>
+          <tr><td><code>utilities.css</code> <code>.glass</code></td><td>generic</td><td>Opaque <code>--surface-2</code></td></tr>
+          <tr><td><code>Navbar</code> sticky bar</td><td>translucent-by-design</td><td>Scrolled-state background (82% opaque)</td></tr>
+          <tr><td><code>Navbar</code> mobile overlay</td><td>already-opaque (95%)</td><td>Keep existing; add blur only</td></tr>
+          <tr><td><code>CartDrawer</code> backdrop</td><td>dimming overlay</td><td>72% opaque (matches Modal pattern)</td></tr>
+          <tr><td><code>Modal</code> backdrop</td><td>dimming overlay</td><td><code>var(--surface-overlay)</code></td></tr>
+          <tr><td><code>AdminHeader</code></td><td>already-opaque (85%)</td><td>Keep existing; add blur only</td></tr>
+          <tr><td><code>DashboardHeader</code></td><td>already-opaque (85%)</td><td>Keep existing; add blur only</td></tr>
+          <tr><td><code>AuthShell</code> .quote</td><td>translucent-by-design</td><td>Opaque <code>--surface-1</code></td></tr>
+          <tr><td><code>AuthShell</code> .trust</td><td>translucent-by-design</td><td>Opaque <code>--surface-2</code></td></tr>
+          <tr><td><code>ProductCard</code> cover badges</td><td>cover-overlay chips</td><td>Opaque black-on-cover</td></tr>
+          <tr><td><code>Hero</code> .chart-card</td><td>translucent-by-design</td><td>Opaque gradient surface</td></tr>
+          <tr><td><code>routes/+page.svelte</code> .lm-form-card</td><td>translucent-by-design</td><td>Opaque <code>--surface-1</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>13 <code>@supports</code> blocks present in the built CSS (10 component sites + the utility + bundled duplicates). Every one of them follows the same shape: opaque default, upgrade-on-support. Zero sites in the project use <code>backdrop-filter</code> without a corresponding fallback.</p>
+
+      <h3>Why opaque-default beats translucent-default</h3>
+      <p>An alternative pattern exists: declare the translucent background as the default, and put the <em>fallback</em> behind <code>@supports not (backdrop-filter: ...)</code>. Looks symmetric on paper. Three reasons it's worse:</p>
+
+      <ol>
+        <li><strong>Cascade clarity.</strong> The base rule (outside any feature query) is what readers reach for first. Putting the "safe" version there means: <em>"every browser gets a readable surface by default."</em> Putting the risky version there means: <em>"every browser gets a possibly-broken surface unless feature-detection saves them."</em> The first mental model is the L7 default; the second is the bug.</li>
+        <li><strong><code>@supports not</code> has more compatibility caveats than <code>@supports</code>.</strong> A browser too old to support <code>@supports</code> at all (very rare in 2026 but possible for stale enterprise installs) treats unknown <code>@</code>-rules as failed — meaning neither branch applies, and the user gets <em>no</em> styling. The opaque-default pattern fails gracefully (you keep your default); the translucent-default pattern fails completely (no rules apply, no styling).</li>
+        <li><strong>Diff readability.</strong> Reviewing a PR that adds a new translucent surface, the diff with opaque-default puts the fallback in the base rule (visible at a glance) and the enhancement in the conditional block (clearly labeled as enhancement). The reverse pattern requires the reviewer to mentally parse the negation.</li>
+      </ol>
+
+      <h3>The principle generalizes · feature-detect every CSS feature that "fails silent"</h3>
+      <p><code>backdrop-filter</code> is the canonical example because the silent-fail is so visually devastating, but the same pattern applies to any CSS feature where the absence-of-support is functionally different from the support-present case. Three other features worth wrapping:</p>
+
+      <dl>
+        <dt><code>scrollbar-gutter: stable</code></dt>
+        <dd>Reserves space for the scrollbar even when not scrolling, eliminating layout-shift on scroll-trigger. Without support, the content reflows when a scrollbar appears. Fallback: explicit <code>padding-right</code>.</dd>
+        <dt><code>overscroll-behavior: contain</code></dt>
+        <dd>Prevents scroll chaining (the body scrolling when you reach the end of a modal's scroll). Without support, modals scroll the body. Fallback: JavaScript scroll-lock on body.</dd>
+        <dt><code>color-mix()</code></dt>
+        <dd>If you use it for a semantic background (e.g., <code>color-mix(in oklch, var(--success) 12%, transparent)</code>), unsupported browsers get the un-mixed token or nothing. Fallback: an explicit <code>rgba()</code> declaration in the base rule.</dd>
+      </dl>
+
+      <p>The check: <strong>if the feature is "polish on top of working baseline," it's safe without <code>@supports</code></strong>. If the feature is <strong>load-bearing for legibility, readability, or layout</strong>, wrap it. <code>backdrop-filter</code> ended up in the "load-bearing" bucket because the design used translucency to such an extreme degree that the fallback wasn't just "less pretty" — it was unreadable.</p>
+
+      <h3>Verification · what the build output looks like</h3>
+      <p>A simple grep against the built CSS proves the fallbacks shipped:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — @supports blocks in src/</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">grep -rh "@supports" src/ | sort | uniq -c | sort -rn</span>
+<span class="out">  13   @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {</span>
+<span class="out">   1 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {</span>
+<span class="out">   1  * Default block is the fallback (solid). The @supports block</span></pre></div>
+
+      <p>14 occurrences of the exact same condition string (13 indented inside style blocks + 1 in the .glass utility at the global scope) + 1 in a documenting comment. The uniformity is intentional — every consumer can search for that one string and find every site that uses the pattern, which makes future audits trivial.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the 5% nobody tests against</div>
+        <p>A typical L7 engineer tests at three browser/OS combos. The 5% who don't get <code>backdrop-filter</code> are not represented in those three — they're using Firefox 90 on an enterprise-managed Linux desktop, or a budget Android phone with a software GPU stack, or a kiosk running a stripped-down Chromium build. You will never see the rendering bug on your own machine. You only catch it if you (a) write the fallback by reflex on every <code>backdrop-filter</code> site, or (b) test in BrowserStack against an explicitly-unsupported combo, which most teams don't do. The fallback discipline is the only practical defense.</p>
+      </div>
+
+      <h3>Summary · the four-line pattern, every time</h3>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">the pattern · memorize this</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">surface</span> {</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-com">/* opaque fallback — readable on its own */</span>;</span><span class="ln">}</span><span class="ln"><span class="tk-kw">@supports</span> (<span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) <span class="tk-kw">or</span> (<span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">1px</span>)) {</span><span class="ln">  .<span class="tk-var">surface</span> {</span><span class="ln">    <span class="tk-prop">background</span>: <span class="tk-com">/* translucent rgba — base for the blur */</span>;</span><span class="ln">    <span class="tk-prop">backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">N</span>);</span><span class="ln">    <span class="tk-prop">-webkit-backdrop-filter</span>: <span class="tk-fn">blur</span>(<span class="tk-num">N</span>);</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The next chapter is the smallest commit in this volume but one of the most semantically important: replacing <code>margin-left</code> / <code>padding-right</code> with their logical-property equivalents (<code>margin-inline-start</code> / <code>padding-inline-end</code>) so the entire codebase becomes RTL-correct for free.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-6"><div class="dir">← Prev</div><div class="ttl">Container queries</div></a>
+        <a class="next" href="#ch-8"><div class="dir">Next →</div><div class="ttl">Logical properties &amp; RTL</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
