@@ -2,11 +2,12 @@
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import SectionHeading from '$lib/components/marketing/SectionHeading.svelte';
 	import ProductCard from '$lib/components/commerce/ProductCard.svelte';
+	import RoadmapCard from '$lib/components/commerce/RoadmapCard.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Breadcrumbs from '$lib/components/seo/Breadcrumbs.svelte';
-	import { INDICATORS } from '$lib/data/products.js';
+	import { INDICATORS, INDICATOR_ROADMAP } from '$lib/data/products.js';
 	import { stagger, fadeUp } from '$lib/animations/attachments.js';
-	import { IconChartCandle, IconRocket, IconArrowRight } from '@tabler/icons-svelte';
+	import { IconChartCandle } from '@tabler/icons-svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 </script>
 
@@ -62,36 +63,9 @@
 			{#each INDICATORS as p (p.id)}
 				<ProductCard product={p} featured />
 			{/each}
-			<article class="coming-soon">
-				<div class="cs-mark">
-					<IconRocket size={28} />
-				</div>
-				<p class="eyebrow">Roadmap · Q3 2026</p>
-				<h3>Liquidity Hawk</h3>
-				<p>
-					A multi-timeframe order-flow add-on for Revolution Ranger. Sweep maps, absorption alerts,
-					and stop-run telemetry.
-				</p>
-				<Button variant="ghost" size="sm" href="/free-guide">
-					Be notified
-					{#snippet iconRight()}<IconArrowRight size={14} />{/snippet}
-				</Button>
-			</article>
-			<article class="coming-soon">
-				<div class="cs-mark">
-					<IconRocket size={28} />
-				</div>
-				<p class="eyebrow">Roadmap · Q4 2026</p>
-				<h3>Volatility Compass</h3>
-				<p>
-					Regime classifier and vol-of-vol heatmap built for options sellers. Slots cleanly under
-					your existing setup.
-				</p>
-				<Button variant="ghost" size="sm" href="/free-guide">
-					Be notified
-					{#snippet iconRight()}<IconArrowRight size={14} />{/snippet}
-				</Button>
-			</article>
+			{#each INDICATOR_ROADMAP as item (item.id)}
+				<RoadmapCard {item} />
+			{/each}
 		</div>
 	</div>
 </section>
@@ -187,46 +161,4 @@
 		}
 	}
 
-	.coming-soon {
-		padding: var(--space-7);
-		background: var(--surface-1);
-		border: 1px dashed var(--border-default);
-		border-radius: var(--radius-xl);
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-3);
-	}
-	.cs-mark {
-		width: 56px;
-		height: 56px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--surface-2);
-		color: var(--gold-400);
-		border-radius: var(--radius-lg);
-		margin-bottom: var(--space-3);
-	}
-	.coming-soon h3 {
-		font-family: var(--font-display);
-		font-size: var(--text-xl);
-		margin: 0;
-	}
-	.coming-soon p {
-		font-size: var(--text-sm);
-		color: var(--ink-300);
-		line-height: var(--leading-relaxed);
-		margin: 0;
-	}
-	.coming-soon .eyebrow {
-		font-size: var(--text-2xs);
-		color: var(--gold-400);
-		font-weight: var(--weight-semibold);
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-widest);
-		margin: 0;
-	}
-	.coming-soon .eyebrow::before {
-		display: none;
-	}
 </style>

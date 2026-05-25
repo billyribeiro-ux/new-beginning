@@ -187,3 +187,37 @@ export function getProductBySlug(slug: string): Product | undefined {
 export function getProductsByKind(kind: ProductKind): Product[] {
 	return getAllProducts().filter((p) => p.kind === kind);
 }
+
+/* Forward-looking roadmap items rendered alongside the indicator catalog.
+ * Not Products — no price, no rating, no purchase path. Kept here so the
+ * one source of truth for "what's coming" lives next to the catalog
+ * fixtures it appears beside. */
+export interface RoadmapItem {
+	id: string;
+	quarter: string;
+	name: string;
+	tagline: string;
+	description: string;
+	posterColor: string;
+}
+
+export const INDICATOR_ROADMAP: RoadmapItem[] = [
+	{
+		id: 'roadmap_liquidity_hawk',
+		quarter: 'Q3 2026',
+		name: 'Liquidity Hawk',
+		tagline: 'Order-flow add-on for Revolution Ranger.',
+		description:
+			'A multi-timeframe order-flow add-on for Revolution Ranger. Sweep maps, absorption alerts, and stop-run telemetry.',
+		posterColor: 'linear-gradient(135deg, #2d1f0a, #0a0a0b)'
+	},
+	{
+		id: 'roadmap_volatility_compass',
+		quarter: 'Q4 2026',
+		name: 'Volatility Compass',
+		tagline: 'Regime classifier for options sellers.',
+		description:
+			'Regime classifier and vol-of-vol heatmap built for options sellers. Slots cleanly under your existing setup.',
+		posterColor: 'linear-gradient(135deg, #1a2233, #0a0a0b)'
+	}
+];
