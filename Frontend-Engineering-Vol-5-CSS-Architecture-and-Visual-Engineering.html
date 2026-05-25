@@ -2259,6 +2259,213 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 13 ============================ -->
+    <section id="ch-13">
+      <p class="eyebrow">Chapter 13</p>
+      <h2>Tabler tree-shake · 12 MB → 2.8 MB · a hard-evidence case study</h2>
+      <p class="lede">The audit started with a routine "is anything else worth fixing" pass and ended by deleting <strong>3.2 MB</strong> of JavaScript from every production page. The bundle contained <strong>6,193 icons; 112 of them were used</strong>. The other 6,081 were shipping to every user, on every page, on every visit. This chapter is the full investigation — methodology, the architectural blocker that made the naive fix impossible, the package's own undocumented import quirk that broke the first attempt, and the final measurements that proved a 77% bundle reduction and a 75% faster build.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commit</div>
+        <p><code>433d6db</code> · <em>perf(icons): deep-import @tabler/icons-svelte, drop client JS by 77%</em> — 67 files modified, three architectural refactors + one mechanical migration, before/after measurements verified via headless Chrome.</p>
+      </div>
+
+      <h3>How the problem was found · the off-hand observation</h3>
+      <p>The audit didn't start with "the bundle is too big." It started with a single user observation: <em>"why is my browser making 792 requests when I navigate the dev site?"</em></p>
+
+      <p>That's an off-hand question without an obvious bug attached. A typical engineer might wave it off (dev-mode is fetch-heavy by design — Vite serves every module as its own request). But the right move was to actually count what was being fetched and group by URL. The measurement script (using headless Chrome + the Chrome DevTools Protocol) revealed:</p>
+
+      <ul>
+        <li>Per page load: ~190 module requests in dev mode (expected — Vite HMR pings + per-module ESM imports)</li>
+        <li>Per page load in production preview: ~88 requests (also expected — bundled chunks)</li>
+        <li><strong>Largest single chunk in production: 3.3 MB / 471 KB gzipped</strong> (not expected)</li>
+        <li>That chunk: <code>tabler-icons-svelte</code></li>
+      </ul>
+
+      <p>The 792 number was a red herring. The real finding was the 3.3 MB chunk — which would never have been investigated without the original off-hand question. <strong>Investigations that start with "this number feels off" produce the wins; investigations that start with "is the bundle too big" go nowhere because there's no anchor measurement.</strong></p>
+
+      <h3>The measurement methodology · CDP-driven Chrome</h3>
+      <p>The numbers in this chapter come from a controlled measurement against the production build, not from intuition or the browser's network tab. The methodology:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">measurement approach (paraphrased)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* 1. Spawn headless Chrome with remote debugging enabled */</span></span><span class="ln"><span class="tk-fn">spawn</span>(<span class="tk-str">'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'</span>, [</span><span class="ln">  <span class="tk-str">'--headless=new'</span>,</span><span class="ln">  <span class="tk-str">'--remote-debugging-port=9222'</span>,</span><span class="ln">  <span class="tk-var">url</span></span><span class="ln">]);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* 2. Connect via Chrome DevTools Protocol */</span></span><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">ws</span> = <span class="tk-kw">new</span> <span class="tk-typ">WebSocket</span>(<span class="tk-var">debuggerUrl</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* 3. Subscribe to Network.requestWillBeSent events */</span></span><span class="ln"><span class="tk-fn">send</span>(<span class="tk-str">'Network.enable'</span>);</span><span class="ln"></span><span class="ln"><span class="tk-com">/* 4. Wait for Page.loadEventFired + N seconds of idle */</span></span><span class="ln"><span class="tk-com">/* 5. Aggregate every request by URL, count by type, sum bytes */</span></span></code></pre></div>
+
+      <p>Why this matters more than the browser's network tab: the script produces <strong>deterministic, scriptable</strong> measurements. The same script ran before the migration (recording 12 MB / 3.3 MB largest chunk), after (recording 2.8 MB / 114 KB largest chunk), and continues to be re-runnable today. The "before" numbers aren't from memory; they're from a saved JSON output. Every claim in this chapter has a corresponding measurement run.</p>
+
+      <h3>The smoking gun · 98.2% bundle waste</h3>
+      <p>Once the tabler chunk was identified, two greps closed the case:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — quantifying the waste</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">grep -oE "Icon[A-Z][a-zA-Z0-9]+" .svelte-kit/output/client/_app/immutable/chunks/CoG4EQA5.js | sort -u | wc -l</span>
+<span class="out">6193</span>
+<span class="prompt">$</span> <span class="cmd">grep -rhoE "Icon[A-Z][a-zA-Z0-9]+" src/ | sort -u | wc -l</span>
+<span class="out">114</span></pre></div>
+
+      <p>6,193 icons in the production bundle. 114 actually referenced in source. <strong>98.2% of the bundle was code that no part of the application could call</strong>. Even allowing for some over-counting (rough <code>IconX</code> pattern matching may catch type imports and the like), the ratio is unambiguous — the vast majority of the chunk was dead weight.</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · the cost is per-user, per-visit, forever</div>
+        <p>471 KB gzipped means roughly 1.5 MB after decompression and parse. On a 3G connection (still 8% of global mobile traffic in 2026), that's an extra ~3 seconds of download. The chunk caches after first load, so repeat visitors pay the cost once — but every new visitor pays in full. For a marketing site whose conversion depends on first impression, a 3-second download on the home page is a measurable drop in conversion rate. <strong>The cost compounds with audience size</strong>; the fix is one-time engineering effort with permanent payoff.</p>
+      </div>
+
+      <h3>The official answer · SvelteKit docs anticipated this</h3>
+      <p>The SvelteKit team has documented this exact failure mode. From the official docs (kit/icons section):</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from SvelteKit docs · Icons</div>
+        <p>"When choosing an icon library, it is recommended to <strong>avoid</strong> those that provide a <code>.svelte</code> file per icon, as these libraries can have thousands of <code>.svelte</code> files which really slow down Vite's dependency optimization."</p>
+      </div>
+
+      <p><code>@tabler/icons-svelte</code> is exactly that pattern — <strong>6,147 individual <code>.svelte</code> files</strong> on disk in <code>node_modules</code>. The SvelteKit recommendation: use CSS-based icons (Iconify) for a complete rewrite, or use deep imports per-icon for an incremental fix.</p>
+
+      <p>The deep-import option from the <a href="https://github.com/sveltejs/vite-plugin-svelte/blob/main/docs/faq.md">vite-plugin-svelte FAQ</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from vite-plugin-svelte FAQ</div>
+        <p>"Use different import styles for different libraries where it helps. E.g. deep imports for the few icons of that one huge icon library, but index import for the component library that is heavily used."</p>
+      </div>
+
+      <p>Two options on the table; deep imports won because they didn't require touching every icon-rendering component (only the import statements changed). Iconify CSS would have required redesigning every icon-using site to consume CSS class names instead of Svelte components — a much larger change.</p>
+
+      <h3>The architectural blocker · dynamic icon lookups</h3>
+      <p>The naive plan — replace every barrel import with deep imports — would have failed silently. <strong>Three files in the codebase used the icon library as a namespace</strong> and looked up icons by string name at runtime:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/components/admin/AdminSidebar.svelte (BEFORE)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> * <span class="tk-kw">as</span> <span class="tk-typ">TablerIcons</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span><span class="ln"><span class="tk-kw">import</span> { <span class="tk-typ">ADMIN_NAV</span> } <span class="tk-kw">from</span> <span class="tk-str">'$lib/data/navigation.js'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">function</span> <span class="tk-fn">iconOf</span>(<span class="tk-var">name</span>: <span class="tk-typ">string</span>): <span class="tk-typ">Component</span> {</span><span class="ln">  <span class="tk-kw">const</span> <span class="tk-var">dict</span> = <span class="tk-typ">TablerIcons</span> <span class="tk-kw">as</span> <span class="tk-kw">unknown</span> <span class="tk-kw">as</span> <span class="tk-typ">Record</span>&lt;<span class="tk-typ">string</span>, <span class="tk-typ">Component</span> | <span class="tk-kw">undefined</span>&gt;;</span><span class="ln">  <span class="tk-kw">return</span> <span class="tk-var">dict</span>[<span class="tk-var">name</span>] ?? (<span class="tk-typ">IconCircleDot</span> <span class="tk-kw">as</span> <span class="tk-kw">unknown</span> <span class="tk-kw">as</span> <span class="tk-typ">Component</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>And the data that feeds it:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/data/navigation.ts (BEFORE — string icon names)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">export const</span> <span class="tk-typ">ADMIN_NAV</span> = [</span><span class="ln">  {</span><span class="ln">    <span class="tk-prop">heading</span>: <span class="tk-str">'Catalog'</span>,</span><span class="ln">    <span class="tk-prop">items</span>: [</span><span class="ln">      { <span class="tk-prop">label</span>: <span class="tk-str">'Overview'</span>, <span class="tk-prop">href</span>: <span class="tk-str">'/admin'</span>, <span class="tk-prop">icon</span>: <span class="tk-str">'IconLayoutDashboard'</span> },</span><span class="ln">      { <span class="tk-prop">label</span>: <span class="tk-str">'Products'</span>, <span class="tk-prop">href</span>: <span class="tk-str">'/admin/products'</span>, <span class="tk-prop">icon</span>: <span class="tk-str">'IconBox'</span> },</span><span class="ln">      <span class="tk-com">/* ... 14 more entries with string icon names ... */</span></span><span class="ln">    ]</span><span class="ln">  }</span><span class="ln">];</span></code></pre></div>
+
+      <p>The icon field is a <em>string</em>. The sidebar component reads the string, looks it up in the <code>TablerIcons</code> namespace, and renders the matching component. <strong>This pattern defeats tree-shaking entirely</strong> — the bundler cannot know at build time which strings will appear, so it must ship every possible target. Even if every <em>other</em> file in the codebase used deep imports, these three files would force the full barrel into the bundle.</p>
+
+      <h4>The refactor · static component refs, not strings</h4>
+      <p>The fix: change the data shape so <code>icon</code> is the component itself, not a string. The navigation file imports the components it needs at the top and references them by JS binding, not by string name:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/data/navigation.ts (AFTER)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">Icon</span> <span class="tk-kw">as</span> <span class="tk-typ">IconComponent</span> } <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span><span class="ln"></span><span class="ln"><span class="tk-kw">import</span> <span class="tk-typ">IconLayoutDashboard</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte/icons/layout-dashboard'</span>;</span><span class="ln"><span class="tk-kw">import</span> <span class="tk-typ">IconBox</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte/icons/box'</span>;</span><span class="ln"><span class="tk-com">/* ... 14 more deep imports ... */</span></span><span class="ln"></span><span class="ln"><span class="tk-kw">export const</span> <span class="tk-typ">ADMIN_NAV</span>: <span class="tk-typ">Array</span>&lt;<span class="tk-typ">Section</span>&gt; = [</span><span class="ln">  {</span><span class="ln">    <span class="tk-prop">heading</span>: <span class="tk-str">'Catalog'</span>,</span><span class="ln">    <span class="tk-prop">items</span>: [</span><span class="ln">      { <span class="tk-prop">label</span>: <span class="tk-str">'Overview'</span>, <span class="tk-prop">href</span>: <span class="tk-str">'/admin'</span>, <span class="tk-prop">icon</span>: <span class="tk-typ">IconLayoutDashboard</span> },</span><span class="ln">      { <span class="tk-prop">label</span>: <span class="tk-str">'Products'</span>, <span class="tk-prop">href</span>: <span class="tk-str">'/admin/products'</span>, <span class="tk-prop">icon</span>: <span class="tk-typ">IconBox</span> },</span><span class="ln">    ]</span><span class="ln">  }</span><span class="ln">];</span></code></pre></div>
+
+      <p>The sidebar component now consumes <code>item.icon</code> directly as a component — no string lookup, no namespace import, no dictionary:</p>
+
+      <div class="code"><div class="head"><span class="lang">svelte</span><span class="path">src/lib/components/admin/AdminSidebar.svelte (AFTER)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">{#<span class="tk-kw">each</span> <span class="tk-var">item</span>.<span class="tk-prop">items</span> <span class="tk-kw">as</span> <span class="tk-var">subItem</span>}</span><span class="ln">  &lt;<span class="tk-tag">a</span> <span class="tk-attr">href</span>={<span class="tk-var">subItem</span>.<span class="tk-prop">href</span>}&gt;</span><span class="ln">    &lt;<span class="tk-var">subItem.icon</span> <span class="tk-attr">size</span>={<span class="tk-num">18</span>} /&gt;</span><span class="ln">    {<span class="tk-var">subItem</span>.<span class="tk-prop">label</span>}</span><span class="ln">  &lt;/<span class="tk-tag">a</span>&gt;</span><span class="ln">{/<span class="tk-kw">each</span>}</span></code></pre></div>
+
+      <p>Three files needed this refactor:</p>
+
+      <ol>
+        <li><strong><code>src/lib/data/navigation.ts</code></strong> — <code>DASHBOARD_NAV</code> + <code>ADMIN_NAV</code> data arrays. 16 icons.</li>
+        <li><strong><code>src/lib/data/products.ts</code></strong> — <code>features[].icon</code> in the product data structure. 12 icons.</li>
+        <li><strong><code>src/lib/components/marketing/FeatureGrid.svelte</code></strong> — consumed the products data and did the string lookup. Refactored to receive a Component prop instead.</li>
+      </ol>
+
+      <p>Now the bundler can prove statically that <code>--bp-md</code>, sorry, <em>IconLayoutDashboard</em> is the <em>only</em> layout-dashboard variant used. Every other icon is dead code, eligible for tree-shaking.</p>
+
+      <h3>The mechanical migration · 61 files, one regex sweep</h3>
+      <p>With the architectural blockers removed, the remaining 61 files used <em>barrel imports</em>:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">typical component BEFORE</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> { <span class="tk-typ">IconArrowRight</span>, <span class="tk-typ">IconCheck</span>, <span class="tk-typ">IconStar</span> } <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span></code></pre></div>
+
+      <p>Tree-shakeable in principle (Vite's docs say <code>"sideEffects": false</code> on the package opts into it), but Vite's dev-mode pre-bundling still ingests the entire library — slowing down dev server starts and HMR. The deep-import form bypasses pre-bundling entirely:</p>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">typical component AFTER</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">import</span> <span class="tk-typ">IconArrowRight</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte/icons/arrow-right'</span>;</span><span class="ln"><span class="tk-kw">import</span> <span class="tk-typ">IconCheck</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte/icons/check'</span>;</span><span class="ln"><span class="tk-kw">import</span> <span class="tk-typ">IconStar</span> <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte/icons/star'</span>;</span></code></pre></div>
+
+      <p>Each barrel import becomes <em>N</em> deep imports, one per icon. The migrator script (a one-off Node.js file, not committed) used a bracket-counting parser (not a regex) to identify the full import block, parsed the icon list, and emitted the per-icon imports. The mapping authority was the package's own <code>dist/icons/index.js</code> file, which lists every icon's kebab-case filename next to its PascalCase identifier — the migrator read that file and used it as the authoritative PascalCase → kebab-case translation.</p>
+
+      <p>Why not a regex? A regex matching <code>import { ... } from '@tabler/icons-svelte'</code> works fine for single-line imports. For multi-line imports — which the project had several of — naive regex either over-matches or under-matches the bracket boundaries. The bracket-counter parser is six lines longer but correct on every input shape.</p>
+
+      <h3>The trap the docs don't tell you · the <code>.svelte</code> extension wildcard</h3>
+      <p>The first run of the migrator produced deep imports like <code>'@tabler/icons-svelte/icons/arrow-right.svelte'</code> — with the explicit <code>.svelte</code> extension. The build failed:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — the first migration broke</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm build</span>
+<span class="err">RolldownError: Cannot resolve '@tabler/icons-svelte/icons/arrow-right.svelte'</span>
+<span class="err">  Module not found: tried .svelte.svelte, .svelte.ts, .svelte.js</span></pre></div>
+
+      <p>The error message is the clue. <strong>Rolldown is looking for <code>arrow-right.svelte.svelte</code></strong>. The package's <code>exports</code> map explains why:</p>
+
+      <div class="code"><div class="head"><span class="lang">json</span><span class="path">@tabler/icons-svelte/package.json (exports field)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">{</span><span class="ln">  <span class="tk-prop">"exports"</span>: {</span><span class="ln">    <span class="tk-prop">"./icons/*"</span>: {</span><span class="ln">      <span class="tk-prop">"svelte"</span>: <span class="tk-str">"./dist/icons/*.svelte"</span></span><span class="ln">    }</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The <code>./icons/*</code> pattern is a wildcard. <strong>The <code>*</code> captures the user's import suffix and substitutes it into the destination, with the destination template adding <code>.svelte</code> automatically</strong>. When the import is <code>@tabler/icons-svelte/icons/arrow-right.svelte</code>, the wildcard captures <code>arrow-right.svelte</code> (including the extension), and the destination becomes <code>./dist/icons/arrow-right.svelte.svelte</code> — which doesn't exist.</p>
+
+      <p>The correct import drops the <code>.svelte</code> extension: <code>@tabler/icons-svelte/icons/arrow-right</code>. The wildcard captures <code>arrow-right</code>, the destination template adds <code>.svelte</code>, the final resolved path is <code>./dist/icons/arrow-right.svelte</code>. Correct.</p>
+
+      <p>This is the kind of trap that's <strong>not in any tutorial</strong>. The Tabler docs show extension-less import examples without explaining why; vite-plugin-svelte's FAQ shows the pattern without flagging the extension question; the SvelteKit docs link to vite-plugin-svelte without elaborating. The error only appears when you happen to write the "more explicit" form that intuition suggests. <strong>Knowing-why is the L7 skill</strong>; the migrator was patched in 30 seconds once the package's <code>exports</code> field was inspected.</p>
+
+      <h3>The TypeScript snag · Svelte 4 class components vs Svelte 5 function components</h3>
+      <p>After the import-path fix, the build succeeded but <code>pnpm check</code> failed:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — TypeScript broke after the migration</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm check</span>
+<span class="err">Error: Type 'typeof IconLayoutDashboard' is not assignable to type 'Component'.</span>
+<span class="err">  Type 'typeof IconLayoutDashboard' lacks properties from type 'Component':</span>
+<span class="err">  $$prop_def, $$events_def, $$slot_def</span></pre></div>
+
+      <p>The problem: Tabler still ships its icons as Svelte 4 <em>class</em> components (<code>typeof Component</code>). Svelte 5's <code>Component</code> type is a function-component type that doesn't structurally match. The two type systems don't unify cleanly.</p>
+
+      <p>The fix is the one Tabler's own type definitions document: import <code>Icon</code> from the package as the canonical icon-component type:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/data/navigation.ts (current)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Tabler exports its own canonical icon component type. Using the</span></span><span class="ln"><span class="tk-com"> * package's own type avoids structural-typing mismatches between</span></span><span class="ln"><span class="tk-com"> * Svelte 5's `Component` and Tabler's Svelte 4-style classes. */</span></span><span class="ln"><span class="tk-kw">import type</span> { <span class="tk-typ">Icon</span> <span class="tk-kw">as</span> <span class="tk-typ">IconComponent</span> } <span class="tk-kw">from</span> <span class="tk-str">'@tabler/icons-svelte'</span>;</span></code></pre></div>
+
+      <p>Wait — that's an <em>import from the barrel</em>. Wouldn't that pull the whole library back into the bundle?</p>
+
+      <p><strong>No</strong> — and this is the load-bearing detail. <code>import type</code> declarations are erased at runtime; only the value-level import survives compilation. A <code>type</code>-only import from the barrel is purely a TypeScript hint with zero JavaScript footprint. The bundle stays at 2.8 MB because the runtime code never references the barrel; only the type-checker does.</p>
+
+      <p>This is the kind of detail that fixes a TypeScript error in one line and gets dismissed as "trivial." But if you'd reached for a workaround (casting the icon as <code>unknown as Component</code>, or rewriting all icons as a custom factory) you'd have lost half a day. The <code>import type { Icon }</code> answer was in the package's own typings; it just required reading them.</p>
+
+      <h3>The final numbers · all verified, all reproducible</h3>
+
+      <table>
+        <thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Total client JS</td><td>12 MB</td><td>2.8 MB</td><td><strong>−77%</strong></td></tr>
+          <tr><td>Largest single chunk</td><td>3.3 MB (tabler)</td><td>114 KB</td><td><strong>−97%</strong></td></tr>
+          <tr><td>Largest chunk (gzipped)</td><td>471 KB</td><td>~14 KB</td><td><strong>−97%</strong></td></tr>
+          <tr><td>Build time (production)</td><td>~7.08s</td><td>~1.75s</td><td><strong>−75%</strong></td></tr>
+          <tr><td>Icons shipped to client</td><td>6,193</td><td>112</td><td><strong>−98.2%</strong></td></tr>
+          <tr><td>Dev-mode HMR speed</td><td>noticeable lag</td><td>~instant</td><td>perceptual</td></tr>
+        </tbody>
+      </table>
+
+      <p>The build-time win (−75%) is almost a side effect; the real story is the client-side payload. A new user landing on the home page on a 3G connection downloads ~3 seconds less JavaScript than before. The page is the same; it just doesn't ship 6,081 icons nobody uses.</p>
+
+      <h3>The patterns this case study taught</h3>
+
+      <ol>
+        <li><strong>Investigate off-hand observations.</strong> The 792-fetches question wasn't a bug report. Following it produced the biggest perf win in the volume. <em>"This number feels off"</em> is a better starting point than <em>"is the bundle big?"</em> because it has an anchor measurement.</li>
+        <li><strong>Measure with scriptable tools, not the browser's network tab.</strong> The CDP + headless Chrome script produces reproducible numbers; the network tab produces "I think it was around 200 requests." When the migration shipped, the script re-ran and confirmed the new numbers — not memory, not screenshots.</li>
+        <li><strong>String-keyed dynamic lookups defeat tree-shaking, period.</strong> If you index a library namespace by runtime string, the bundler ships the entire namespace. The refactor to static component references unlocks tree-shaking everywhere else.</li>
+        <li><strong>Read the package's actual files, not just the docs.</strong> The <code>.svelte</code> extension wildcard trap was solved by reading <code>node_modules/@tabler/icons-svelte/package.json</code>'s <code>exports</code> map and reasoning about the wildcard substitution. The docs didn't cover it; the package did.</li>
+        <li><strong><code>import type</code> is free.</strong> A type-only import from a heavy module doesn't pull the runtime code. When TypeScript needs a type that lives in a big module, <code>import type</code> is the answer.</li>
+        <li><strong>Build a measurement script before optimizing.</strong> The CDP script took ~30 minutes to write and gives the project permanent ability to re-measure. Any future perf regression can be caught by running it again. <em>The infrastructure for measurement is itself a deliverable.</em></li>
+      </ol>
+
+      <h3>The future · what's next for this codebase's bundle</h3>
+      <p>Three further wins remain on the table, ranked by leverage:</p>
+
+      <ol>
+        <li><strong>GSAP (~62 KB gzipped)</strong> — used on the home page and Hero only. Most pages load it via the shared chunk and never use it. Splitting GSAP into its own chunk (loaded on routes that need it) would save ~50 KB on routes that don't use animations. Lower priority because the cache means it's paid once per session.</li>
+        <li><strong>Drizzle ORM types (~30 KB)</strong> — should be a server-only dependency; if any of it leaks into the client bundle that's worth investigating.</li>
+        <li><strong>Reconsider icons entirely</strong> — Iconify CSS would eliminate icon JS from the bundle entirely (icons would render as CSS background-image masks). Larger refactor (every icon usage site changes from <code>&lt;IconArrowRight /&gt;</code> to a class-name pattern) but the long-term ceiling is lower-touch icon usage.</li>
+      </ol>
+
+      <p>None of these has the same leverage as the Tabler migration — that one was the long-pole, and it's done. The remaining wins are smaller and have to be measured before justifying the engineering time.</p>
+
+      <h3>Summary · the one-paragraph version</h3>
+      <p>An off-hand user observation led to a CDP-driven bundle audit. The audit found a single chunk that was 3.3 MB / 471 KB gzipped, shipping 6,193 icons of which only 112 were used. The fix had two parts: an architectural refactor of three files that used the icon library as a runtime-string-indexed namespace (changing the data shape so icons are component references, not strings), then a mechanical migration of 61 files from barrel imports to deep imports. Two non-obvious traps along the way: the package's <code>exports</code> wildcard required dropping the <code>.svelte</code> extension from the import path, and the type-vs-runtime distinction allowed using <code>import type { Icon } from '@tabler/icons-svelte'</code> for type-checking without re-introducing the barrel. Final result: 77% reduction in total client JS, 97% reduction in largest chunk, 75% faster builds. Every number verified via re-runnable measurement.</p>
+
+      <p>The next chapter is the volume's closing meta — the L7 mindset that ties the audit work in this volume into a transferable framework. It's the chapter where the "knowing what you haven't done" framing from Chs 10 and 12, the failure-narration from Chs 1 and 5, and the case-study discipline from this chapter come together.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-12"><div class="dir">← Prev</div><div class="ttl">Performance levers</div></a>
+        <a class="next" href="#ch-14"><div class="dir">Next →</div><div class="ttl">The L7 mindset</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
