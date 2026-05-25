@@ -1027,6 +1027,153 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 6 ============================ -->
+    <section id="ch-6">
+      <p class="eyebrow">Chapter 06</p>
+      <h2>Container queries · component-relative responsiveness on 4 real components</h2>
+      <p class="lede">The 30-year assumption that "responsive design = viewport-relative" turned out to be wrong. A <code>ProductCard</code> should respond to <em>its container</em>, not the user's window — because the same card might render in a wide marketing grid on one page and a narrow sidebar slot on another. <code>@container</code> queries (Containment Level 3, shipped in all major browsers in 2023) make that possible. This chapter walks the project's four real container-query uses, then narrates the self-reference bug that broke <code>PricingCard</code> for an entire turn before it was diagnosed.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commits</div>
+        <p><code>557eee3</code> · <em>css(components): add @container queries to 4 reusable components</em> — the introduction</p>
+        <p><code>65132cd</code> · <em>fix(home): featured PricingCard no longer overflows wrapper</em> — the self-reference bug + fix</p>
+      </div>
+
+      <h3>The mental model · containers are local viewports</h3>
+      <p>A standard media query asks: <em>"how wide is the user's browser?"</em> A container query asks: <em>"how wide is the box I'm currently sitting inside?"</em>. Two changes make this possible:</p>
+
+      <ol>
+        <li>An ancestor element declares <code>container-type: inline-size</code> (and optionally <code>container-name: foo</code>). That element becomes a "query container" — its dimensions can be measured.</li>
+        <li>Descendant rules use <code>@container foo (min-width: ...)</code> to react to the named container's width.</li>
+      </ol>
+
+      <p>The component author no longer has to assume anything about where the component will live. A card declares its own breakpoints; if it's placed in a 24rem-wide column on a 1920px monitor, it renders in single-column mode anyway. If it's placed in a 60rem-wide layout on a 768px tablet, it renders multi-column.</p>
+
+      <h3>The four real components</h3>
+
+      <h4>1. <code>ProductCard</code> · highlights collapse based on card width</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/commerce/ProductCard.svelte (extract)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">card</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;</span><span class="ln">  <span class="tk-prop">container-name</span>: product-card;</span><span class="ln">  <span class="tk-com">/* ... rest of card styles ... */</span></span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Highlights become 2 columns once the card has room. The card stacks</span></span><span class="ln"><span class="tk-com"> * to 1 column in a sidebar slot at the same viewport width. */</span></span><span class="ln"><span class="tk-kw">@container</span> product-card (<span class="tk-prop">min-width</span>: <span class="tk-num">24rem</span>) {</span><span class="ln">  .<span class="tk-var">highlights</span> {</span><span class="ln">    <span class="tk-prop">display</span>: grid;</span><span class="ln">    <span class="tk-prop">grid-template-columns</span>: <span class="tk-num">1fr 1fr</span>;</span><span class="ln">    <span class="tk-prop">column-gap</span>: <span class="tk-var">var</span>(--space-4);</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The card's highlights list (4-6 bullet points per product) becomes a 2-column grid when the card is ≥24rem (384px) wide. In the home page's 3-column featured grid, the card is roughly 450px → 2-column highlights, balanced layout. In a hypothetical dashboard sidebar slot at 280px, the card stays single-column. The viewport doesn't enter the calculation.</p>
+
+      <h4>2. <code>StatCard</code> · sparkline hides on narrow cards</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/dashboard/StatCard.svelte (extract)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">stat-card</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;</span><span class="ln">  <span class="tk-prop">container-name</span>: stat-card;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Below ~15rem (240px) the sparkline can't fit alongside the value</span></span><span class="ln"><span class="tk-com"> * without overlapping; hide it. The card still tells the same</span></span><span class="ln"><span class="tk-com"> * story via the delta percent in the footer. */</span></span><span class="ln"><span class="tk-kw">@container</span> stat-card (<span class="tk-prop">max-width</span>: <span class="tk-num">15rem</span>) {</span><span class="ln">  .<span class="tk-var">spark</span> {</span><span class="ln">    <span class="tk-prop">display</span>: none;</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The dashboard overview shows 4 StatCards in a row at desktop widths (~280px each) — sparklines visible, story complete. On a tablet where the row collapses to 2-column, each card is ~360px wide — still sparklines visible. If the dashboard ever puts a StatCard in a narrow KPI strip at the top of a detail page (say, 200px wide), the sparkline auto-hides and the card gracefully degrades. The component is correct in every context without any per-page code changes.</p>
+
+      <h4>3. <code>DataTable</code> · two-stage toolbar collapse</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/admin/DataTable.svelte (extracts)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* Stack the toolbar vertically when the table is narrow so the</span></span><span class="ln"><span class="tk-com"> * search box keeps full width instead of squeezing to a sliver. */</span></span><span class="ln"><span class="tk-kw">@container</span> data-table (<span class="tk-prop">max-width</span>: <span class="tk-num">32rem</span>) {</span><span class="ln">  .<span class="tk-var">toolbar</span> {</span><span class="ln">    <span class="tk-prop">flex-direction</span>: column;</span><span class="ln">    <span class="tk-prop">align-items</span>: stretch;</span><span class="ln">  }</span><span class="ln">  .<span class="tk-var">search</span> { <span class="tk-prop">max-width</span>: none; }</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-com">/* In narrow tables the pager's count + buttons collide; stack</span></span><span class="ln"><span class="tk-com"> * them so the buttons get their own row and remain tappable. */</span></span><span class="ln"><span class="tk-kw">@container</span> data-table (<span class="tk-prop">max-width</span>: <span class="tk-num">26rem</span>) {</span><span class="ln">  .<span class="tk-var">pager</span> {</span><span class="ln">    <span class="tk-prop">flex-direction</span>: column;</span><span class="ln">    <span class="tk-prop">gap</span>: <span class="tk-var">var</span>(--space-3);</span><span class="ln">    <span class="tk-prop">align-items</span>: stretch;</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>Two breakpoints, both container-relative. At 32rem (512px) the toolbar stacks; at 26rem (416px) the pager also stacks. The table works in any width — admin pages typically render it at full container width, but a narrow dashboard widget could embed the same table and the layout still degrades gracefully.</p>
+
+      <h4>4. <code>.compare-wrap</code> · the dual-layout swap from Ch 7's section</h4>
+      <p>The fourth use isn't on a reusable component — it's on a route-specific element. The subscription page's comparison table swaps between a wide-container <code>&lt;table&gt;</code> layout and a narrow-container stacked-cards layout. The breakpoint is on the wrapper, not the viewport:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/routes/subscription/+page.svelte (extract)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">compare-wrap</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;</span><span class="ln">  <span class="tk-prop">container-name</span>: compare;</span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-kw">@container</span> compare (<span class="tk-prop">max-width</span>: <span class="tk-num">760px</span>) {</span><span class="ln">  .<span class="tk-var">compare</span> { <span class="tk-com">/* visually-hidden, SR-only */</span> }</span><span class="ln">  .<span class="tk-var">compare-cards</span> { <span class="tk-prop">display</span>: grid; }</span><span class="ln">}</span></code></pre></div>
+
+      <p>Below 760px container width, the <code>&lt;table&gt;</code> goes to the SR-only pattern and the stacked-card layout becomes visible. The table stays in the DOM for screen-reader access (one canonical semantic representation); the cards are <code>aria-hidden</code> when the table shows, and vice versa. Same data, two layouts, no JavaScript.</p>
+
+      <h3>The self-reference bug · a Principal-L7 trap</h3>
+      <p>The four components above all share a structural pattern: <strong>the container declaration is on an ancestor element, and the <code>@container</code> rules target descendants</strong>. <code>ProductCard</code>'s <code>.card</code> declares the container; <code>.highlights</code> inside it is the descendant that responds. <code>StatCard</code>'s <code>.stat-card</code> declares the container; <code>.spark</code> responds. <code>DataTable</code>'s wrapper declares; <code>.toolbar</code> and <code>.pager</code> respond. <code>.compare-wrap</code> declares; <code>.compare</code> and <code>.compare-cards</code> respond.</p>
+
+      <p>This is not a stylistic choice. <strong>It's required by the CSS Containment Module Level 3 spec.</strong></p>
+
+      <div class="callout term">
+        <div class="label">Quoted from CSS Containment Module Level 3 (W3C draft)</div>
+        <p>"For each element, the query container to be queried is selected from among the element's <strong>ancestor</strong> query containers..."</p>
+      </div>
+
+      <p>Read literally: when matching an <code>@container</code> rule against an element, the browser walks up the ancestor chain looking for query containers. The element itself is not in that chain. <strong>An element cannot query its own container's dimensions.</strong></p>
+
+      <h4>The bug · <code>PricingCard</code>'s broken featured-lift</h4>
+      <p>Before the recent fix, <code>PricingCard</code> had this pattern:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/commerce/PricingCard.svelte (BROKEN)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">pricing-card</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;</span><span class="ln">  <span class="tk-prop">container-name</span>: pricing-card;</span><span class="ln">}</span><span class="ln"></span><span class="ln">.<span class="tk-var">is-featured</span> {</span><span class="ln">  <span class="tk-prop">transform</span>: <span class="tk-fn">scale</span>(<span class="tk-num">1.02</span>);  <span class="tk-com">/* lift effect for the featured plan */</span></span><span class="ln">}</span><span class="ln"></span><span class="ln"><span class="tk-com">/* Disable the lift when the card is narrow (single-column stack) */</span></span><span class="ln"><span class="tk-kw">@container</span> pricing-card (<span class="tk-prop">max-width</span>: <span class="tk-num">28rem</span>) {</span><span class="ln">  .<span class="tk-var">is-featured</span> {</span><span class="ln">    <span class="tk-prop">transform</span>: none;  <span class="tk-com">/* ← supposed to fire below 448px */</span></span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The <code>.is-featured</code> class is applied to the same element that declares <code>container-type: pricing-card</code> (they're both on the card's root <code>&lt;article&gt;</code>). The <code>@container</code> rule asks: <em>"is my container ≤28rem wide?"</em> Per the spec quoted above, the browser walks the element's <em>ancestor</em> query containers — and finds none, because the element itself is the only container in the chain. The rule never matches. <code>.is-featured</code> keeps its <code>transform: scale(1.02)</code> at every viewport.</p>
+
+      <p>Discovered via direct DOM measurement at 500px viewport:</p>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — measuring the bug</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">node /tmp/measure-pricing.js</span>
+<span class="out">{</span>
+<span class="out">  "viewport": 500,</span>
+<span class="out">  "cardPreScaleWidth": "457px",</span>
+<span class="out">  "transform": "matrix(1.02, 0, 0, 1.02, 0, 0)",  ← STILL SCALED</span>
+<span class="out">  "containerType": "inline-size",</span>
+<span class="out">  "containerName": "pricing-card"</span>
+<span class="out">}</span></pre></div>
+
+      <p>The card was 457px wide — well under the 448px threshold (28rem × 16px) — but <code>transform</code> was still <code>scale(1.02)</code>. The container query never fired. The <code>scale(1.02)</code> made the card visually overflow its <code>.featured-plan-card</code> wrapper by ~5px on each side. The user reported the symptom: <em>"left, right, and bottom borders are missing"</em>. The card's borders were rendering <em>outside</em> the wrapper's bounds and getting clipped.</p>
+
+      <h4>The fix · drop the @container, use a viewport @media instead</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/components/commerce/PricingCard.svelte (FIXED)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-com">/* MUST be a viewport-relative media query (not a @container query)</span></span><span class="ln"><span class="tk-com"> * because the card itself is the container — and per CSS Containment</span></span><span class="ln"><span class="tk-com"> * spec, an element can't query its own container size, only its</span></span><span class="ln"><span class="tk-com"> * ancestor's. So a self-referential @container query never fires. */</span></span><span class="ln"><span class="tk-kw">@media</span> (--bp-lg-down) {</span><span class="ln">  .<span class="tk-var">is-featured</span> {</span><span class="ln">    <span class="tk-prop">transform</span>: none;</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The viewport media query <em>does</em> fire. The lift is now correctly suppressed at viewport widths below the <code>--bp-lg</code> (1024px) threshold, where the featured-grid layout is single-column anyway. At wider viewports where the multi-column grid kicks in, the lift returns. The behavior the original code intended now actually happens.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · the three ways out of the self-reference trap</div>
+        <p>If you need an element to react to its own dimensions, you have three options. <strong>(1)</strong> Move the rule to a viewport <code>@media</code> query — works if "what the element looks like" correlates with viewport width in your design (the project's fix). <strong>(2)</strong> Wrap the element in a parent that declares the container, and put the responsive rule on the element — adds a div, but keeps the local-responsiveness story. <strong>(3)</strong> Use <code>container-type: size</code> on a parent and check both axes — more complex, rarely needed. Of the three, option 1 is the simplest and the project's design accommodated it. Option 2 is the right choice when the element really does need to respond to its own size regardless of viewport.</p>
+      </div>
+
+      <h3>Dead container declarations · the audit follow-up</h3>
+      <p>One honest find from re-auditing the codebase while writing this chapter: <strong>two components still declare containers they don't use</strong>. <code>PricingCard</code> kept <code>container-type: inline-size; container-name: pricing-card</code> after the broken <code>@container</code> rule was deleted in <code>65132cd</code>. <code>RoadmapCard</code> declares <code>container-type: inline-size; container-name: roadmap-card</code> and never had a <code>@container</code> rule at all.</p>
+
+      <p>Dead container declarations aren't free. The browser still performs containment on the element (forcing it into its own layout context, which affects how percentages and child styles resolve). For these two components the impact is negligible — small cards, no children that depend on percentage sizing — but the principle is wrong.</p>
+
+      <p>The cleanup: delete both. <code>PricingCard</code> doesn't need the container anymore. <code>RoadmapCard</code> never did. Two trivial diffs that the original commits should have included. This is the kind of thing that gets caught only when you re-read the codebase chapter by chapter — which is one reason writing a documentation volume <em>after</em> shipping the work is more valuable than writing it concurrently. The act of explaining forces a re-audit.</p>
+
+      <h3>When media queries still win</h3>
+      <p>Container queries are not a strict upgrade. Three categories where <code>@media</code> remains the right tool:</p>
+
+      <dl>
+        <dt>Page-level layout decisions</dt>
+        <dd>Whether the navbar shows hamburger or full-width links, whether the sidebar is fixed or hidden, whether the page uses 2-column or 3-column overall layout. These are decisions about the page itself, not about a reusable component, and viewport width is the right input.</dd>
+        <dt>Design-token scaling</dt>
+        <dd>The project's <code>--container-max</code> grows from 1280px to 1440px at <code>--bp-2xl</code> (1536px viewport). That's a viewport decision, not a component-relative one. Per the project's <code>tokens.css</code>: <code>@media (min-width: 1536px) { :root { --container-max: 1440px } }</code>.</dd>
+        <dt>User-preference media queries</dt>
+        <dd><code>prefers-reduced-motion</code>, <code>prefers-color-scheme</code>, <code>prefers-contrast</code> — these aren't about layout at all. They're user-state signals. Container queries have no equivalent.</dd>
+      </dl>
+
+      <h3>The <code>cqi</code> unit · type that scales with the card</h3>
+      <p>The container-relative length units (<code>cqi</code>, <code>cqb</code>, <code>cqw</code>, <code>cqh</code>) are the natural complement to <code>@container</code> queries. <code>cqi</code> stands for "container query inline-size" — 1cqi = 1% of the nearest containment context's inline dimension. Use case:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">example · cqi for container-aware type</span><button class="copy">copy</button></div>
+<pre><code><span class="ln">.<span class="tk-var">stat-card</span> {</span><span class="ln">  <span class="tk-prop">container-type</span>: inline-size;</span><span class="ln">  <span class="tk-prop">container-name</span>: stat-card;</span><span class="ln">}</span><span class="ln"></span><span class="ln">.<span class="tk-var">stat-card</span> .<span class="tk-var">value</span> {</span><span class="ln">  <span class="tk-com">/* Grow the KPI number with the card, capped at sane bounds */</span></span><span class="ln">  <span class="tk-prop">font-size</span>: <span class="tk-fn">clamp</span>(<span class="tk-num">1.5rem</span>, <span class="tk-num">12cqi</span>, <span class="tk-num">3rem</span>);</span><span class="ln">}</span></code></pre></div>
+
+      <p>The project doesn't use this yet. It could — the StatCard's KPI numbers could scale with the card's width, looking proportional in every column count. The reason it's not in the current codebase: the design used fixed type sizes via <code>--text-3xl</code>, which works fine and saved the implementation cost. The unit is in the toolkit for when the design system calls for container-relative typography.</p>
+
+      <h3>Browser support · this is universal in 2026</h3>
+      <p>Container queries shipped in <strong>Chrome 105</strong>, <strong>Safari 16</strong>, and <strong>Firefox 110</strong> — all in 2022–2023. Container units (<code>cqi</code> et al.) shipped in the same releases. No major browser version released after early 2023 lacks support. Like the rest of Vol 5's modern-CSS features, there's no progressive-enhancement story to worry about; if a user is running a browser old enough to lack container queries, your authentication form's modern <code>color-mix()</code> won't work either.</p>
+
+      <h3>Summary · the rule</h3>
+      <ul>
+        <li><strong>Container queries</strong> let descendants react to their nearest ancestor's container size — not the viewport.</li>
+        <li><strong>Declare</strong> <code>container-type: inline-size</code> on the wrapper; <strong>query</strong> <code>@container name (max-width: ...)</code> on descendants.</li>
+        <li><strong>An element cannot query its own container</strong>. Per W3C spec, container resolution walks <em>ancestor</em> chains only. If you need self-responsive behavior, either move to a viewport media query or wrap the element in a parent that declares the container.</li>
+        <li><strong>Dead container declarations cost containment overhead</strong>. If you remove the <code>@container</code> rule, remove the <code>container-type</code> declaration too. Two cleanups outstanding in this codebase.</li>
+        <li><strong>Media queries still win</strong> for page-level layout, design-token scaling, and user-preference signals (<code>prefers-reduced-motion</code>, etc.).</li>
+        <li><strong><code>cqi</code> and friends</strong> are the natural pairing — container-relative lengths for container-relative layouts.</li>
+      </ul>
+
+      <p>The next chapter is about progressive enhancement — specifically the project's <code>backdrop-filter</code> defenses, where each of 10 sites that used the effect needed a <code>@supports</code> fallback so older browsers got an opaque background instead of a transparent panel with no blur.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-5"><div class="dir">← Prev</div><div class="ttl">Single-source breakpoints</div></a>
+        <a class="next" href="#ch-7"><div class="dir">Next →</div><div class="ttl">@supports &amp; backdrop-filter</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
