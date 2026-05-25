@@ -1490,6 +1490,190 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 9 ============================ -->
+    <section id="ch-9">
+      <p class="eyebrow">Chapter 09</p>
+      <h2>Motion · easing curves, <code>prefers-reduced-motion</code>, GSAP vs CSS</h2>
+      <p class="lede">Motion is the thinnest layer of polish that separates a competent interface from a memorable one — and the thinnest line between memorable and nauseating. This chapter is the project's motion stack: seven hand-picked cubic-bezier easing tokens, six duration tiers, eight CSS keyframes, and a GSAP layer that honors <code>prefers-reduced-motion</code> at three independent enforcement points. None of these decisions are stylistic; each has a math reason and an accessibility reason that show up in the code.</p>
+
+      <h3>The easing curves · what cubic-bezier numbers actually mean</h3>
+      <p>Every motion in the project ultimately resolves through one of seven easing tokens. They're declared once in <code>tokens.css</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · easing</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--ease-linear</span>:       linear;</span><span class="ln"><span class="tk-prop">--ease-out</span>:          <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.16, 1, 0.3, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-in</span>:           <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.7, 0, 0.84, 0</span>);</span><span class="ln"><span class="tk-prop">--ease-in-out</span>:       <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.65, 0, 0.35, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-out-expo</span>:     <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.19, 1, 0.22, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-in-out-quart</span>: <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.77, 0, 0.175, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-spring</span>:       <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.34, 1.56, 0.64, 1</span>);</span></code></pre></div>
+
+      <p>A <code>cubic-bezier(x1, y1, x2, y2)</code> defines an animation's progress over time as a Bézier curve. The four numbers are two control points (x1,y1) and (x2,y2) on the curve from (0,0) to (1,1). The X axis is time (0% → 100%); the Y axis is animation progress (0% → 100%). The control points pull the curve toward themselves, shaping how fast the animation accelerates and decelerates.</p>
+
+      <p>What each token feels like:</p>
+
+      <dl>
+        <dt><code>--ease-out: cubic-bezier(0.16, 1, 0.3, 1)</code></dt>
+        <dd><strong>Decelerates fast, then settles slowly.</strong> The first control point pulls Y immediately to 1 (the animation reaches near-final value almost instantly), while the second control point keeps Y at 1 (the tail glides into place). Feels confident — like the element <em>knew</em> where it was going. The project's default for entrance animations.</dd>
+        <dt><code>--ease-in: cubic-bezier(0.7, 0, 0.84, 0)</code></dt>
+        <dd><strong>Holds still, then accelerates.</strong> Both Y control points are 0, so the curve stays flat near the start and only ramps up near the end. Feels deliberate, like the element is winding up. Used for exit animations where the user has dismissed something and the element should fall away decisively.</dd>
+        <dt><code>--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1)</code></dt>
+        <dd><strong>Slow start, fast middle, slow end.</strong> The classic "natural" S-curve. Used for transitions where the element exists before and after (a panel sliding, a tab indicator moving). Reads as "this thing is moving with deliberate purpose."</dd>
+        <dt><code>--ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1)</code></dt>
+        <dd>An even more aggressive variant of <code>--ease-out</code> — the curve hits Y=1 even earlier, then holds there for ~80% of the duration. Useful for elements that need to feel instantly responsive but should still have a settling tail. The project's GSAP defaults use the comparable <code>expo.out</code> easing string.</dd>
+        <dt><code>--ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1)</code></dt>
+        <dd>The sharpest S-curve — basically holds still for the first third, snaps through the middle third, settles in the last third. Used sparingly for moments that need to feel <em>punchy</em> rather than smooth.</dd>
+        <dt><code>--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)</code></dt>
+        <dd><strong>Overshoots past the target, then settles back.</strong> The second value of the first control point is <strong>1.56</strong> — above 1, which means the Y coordinate goes past the final animation value during the curve, then returns. Used for the "scale-in" animation where a card or modal appears: it scales up to slightly larger than 100%, then snaps back to 100%. Reads as <em>"that thing landed"</em> — the bounce communicates impact.</dd>
+      </dl>
+
+      <div class="callout why">
+        <div class="label">Why this matters · easing carries meaning, not just smoothness</div>
+        <p>Pick the wrong easing and the same animation reads completely differently. A modal fading in with <code>--ease-linear</code> feels mechanical. The same modal with <code>--ease-out</code> feels confident. With <code>--ease-spring</code> it feels playful. With <code>--ease-in</code> it feels backwards — like the modal is reluctantly arriving. The seven tokens cover the recognized vocabulary of UI motion; you almost never need a custom curve.</p>
+      </div>
+
+      <h3>The duration scale · six tiers, doubling-ish</h3>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · durations</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">--dur-instant</span>:   <span class="tk-num">80ms</span>;</span><span class="ln"><span class="tk-prop">--dur-fast</span>:      <span class="tk-num">160ms</span>;</span><span class="ln"><span class="tk-prop">--dur-base</span>:      <span class="tk-num">240ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slow</span>:      <span class="tk-num">420ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slower</span>:    <span class="tk-num">680ms</span>;</span><span class="ln"><span class="tk-prop">--dur-cinematic</span>: <span class="tk-num">1100ms</span>;</span></code></pre></div>
+
+      <p>The tiers aren't pure doublings (80 → 160 → 320 would be), but they grow exponentially-ish. The numbers map to perceptual categories:</p>
+
+      <ul>
+        <li><strong>80ms (instant)</strong> — at the threshold of conscious perception. Used for hover state changes where any longer delay would feel laggy. The brain registers "something happened" without registering "something animated."</li>
+        <li><strong>160ms (fast)</strong> — short enough to feel responsive, long enough for the eye to track. Button hover lifts, focus ring expansions.</li>
+        <li><strong>240ms (base)</strong> — the project's default for state transitions. Cart drawer opens, modal appears. Long enough to read as "this thing moved here on purpose."</li>
+        <li><strong>420ms (slow)</strong> — entrance animations for content panels. Hero fade-ups, section reveals on scroll. Feels deliberate, almost editorial.</li>
+        <li><strong>680ms (slower)</strong> — used for longer sequences where the eye should follow the motion fully. Marquees, complex stagger reveals.</li>
+        <li><strong>1100ms (cinematic)</strong> — the only tier over a second. Reserved for hero-level moments — the headline split-reveal on first page load. Anything <em>this</em> long happens at most once per page view, by design.</li>
+      </ul>
+
+      <p>The discipline: <strong>if you find yourself reaching for a duration not in this list</strong>, you're either tweaking past what the user can perceive or you've identified a missing tier that should be added to the scale. Hand-picking <code>237ms</code> for one animation is a code smell.</p>
+
+      <h3>The CSS keyframes · eight reusable patterns + animation aliases</h3>
+      <p>Project-wide motion patterns live in <code>animations.css</code> — eight <code>@keyframes</code> + eight utility classes that compose them with the duration/easing tokens. Three worth examining:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/animations.css · fade-up + .animate-fade-up</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@keyframes</span> fade-up {</span><span class="ln">  <span class="tk-kw">from</span> {</span><span class="ln">    <span class="tk-prop">opacity</span>: <span class="tk-num">0</span>;</span><span class="ln">    <span class="tk-prop">transform</span>: <span class="tk-fn">translate3d</span>(<span class="tk-num">0, 16px, 0</span>);</span><span class="ln">  }</span><span class="ln">  <span class="tk-kw">to</span> {</span><span class="ln">    <span class="tk-prop">opacity</span>: <span class="tk-num">1</span>;</span><span class="ln">    <span class="tk-prop">transform</span>: <span class="tk-fn">translate3d</span>(<span class="tk-num">0, 0, 0</span>);</span><span class="ln">  }</span><span class="ln">}</span><span class="ln"></span><span class="ln">.<span class="tk-var">animate-fade-up</span> {</span><span class="ln">  <span class="tk-prop">animation</span>: fade-up <span class="tk-var">var</span>(--dur-slow) <span class="tk-var">var</span>(--ease-out) both;</span><span class="ln">}</span></code></pre></div>
+
+      <p>The element fades in (opacity 0 → 1) while rising 16px from below. The <code>animation</code> shorthand composes the keyframe with <code>--dur-slow</code> (420ms) and <code>--ease-out</code> (the confident decelerating curve). The <code>both</code> keyword applies the keyframe's <code>from</code> state before the animation starts and its <code>to</code> state after it ends — preventing the flash of unstyled content where the element would briefly appear at its post-animation state before animating.</p>
+
+      <p>The <code>translate3d</code> is the load-bearing detail. <code>translateY(16px)</code> would work identically <em>visually</em> — but <code>translate3d</code> is the canonical hint to the browser to promote the element to its own compositor layer, which means the animation runs entirely on the GPU. Without that hint, the browser may run the animation on the main thread, contending with whatever else the page is doing. The <code>3d</code> trick costs nothing (the Z translation is 0) and earns reliable 60fps.</p>
+
+      <h4>The spring landing</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/animations.css · scale-in + .animate-scale-in</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@keyframes</span> scale-in {</span><span class="ln">  <span class="tk-kw">from</span> { <span class="tk-prop">opacity</span>: <span class="tk-num">0</span>; <span class="tk-prop">transform</span>: <span class="tk-fn">scale</span>(<span class="tk-num">0.96</span>); }</span><span class="ln">  <span class="tk-kw">to</span>   { <span class="tk-prop">opacity</span>: <span class="tk-num">1</span>; <span class="tk-prop">transform</span>: <span class="tk-fn">scale</span>(<span class="tk-num">1</span>); }</span><span class="ln">}</span><span class="ln"></span><span class="ln">.<span class="tk-var">animate-scale-in</span> {</span><span class="ln">  <span class="tk-prop">animation</span>: scale-in <span class="tk-var">var</span>(--dur-base) <span class="tk-var">var</span>(--ease-spring) both;</span><span class="ln">}</span></code></pre></div>
+
+      <p>The keyframe goes from <code>scale(0.96)</code> to <code>scale(1)</code> — only 4% growth. Combined with <code>--ease-spring</code>'s overshoot, the element actually scales past 1.0 (briefly to ~1.05 around the 75% mark) before settling back to 1.0. The 4% starting offset is small enough not to draw attention; the overshoot adds the "landed" feel without being cartoonish. Used for modals appearing and cards popping into view.</p>
+
+      <h4>Shimmer · skeleton-loader pattern</h4>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/animations.css · shimmer (loading state)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@keyframes</span> shimmer {</span><span class="ln">  <span class="tk-num">0%</span>   { <span class="tk-prop">background-position</span>: <span class="tk-num">-200% 0</span>; }</span><span class="ln">  <span class="tk-num">100%</span> { <span class="tk-prop">background-position</span>: <span class="tk-num">200% 0</span>; }</span><span class="ln">}</span><span class="ln"></span><span class="ln">.<span class="tk-var">animate-shimmer</span> {</span><span class="ln">  <span class="tk-prop">background</span>: <span class="tk-fn">linear-gradient</span>(</span><span class="ln">    <span class="tk-num">90deg</span>,</span><span class="ln">    <span class="tk-var">var</span>(--surface-2) <span class="tk-num">0%</span>,</span><span class="ln">    <span class="tk-var">var</span>(--surface-3) <span class="tk-num">50%</span>,</span><span class="ln">    <span class="tk-var">var</span>(--surface-2) <span class="tk-num">100%</span></span><span class="ln">  );</span><span class="ln">  <span class="tk-prop">background-size</span>: <span class="tk-num">200% 100%</span>;</span><span class="ln">  <span class="tk-prop">animation</span>: shimmer <span class="tk-num">1.6s</span> linear infinite;</span><span class="ln">}</span></code></pre></div>
+
+      <p>A wider-than-element gradient slides across, producing the canonical "pulse of light" skeleton-loader effect. The gradient is 200% wide and travels from -200% to 200% — a full 400% pan — so the light sweep starts off-screen, crosses the visible area once per cycle, and exits before looping. <code>linear</code> easing on infinite loops only; ease curves would create perceived stops at the edges.</p>
+
+      <h3>The reduced-motion blanket guard</h3>
+      <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN</a>:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from MDN · prefers-reduced-motion</div>
+        <p>"The <code>prefers-reduced-motion</code> CSS media feature is used to detect if a user has enabled a setting on their device to minimize the amount of non-essential motion."</p>
+        <p>"Such animations can trigger discomfort for those with vestibular motion disorders. Animations such as scaling or panning large objects can be vestibular motion triggers."</p>
+        <p>The intent: "removes, reduces, or replaces motion-based animations" — animations should be toned down to less aggressive alternatives, <em>not necessarily removed entirely</em>.</p>
+      </div>
+
+      <p>The project's response is the universal blanket guard, declared once in <code>reset.css</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/reset.css · reduced-motion guard</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@media</span> (<span class="tk-prop">prefers-reduced-motion</span>: reduce) {</span><span class="ln">  <span class="tk-var">html</span> { <span class="tk-prop">scroll-behavior</span>: auto; }</span><span class="ln">  <span class="tk-punct">*</span>, <span class="tk-punct">*</span>::before, <span class="tk-punct">*</span>::after {</span><span class="ln">    <span class="tk-prop">animation-duration</span>: <span class="tk-num">0.01ms</span> !important;</span><span class="ln">    <span class="tk-prop">animation-iteration-count</span>: <span class="tk-num">1</span> !important;</span><span class="ln">    <span class="tk-prop">transition-duration</span>: <span class="tk-num">0.01ms</span> !important;</span><span class="ln">    <span class="tk-prop">scroll-behavior</span>: auto !important;</span><span class="ln">  }</span><span class="ln">}</span></code></pre></div>
+
+      <p>The universal selector + <code>!important</code> overrides every component-local animation. The user with reduced-motion preferences set gets:</p>
+      <ul>
+        <li><strong>Smooth-scrolling disabled</strong> — anchor links jump instantly instead of animating.</li>
+        <li><strong>Every animation runs for 0.01ms once</strong> — essentially instant, but technically still firing.</li>
+        <li><strong>Every transition runs for 0.01ms</strong> — same.</li>
+      </ul>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · why 0.01ms instead of 0</div>
+        <p>Setting <code>animation-duration: 0</code> seems cleaner but breaks <code>animationend</code> event firing on some platforms — older Safari and certain Firefox versions don't dispatch the event for zero-duration animations. Code that relies on <code>animationend</code> to clean up state (focus restoration after modal close, removing a "just-animated" class) silently stops working. <code>0.01ms</code> guarantees the event fires while being below any perceptible threshold. The non-zero value isn't paranoia; it's compatibility.</p>
+      </div>
+
+      <h3>The GSAP layer · three enforcement points for reduced-motion</h3>
+      <p>The CSS keyframes handle simple entrance and ambient animations. The richer GSAP-driven attachments — stagger reveals, parallax scrolling, magnetic hover, the headline split-reveal — need their own respect for the user's preferences. The implementation lives in <code>$lib/animations/gsap.ts</code>:</p>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">src/lib/animations/gsap.ts · prefersReducedMotion helper</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">export function</span> <span class="tk-fn">prefersReducedMotion</span>(): <span class="tk-typ">boolean</span> {</span><span class="ln">  <span class="tk-kw">if</span> (!<span class="tk-var">browser</span>) <span class="tk-kw">return</span> <span class="tk-bool">false</span>;</span><span class="ln">  <span class="tk-kw">return</span> <span class="tk-var">window</span>.<span class="tk-fn">matchMedia</span>(<span class="tk-str">'(prefers-reduced-motion: reduce)'</span>).<span class="tk-prop">matches</span>;</span><span class="ln">}</span></code></pre></div>
+
+      <p>Three different ways this helper gates motion in the attachment functions:</p>
+
+      <h4>Pattern 1 · snap to final state</h4>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">attachments.ts · fadeUp (paraphrased)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">if</span> (<span class="tk-fn">prefersReducedMotion</span>()) {</span><span class="ln">  <span class="tk-var">gsap</span>.<span class="tk-fn">set</span>(<span class="tk-var">node</span>, { <span class="tk-prop">opacity</span>: <span class="tk-num">1</span>, <span class="tk-prop">y</span>: <span class="tk-num">0</span>, <span class="tk-prop">x</span>: <span class="tk-num">0</span>, <span class="tk-prop">scale</span>: <span class="tk-num">1</span> });</span><span class="ln">  <span class="tk-kw">return</span>;</span><span class="ln">}</span></code></pre></div>
+
+      <p>For entrance animations that move an element into place — the element starts off-screen or invisible, and the animation brings it into view. The reduced-motion path uses <code>gsap.set</code> to immediately apply the post-animation state (opacity 1, position 0, scale 1) and return. The user sees the final state from the start. Same content, no motion.</p>
+
+      <h4>Pattern 2 · skip the entire effect</h4>
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">attachments.ts · parallax (paraphrased)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">if</span> (!<span class="tk-var">gsap</span>) <span class="tk-kw">return</span>;</span><span class="ln"><span class="tk-kw">if</span> (<span class="tk-fn">prefersReducedMotion</span>()) <span class="tk-kw">return</span>;</span></code></pre></div>
+
+      <p>For purely-decorative effects — parallax background scrolling, cursor-following glows. There's no "final state" to snap to; the effect <em>is</em> motion. The reduced-motion path returns before the attachment registers any listeners. The element renders normally; the parallax/glow simply never starts.</p>
+
+      <h4>Pattern 3 · pre-emptive guard in attachments.ts</h4>
+      <p>Every attachment in the file checks <code>prefersReducedMotion()</code> at the top before doing any work. This is belt-and-braces over the CSS reset's universal blanket — the CSS guard catches CSS transitions and keyframe animations; the JS guards catch GSAP timelines that bypass CSS entirely (GSAP often animates inline styles directly, which can override the CSS reset's <code>animation-duration: 0.01ms</code> rule).</p>
+
+      <div class="callout why">
+        <div class="label">Why this matters · CSS guards don't cover JS animations</div>
+        <p>The universal <code>* { animation-duration: 0.01ms !important }</code> in reset.css overrides CSS-declared animations and transitions. It does <em>not</em> override JavaScript-driven motion. GSAP animating <code>element.style.transform</code> directly bypasses the CSS cascade entirely — the reset doesn't know that motion is happening. Without the JS-side check, a reduced-motion user with GSAP attachments still sees the full motion. The two guards are independent; both are required for full coverage.</p>
+      </div>
+
+      <h3>CSS keyframes vs GSAP · when to reach for which</h3>
+      <p>The project uses both — and the boundary between them isn't stylistic. Each has cases where it's the right answer:</p>
+
+      <table>
+        <thead><tr><th>Use case</th><th>CSS keyframes</th><th>GSAP</th></tr></thead>
+        <tbody>
+          <tr><td>Single-element entrance fade</td><td>✅ <code>.animate-fade-up</code> — one class, done</td><td>❌ overkill</td></tr>
+          <tr><td>Hover-state transitions</td><td>✅ <code>transition: background var(--dur-fast)</code></td><td>❌ overkill</td></tr>
+          <tr><td>Infinite loops (spin, shimmer, marquee)</td><td>✅ <code>animation: spin 1s linear infinite</code></td><td>❌ overkill, also harder to pause</td></tr>
+          <tr><td>Stagger reveal across many children</td><td>⚠️ possible with <code>animation-delay</code>, but timing gets fragile</td><td>✅ <code>gsap.from(children, { stagger: 0.1 })</code></td></tr>
+          <tr><td>Scroll-driven reveals</td><td>⚠️ possible with <code>animation-timeline: view()</code> (limited browser support)</td><td>✅ <code>ScrollTrigger.create({...})</code></td></tr>
+          <tr><td>Headline split-reveal with per-character timing</td><td>❌ extremely difficult</td><td>✅ SplitText + timeline</td></tr>
+          <tr><td>Magnetic hover (element following cursor)</td><td>❌ requires JS regardless</td><td>✅ velocity-aware tweens</td></tr>
+          <tr><td>Number-ticker (animated count-up)</td><td>❌ requires JS</td><td>✅ <code>gsap.to({ n: 0 }, { n: target })</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>The pattern: <strong>CSS handles the simple, deterministic, looping cases</strong>; <strong>GSAP handles the multi-element coordination, scroll-coupled, and value-interpolation cases</strong>. The project's home page <em>uses both</em> — the Hero card has GSAP attachments for the parallax + cursor glow + split-reveal, but the shimmer in its loading state is a pure CSS animation.</p>
+
+      <h3>Bundle cost · GSAP isn't free</h3>
+      <p>GSAP core is ~50KB gzipped; ScrollTrigger adds another ~12KB. SplitText (used for the headline reveal) is a paid GSAP Bonus plugin (the project doesn't use it; the codebase implements its own simpler split-reveal). For a site that uses GSAP on most pages, the cost amortizes — the file is cached after first visit. For a site that uses GSAP on the home page only, it's worth asking whether the motion budget justifies it.</p>
+
+      <p>The project's calculus: <strong>the home page's first impression carries the brand</strong> (trading desk for serious traders — needs to feel premium, not sluggish), and GSAP enables motion polish that's measurably difficult to recreate in CSS. The trade-off is accepted explicitly. Internal admin pages that load GSAP via the same shared chunk pay the cost without using the features — that's the marginal waste, but the chunk caches and the admin user has typically already visited the home page, so the cost is paid once per session.</p>
+
+      <h3>The principal-engineer move · always test with motion off</h3>
+      <p>Every time you ship a new animation, set <code>prefers-reduced-motion: reduce</code> in DevTools (Chromium: Rendering panel → "Emulate CSS media feature prefers-reduced-motion") and confirm the page is still <strong>fully usable, fully visible, and fully navigable</strong>. The bug to avoid: an animation that fades content in is gated by <code>prefersReducedMotion()</code>, returns early, but never sets the final visible state — so reduced-motion users see permanently-invisible content. The fix is always the pattern shown above: <code>gsap.set(node, { opacity: 1, ... })</code> before returning.</p>
+
+      <div class="callout pitfall">
+        <div class="label">Pitfall · the most common reduced-motion bug</div>
+        <p>An entrance animation gated by <code>prefersReducedMotion()</code> looks like this in pseudo-code: <em>start at opacity 0, animate to opacity 1. If reduced-motion, skip the animation.</em> If you skip the animation without setting opacity to 1, the element stays at opacity 0 forever. The user sees invisible content. This is genuinely the most common reduced-motion accessibility bug — and it ships easily because the author tests with reduced-motion off and the bug only appears with it on. The fix is to <em>always set the final state</em> in the reduced-motion branch, not just return. Code reviews catch this exactly when the reviewer asks: "what does this look like with motion disabled?" Add that question to your review checklist.</p>
+      </div>
+
+      <h3>Summary · the motion stack at a glance</h3>
+      <ul>
+        <li><strong>Seven easing tokens</strong> covering the recognized vocabulary of UI motion (out, in, in-out, expo, quart, spring, linear). Each token has a distinct <em>feel</em> — not just a shape.</li>
+        <li><strong>Six duration tiers</strong> from 80ms (subliminal) to 1100ms (cinematic). If you reach outside the scale, you're either past perception or missing a tier.</li>
+        <li><strong>Eight CSS keyframes</strong> in <code>animations.css</code> + their <code>.animate-*</code> utility classes. All use <code>translate3d</code> for GPU compositing.</li>
+        <li><strong>Universal reduced-motion blanket guard</strong> in <code>reset.css</code> — <code>0.01ms</code> not <code>0</code> for <code>animationend</code> event compatibility.</li>
+        <li><strong>JS-side <code>prefersReducedMotion()</code> helper</strong> in <code>gsap.ts</code>, called at the top of every attachment in <code>attachments.ts</code>. CSS guards don't cover JS-driven motion.</li>
+        <li><strong>Always set the final state</strong> when returning early from a reduced-motion branch — the most common accessibility bug ships when authors only test with motion enabled.</li>
+        <li><strong>CSS for simple/looping motion; GSAP for stagger/scroll/value-interpolation</strong> — the boundary is functional, not stylistic.</li>
+      </ul>
+
+      <p>The next chapter is accessibility itself — focus management, <code>prefers-contrast</code>, <code>forced-colors</code>, the skip-link pattern, and the focus-visible discipline that turns 16 component-local <code>:focus { outline: none }</code> rules into a documented bug instead of a silent regression.</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-8"><div class="dir">← Prev</div><div class="ttl">Logical properties &amp; RTL</div></a>
+        <a class="next" href="#ch-10"><div class="dir">Next →</div><div class="ttl">Accessibility through CSS</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
