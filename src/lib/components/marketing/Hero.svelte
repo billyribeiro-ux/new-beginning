@@ -362,19 +362,23 @@
 		letter-spacing: var(--tracking-wider);
 		border-radius: var(--radius-xs);
 	}
-	/* Center the label on the rail line regardless of its rendered
-	 * height. A magic-number offset (e.g. `top: calc(18% - 12px)`)
-	 * breaks the moment font-size, padding, or line-height changes.
-	 * Anchoring the label to the rail's y-position and translating
-	 * back by half its own height is the canonical self-centering
-	 * pattern. */
+	/* Both labels sit ABOVE their respective rail lines. The label's
+	 * bottom edge rests just above the gold line, never bisecting
+	 * it. Anchor each label to its rail's y-coordinate (top: 18%
+	 * for the upper rail, bottom: 82% — i.e. 100% − 18% — for the
+	 * lower rail measured from the top), then translate up by 100%
+	 * of the label's own height plus a 4px visual gap. The
+	 * percentage portion self-corrects for font-size / padding /
+	 * line-height changes; the px portion is the deliberate gap. */
+	.label-top,
+	.label-bottom {
+		transform: translateY(calc(-100% - 4px));
+	}
 	.label-top {
 		top: 18%;
-		transform: translateY(-50%);
 	}
 	.label-bottom {
-		bottom: 18%;
-		transform: translateY(50%);
+		top: 82%;
 	}
 
 	.chart-footer {
