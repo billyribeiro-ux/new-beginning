@@ -1494,13 +1494,13 @@ background: color-mix(
     <section id="ch-9">
       <p class="eyebrow">Chapter 09</p>
       <h2>Motion · easing curves, <code>prefers-reduced-motion</code>, GSAP vs CSS</h2>
-      <p class="lede">Motion is the thinnest layer of polish that separates a competent interface from a memorable one — and the thinnest line between memorable and nauseating. This chapter is the project's motion stack: seven hand-picked cubic-bezier easing tokens, six duration tiers, eight CSS keyframes, and a GSAP layer that honors <code>prefers-reduced-motion</code> at three independent enforcement points. None of these decisions are stylistic; each has a math reason and an accessibility reason that show up in the code.</p>
+      <p class="lede">Motion is the thinnest layer of polish that separates a competent interface from a memorable one — and the thinnest line between memorable and nauseating. This chapter is the project's motion stack: three hand-picked cubic-bezier easing tokens (trimmed from seven after an audit), four duration tiers, eight CSS keyframes, and a GSAP layer that honors <code>prefers-reduced-motion</code> at three independent enforcement points. None of these decisions are stylistic; each has a math reason and an accessibility reason that show up in the code.</p>
 
       <h3>The easing curves · what cubic-bezier numbers actually mean</h3>
-      <p>Every motion in the project ultimately resolves through one of seven easing tokens. They're declared once in <code>tokens.css</code>:</p>
+      <p>Every motion in the project ultimately resolves through one of three easing tokens. They're declared once in <code>tokens.css</code>:</p>
 
       <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · easing</span><button class="copy">copy</button></div>
-<pre><code><span class="ln"><span class="tk-prop">--ease-linear</span>:       linear;</span><span class="ln"><span class="tk-prop">--ease-out</span>:          <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.16, 1, 0.3, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-in</span>:           <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.7, 0, 0.84, 0</span>);</span><span class="ln"><span class="tk-prop">--ease-in-out</span>:       <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.65, 0, 0.35, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-out-expo</span>:     <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.19, 1, 0.22, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-in-out-quart</span>: <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.77, 0, 0.175, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-spring</span>:       <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.34, 1.56, 0.64, 1</span>);</span></code></pre></div>
+<pre><code><span class="ln"><span class="tk-prop">--ease-out</span>:    <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.16, 1, 0.3, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-in-out</span>: <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.65, 0, 0.35, 1</span>);</span><span class="ln"><span class="tk-prop">--ease-spring</span>: <span class="tk-fn">cubic-bezier</span>(<span class="tk-num">0.34, 1.56, 0.64, 1</span>);</span></code></pre></div>
 
       <p>A <code>cubic-bezier(x1, y1, x2, y2)</code> defines an animation's progress over time as a Bézier curve. The four numbers are two control points (x1,y1) and (x2,y2) on the curve from (0,0) to (1,1). The X axis is time (0% → 100%); the Y axis is animation progress (0% → 100%). The control points pull the curve toward themselves, shaping how fast the animation accelerates and decelerates.</p>
 
@@ -1508,41 +1508,43 @@ background: color-mix(
 
       <dl>
         <dt><code>--ease-out: cubic-bezier(0.16, 1, 0.3, 1)</code></dt>
-        <dd><strong>Decelerates fast, then settles slowly.</strong> The first control point pulls Y immediately to 1 (the animation reaches near-final value almost instantly), while the second control point keeps Y at 1 (the tail glides into place). Feels confident — like the element <em>knew</em> where it was going. The project's default for entrance animations.</dd>
-        <dt><code>--ease-in: cubic-bezier(0.7, 0, 0.84, 0)</code></dt>
-        <dd><strong>Holds still, then accelerates.</strong> Both Y control points are 0, so the curve stays flat near the start and only ramps up near the end. Feels deliberate, like the element is winding up. Used for exit animations where the user has dismissed something and the element should fall away decisively.</dd>
+        <dd><strong>Decelerates fast, then settles slowly.</strong> The first control point pulls Y immediately to 1 (the animation reaches near-final value almost instantly), while the second control point keeps Y at 1 (the tail glides into place). Feels confident — like the element <em>knew</em> where it was going. The project's default for entrance animations (80 uses across the codebase, the most-consumed easing token by far).</dd>
         <dt><code>--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1)</code></dt>
-        <dd><strong>Slow start, fast middle, slow end.</strong> The classic "natural" S-curve. Used for transitions where the element exists before and after (a panel sliding, a tab indicator moving). Reads as "this thing is moving with deliberate purpose."</dd>
-        <dt><code>--ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1)</code></dt>
-        <dd>An even more aggressive variant of <code>--ease-out</code> — the curve hits Y=1 even earlier, then holds there for ~80% of the duration. Useful for elements that need to feel instantly responsive but should still have a settling tail. The project's GSAP defaults use the comparable <code>expo.out</code> easing string.</dd>
-        <dt><code>--ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1)</code></dt>
-        <dd>The sharpest S-curve — basically holds still for the first third, snaps through the middle third, settles in the last third. Used sparingly for moments that need to feel <em>punchy</em> rather than smooth.</dd>
+        <dd><strong>Slow start, fast middle, slow end.</strong> The classic "natural" S-curve. Used for transitions where the element exists before and after (a panel sliding, a tab indicator moving). Reads as "this thing is moving with deliberate purpose." Single use in the codebase — the gold-pulse infinite animation.</dd>
         <dt><code>--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)</code></dt>
         <dd><strong>Overshoots past the target, then settles back.</strong> The second value of the first control point is <strong>1.56</strong> — above 1, which means the Y coordinate goes past the final animation value during the curve, then returns. Used for the "scale-in" animation where a card or modal appears: it scales up to slightly larger than 100%, then snaps back to 100%. Reads as <em>"that thing landed"</em> — the bounce communicates impact.</dd>
       </dl>
 
       <div class="callout why">
         <div class="label">Why this matters · easing carries meaning, not just smoothness</div>
-        <p>Pick the wrong easing and the same animation reads completely differently. A modal fading in with <code>--ease-linear</code> feels mechanical. The same modal with <code>--ease-out</code> feels confident. With <code>--ease-spring</code> it feels playful. With <code>--ease-in</code> it feels backwards — like the modal is reluctantly arriving. The seven tokens cover the recognized vocabulary of UI motion; you almost never need a custom curve.</p>
+        <p>Pick the wrong easing and the same animation reads completely differently. A modal fading in with <code>linear</code> feels mechanical. The same modal with <code>--ease-out</code> feels confident. With <code>--ease-spring</code> it feels playful. Three tokens cover most of the vocabulary the project actually needs; the CSS keyword <code>linear</code> handles infinite loops (spin, shimmer, marquee — where any easing would create perceived stops at the cycle boundaries).</p>
       </div>
 
-      <h3>The duration scale · six tiers, doubling-ish</h3>
+      <div class="callout commit">
+        <div class="label">Audit footnote · why only three easing tokens</div>
+        <p>An earlier version of this file declared seven tokens (added <code>--ease-linear</code>, <code>--ease-in</code>, <code>--ease-out-expo</code>, <code>--ease-in-out-quart</code> as "design-system breadth"). A token audit found four were never consumed — no <code>var(--ease-in)</code>, no raw cubic-bezier duplicates, no comment references. <code>--ease-linear</code> was a duplicate of the CSS keyword <code>linear</code>, which is what every infinite-loop animation in the codebase used directly. The four unused tokens were deleted in the same audit that produced this volume — the design-system-breadth justification didn't survive the "is anyone actually consuming this?" question. If you ever do need a spring-out or a sharp-quart curve, derive the value from your anchor points (Ch 3's slope formula applies to easing too) and add it back here first.</p>
+      </div>
+
+      <h3>The duration scale · four tiers, perceptually-spaced</h3>
 
       <div class="code"><div class="head"><span class="lang">css</span><span class="path">src/lib/styles/tokens.css · durations</span><button class="copy">copy</button></div>
-<pre><code><span class="ln"><span class="tk-prop">--dur-instant</span>:   <span class="tk-num">80ms</span>;</span><span class="ln"><span class="tk-prop">--dur-fast</span>:      <span class="tk-num">160ms</span>;</span><span class="ln"><span class="tk-prop">--dur-base</span>:      <span class="tk-num">240ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slow</span>:      <span class="tk-num">420ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slower</span>:    <span class="tk-num">680ms</span>;</span><span class="ln"><span class="tk-prop">--dur-cinematic</span>: <span class="tk-num">1100ms</span>;</span></code></pre></div>
+<pre><code><span class="ln"><span class="tk-prop">--dur-fast</span>:   <span class="tk-num">160ms</span>;</span><span class="ln"><span class="tk-prop">--dur-base</span>:   <span class="tk-num">240ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slow</span>:   <span class="tk-num">420ms</span>;</span><span class="ln"><span class="tk-prop">--dur-slower</span>: <span class="tk-num">680ms</span>;</span></code></pre></div>
 
-      <p>The tiers aren't pure doublings (80 → 160 → 320 would be), but they grow exponentially-ish. The numbers map to perceptual categories:</p>
+      <p>The numbers map to perceptual categories:</p>
 
       <ul>
-        <li><strong>80ms (instant)</strong> — at the threshold of conscious perception. Used for hover state changes where any longer delay would feel laggy. The brain registers "something happened" without registering "something animated."</li>
-        <li><strong>160ms (fast)</strong> — short enough to feel responsive, long enough for the eye to track. Button hover lifts, focus ring expansions.</li>
-        <li><strong>240ms (base)</strong> — the project's default for state transitions. Cart drawer opens, modal appears. Long enough to read as "this thing moved here on purpose."</li>
+        <li><strong>160ms (fast)</strong> — short enough to feel responsive, long enough for the eye to track. Button hover lifts, focus ring expansions, color transitions on links. Used 19 times.</li>
+        <li><strong>240ms (base)</strong> — the project's default for state transitions. Cart drawer opens, modal appears, cards lift on hover. Long enough to read as "this thing moved here on purpose." Used 61 times — the workhorse.</li>
         <li><strong>420ms (slow)</strong> — entrance animations for content panels. Hero fade-ups, section reveals on scroll. Feels deliberate, almost editorial.</li>
         <li><strong>680ms (slower)</strong> — used for longer sequences where the eye should follow the motion fully. Marquees, complex stagger reveals.</li>
-        <li><strong>1100ms (cinematic)</strong> — the only tier over a second. Reserved for hero-level moments — the headline split-reveal on first page load. Anything <em>this</em> long happens at most once per page view, by design.</li>
       </ul>
 
       <p>The discipline: <strong>if you find yourself reaching for a duration not in this list</strong>, you're either tweaking past what the user can perceive or you've identified a missing tier that should be added to the scale. Hand-picking <code>237ms</code> for one animation is a code smell.</p>
+
+      <div class="callout commit">
+        <div class="label">Audit footnote · the deleted duration tiers</div>
+        <p>An earlier version of this scale included <code>--dur-instant: 80ms</code> and <code>--dur-cinematic: 1100ms</code>. The same audit that trimmed the easing tokens removed these two — neither was ever consumed. The "80ms is the threshold of conscious perception" framing was theoretically true but didn't survive the "is anyone actually using it?" question. The "cinematic" tier was reserved for the headline split-reveal, which turned out to hardcode its own duration via GSAP defaults. If a use case for either tier emerges, add it back — the four-tier scale isn't a hard limit, it's the current honest representation of what the codebase consumes.</p>
+      </div>
 
       <h3>The CSS keyframes · eight reusable patterns + animation aliases</h3>
       <p>Project-wide motion patterns live in <code>animations.css</code> — eight <code>@keyframes</code> + eight utility classes that compose them with the duration/easing tokens. Three worth examining:</p>
@@ -1657,8 +1659,8 @@ background: color-mix(
 
       <h3>Summary · the motion stack at a glance</h3>
       <ul>
-        <li><strong>Seven easing tokens</strong> covering the recognized vocabulary of UI motion (out, in, in-out, expo, quart, spring, linear). Each token has a distinct <em>feel</em> — not just a shape.</li>
-        <li><strong>Six duration tiers</strong> from 80ms (subliminal) to 1100ms (cinematic). If you reach outside the scale, you're either past perception or missing a tier.</li>
+        <li><strong>Three easing tokens</strong> (<code>--ease-out</code>, <code>--ease-in-out</code>, <code>--ease-spring</code>) — the audit-survived vocabulary the codebase actually uses. The CSS keyword <code>linear</code> covers infinite loops directly.</li>
+        <li><strong>Four duration tiers</strong> from 160ms (fast) to 680ms (slower). If you reach outside the scale, add a new tier here first.</li>
         <li><strong>Eight CSS keyframes</strong> in <code>animations.css</code> + their <code>.animate-*</code> utility classes. All use <code>translate3d</code> for GPU compositing.</li>
         <li><strong>Universal reduced-motion blanket guard</strong> in <code>reset.css</code> — <code>0.01ms</code> not <code>0</code> for <code>animationend</code> event compatibility.</li>
         <li><strong>JS-side <code>prefersReducedMotion()</code> helper</strong> in <code>gsap.ts</code>, called at the top of every attachment in <code>attachments.ts</code>. CSS guards don't cover JS-driven motion.</li>
