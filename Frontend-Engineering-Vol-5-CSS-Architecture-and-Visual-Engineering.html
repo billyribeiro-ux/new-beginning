@@ -1856,6 +1856,234 @@ background: color-mix(
       </div>
     </section>
 
+    <!-- ============================ CHAPTER 11 ============================ -->
+    <section id="ch-11">
+      <p class="eyebrow">Chapter 11</p>
+      <h2>Build pipeline · Lightning CSS, custom-media, and the <code>:global()</code> workaround</h2>
+      <p class="lede">Every chapter so far has referenced "the build pipeline" in passing. This is the chapter where the full picture lands. Two config files (<code>vite.config.ts</code> + <code>svelte.config.js</code>), three preprocessors arranged in sequence, one Lightning CSS draft flag, one masking trick that exists only because the upstream tooling has a known but unfixed bug. The total surface is small — about 25 lines of meaningful config — but each line is load-bearing for a feature documented elsewhere in this volume. This chapter explains why each line exists and what would break if it were removed.</p>
+
+      <div class="callout commit">
+        <div class="label">Anchor commits</div>
+        <p><code>affc7b5</code> · <em>css(infra): single-source breakpoints via @custom-media</em> — the Lightning CSS transformer flag</p>
+        <p><code>948dac6</code> · <em>css(infra): inject @layer priority into EVERY CSS chunk</em> — the cascade-ordering fix</p>
+        <p><code>71d982a</code> · <em>css(build): silence Lightning CSS :global() warnings via mask/unmask</em> — the mask trick</p>
+      </div>
+
+      <h3>The pipeline · top to bottom</h3>
+      <p>When a Svelte component's <code>&lt;style&gt;</code> block compiles, this is the exact sequence of transformations:</p>
+
+      <div class="diagram">                  ┌─ raw &lt;style&gt; block (user code)
+                  │
+                  ▼
+       ┌─────────────────────────────┐
+       │  cssPrePreprocessor          │   svelte.config.js
+       │  • Inject CSS_FOUNDATION     │
+       │    (@layer order + breakpts) │
+       │  • Mask :global( → :--svelte-│
+       │    global(                   │
+       │  • Wrap in @layer components │
+       └─────────────────────────────┘
+                  │
+                  ▼
+       ┌─────────────────────────────┐
+       │  vitePreprocess              │   from @sveltejs/vite-plugin-svelte
+       │  • Calls Vite's preprocessCSS│
+       │  • Which routes through      │
+       │    Lightning CSS (transformer│
+       │    mode, customMedia draft)  │
+       │  • @media (--bp-md) expands  │
+       │    to (min-width: 768px)     │
+       └─────────────────────────────┘
+                  │
+                  ▼
+       ┌─────────────────────────────┐
+       │  cssPostPreprocessor         │   svelte.config.js
+       │  • Unmask :--svelte-global(  │
+       │    → :global(                │
+       └─────────────────────────────┘
+                  │
+                  ▼
+       ┌─────────────────────────────┐
+       │  Svelte compiler             │
+       │  • Scopes selectors with    │
+       │    .svelte-hash class       │
+       │  • Strips :global() — those │
+       │    selectors stay unscoped  │
+       │  • Emits final CSS chunk    │
+       └─────────────────────────────┘
+                  │
+                  ▼
+       ┌─────────────────────────────┐
+       │  Vite + Rolldown bundling    │
+       │  • Lightning CSS again, this│
+       │    time as cssMinify only   │
+       │  • Final chunk written to   │
+       │    .svelte-kit/output/      │
+       └─────────────────────────────┘</div>
+
+      <p>Three custom transforms (one pre, one post, the CSS_FOUNDATION block) wrapped around two ecosystem ones (<code>vitePreprocess</code> and Svelte's own compiler). The ordering matters end-to-end; rearranging any two adjacent steps produces a build error or a worse output. Each chapter that follows dissects one step.</p>
+
+      <h3>Step 1 · <code>vite.config.ts</code> · enable the Lightning CSS transformer</h3>
+
+      <div class="code"><div class="head"><span class="lang">typescript</span><span class="path">vite.config.ts (CSS section)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-prop">css</span>: {</span><span class="ln">  <span class="tk-prop">transformer</span>: <span class="tk-str">'lightningcss'</span>,</span><span class="ln">  <span class="tk-prop">lightningcss</span>: {</span><span class="ln">    <span class="tk-prop">drafts</span>: { <span class="tk-prop">customMedia</span>: <span class="tk-bool">true</span> }</span><span class="ln">  }</span><span class="ln">},</span><span class="ln"><span class="tk-prop">build</span>: {</span><span class="ln">  <span class="tk-prop">target</span>: <span class="tk-str">'es2022'</span>,</span><span class="ln">  <span class="tk-prop">cssMinify</span>: <span class="tk-str">'lightningcss'</span>,</span><span class="ln">  <span class="tk-prop">sourcemap</span>: <span class="tk-bool">true</span></span><span class="ln">},</span></code></pre></div>
+
+      <p>Two Lightning CSS invocations, doing different jobs:</p>
+
+      <ul>
+        <li><strong><code>css.transformer: 'lightningcss'</code></strong> — runs Lightning CSS during the <em>preprocess</em> phase, on the CSS as Vite first sees it. This is where <code>@custom-media</code> expansion happens, where future-CSS features get compiled, where vendor prefixes get added. The <code>drafts.customMedia: true</code> flag opts into the draft-spec at-rule that Ch 5 narrated.</li>
+        <li><strong><code>build.cssMinify: 'lightningcss'</code></strong> — runs Lightning CSS <em>again</em> at the very end of the build, on the final CSS chunks, to minify them. Same engine, different stage. Vite would default to using <code>esbuild</code> for minification; using Lightning CSS here keeps the toolchain consistent and lets the minifier understand any modern CSS that the transformer might have generated.</li>
+      </ul>
+
+      <p>Why <em>both</em>: the transformer stage is required for <code>@custom-media</code> to expand at all (Ch 5 walked through the three failed attempts that proved this). The minifier stage is an optimization — minified output is ~15% smaller than esbuild's, mainly because Lightning CSS knows about modern CSS shorthands and can collapse them more aggressively. The two stages are independent; you can use either alone. The project uses both because they're complementary.</p>
+
+      <h3>Step 2 · the CSS_FOUNDATION block · what gets injected into every chunk</h3>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js · CSS_FOUNDATION</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">CSS_FOUNDATION</span> = <span class="tk-str">`</span></span><span class="ln"><span class="tk-str">@layer reset, tokens, base, utilities, components, overrides;</span></span><span class="ln"><span class="tk-str"></span></span><span class="ln"><span class="tk-str">@custom-media --bp-sm (min-width: 480px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-md (min-width: 768px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-lg (min-width: 1024px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-xl (min-width: 1280px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-2xl (min-width: 1536px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-3xl (min-width: 1920px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-4xl (min-width: 2560px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-sm-down (max-width: 479.98px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-md-down (max-width: 767.98px);</span></span><span class="ln"><span class="tk-str">@custom-media --bp-lg-down (max-width: 1023.98px);</span></span><span class="ln"><span class="tk-str">`</span>;</span></code></pre></div>
+
+      <p>One JavaScript constant, two responsibilities — both established in earlier chapters:</p>
+
+      <ol>
+        <li><strong>The <code>@layer</code> priority declaration</strong> ensures every CSS chunk the browser parses establishes the same cascade order. Without this in every chunk, the cascade-ordering bug from Ch 1 ships — utilities start beating components, layouts break intermittently. Re-declaring layer priority in subsequent chunks is a no-op per CSS spec, so the cost of injecting it everywhere is zero.</li>
+        <li><strong>The <code>@custom-media</code> declarations</strong> let every <code>@media (--bp-md)</code> reference resolve. Lightning CSS only sees <code>@custom-media</code> within a single file's scope; if the declarations aren't in the same file as the consumption, the consumption fails to compile.</li>
+      </ol>
+
+      <p>The triple-source-of-truth caveat from Ch 5 still applies: this block is mirrored in <code>src/lib/styles/breakpoints.css</code> (for global imports that don't go through the Svelte preprocessor) and the values are mirrored in <code>tokens.css</code> as <code>--bp-*</code> CSS variables (for JS-side reads via <code>matchMedia</code>). Three files have to stay in sync; the comment block at the top of <code>breakpoints.css</code> documents this. A future refactor would extract the values to a single source (e.g., <code>breakpoints.json</code>) and have all three files derive from it.</p>
+
+      <h3>Step 3 · the <code>cssPrePreprocessor</code> · injection + masking in one pass</h3>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js · cssPrePreprocessor</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">cssPrePreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-css-pre'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">const</span> <span class="tk-var">masked</span> = <span class="tk-var">content</span>.<span class="tk-fn">replace</span>(<span class="tk-str">/:global\b/g</span>, <span class="tk-str">':--svelte-global'</span>);</span><span class="ln">    <span class="tk-kw">return</span> {</span><span class="ln">      <span class="tk-prop">code</span>: <span class="tk-str">`${</span><span class="tk-var">CSS_FOUNDATION</span><span class="tk-str">}\n@layer components {\n${</span><span class="tk-var">masked</span><span class="tk-str">}\n}\n`</span></span><span class="ln">    };</span><span class="ln">  }</span><span class="ln">};</span></code></pre></div>
+
+      <p>Eight lines. Three operations in order:</p>
+
+      <ol>
+        <li><strong>Mask <code>:global(</code> to <code>:--svelte-global(</code></strong> — the regex <code>/:global\b/g</code> matches the literal text <code>:global</code> followed by a word boundary (so it doesn't accidentally match a hypothetical <code>:globally</code> class). Every match becomes <code>:--svelte-global</code>, a custom CSS pseudo-class that Lightning CSS accepts silently per CSS Selectors Level 4's forward-compatibility rules.</li>
+        <li><strong>Prepend CSS_FOUNDATION</strong> — the layer priority + breakpoint declarations go first in the resulting CSS, so Lightning CSS sees them before any <code>@media (--bp-*)</code> reference.</li>
+        <li><strong>Wrap the (masked) user content in <code>@layer components</code></strong> — every Svelte component's local styles land in the <code>components</code> layer of the cascade declared in Ch 1.</li>
+      </ol>
+
+      <p>The output of this preprocessor for any Svelte file looks roughly like:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">what Lightning CSS receives (typical component)</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@layer</span> reset, tokens, base, utilities, components, overrides;</span><span class="ln"></span><span class="ln"><span class="tk-kw">@custom-media</span> --bp-sm (<span class="tk-prop">min-width</span>: <span class="tk-num">480px</span>);</span><span class="ln"><span class="tk-com">/* ... other breakpoint declarations ... */</span></span><span class="ln"></span><span class="ln"><span class="tk-kw">@layer</span> components {</span><span class="ln">  <span class="tk-com">/* the component's original styles, with :global masked: */</span></span><span class="ln">  .<span class="tk-var">card</span> { <span class="tk-prop">padding</span>: <span class="tk-num">1rem</span>; }</span><span class="ln">  <span class="tk-kw">@media</span> (--bp-md) {</span><span class="ln">    .<span class="tk-var">card</span> { <span class="tk-prop">padding</span>: <span class="tk-num">1.5rem</span>; }</span><span class="ln">  }</span><span class="ln">  .<span class="tk-var">card</span> :<span class="tk-var">--svelte-global</span>(<span class="tk-var">img</span>) { <span class="tk-prop">max-width</span>: <span class="tk-num">100%</span>; }</span><span class="ln">}</span></code></pre></div>
+
+      <p>Lightning CSS now has everything it needs: known custom-media references, a properly-declared layer order, no unrecognized pseudo-class syntax. It processes the file without warnings.</p>
+
+      <h3>Step 4 · what Lightning CSS produces</h3>
+      <p>After Lightning CSS runs, the same chunk looks like:</p>
+
+      <div class="code"><div class="head"><span class="lang">css</span><span class="path">what comes out of vitePreprocess</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">@layer</span> reset,tokens,base,utilities;</span><span class="ln"><span class="tk-kw">@layer</span> components{</span><span class="ln">  .<span class="tk-var">card</span>{<span class="tk-prop">padding</span>:<span class="tk-num">1rem</span>}</span><span class="ln">  <span class="tk-kw">@media</span> (<span class="tk-prop">min-width</span>:<span class="tk-num">768px</span>){.<span class="tk-var">card</span>{<span class="tk-prop">padding</span>:<span class="tk-num">1.5rem</span>}}</span><span class="ln">  .<span class="tk-var">card</span> :<span class="tk-var">--svelte-global</span>(<span class="tk-var">img</span>){<span class="tk-prop">max-width</span>:<span class="tk-num">100%</span>}</span><span class="ln">}</span></code></pre></div>
+
+      <p>Three things changed and one thing didn't:</p>
+
+      <ul>
+        <li><strong>The <code>@custom-media</code> declarations are gone</strong> — they were only needed for Lightning CSS to do its work; the output uses the expanded form (<code>(min-width: 768px)</code>) directly.</li>
+        <li><strong>The <code>@media (--bp-md)</code> reference expanded</strong> to <code>@media (min-width: 768px)</code>. This is the whole point of enabling the transformer — the browser doesn't understand <code>--bp-md</code> at all, only the expanded form.</li>
+        <li><strong>Whitespace collapsed</strong> — newlines removed, spaces between tokens dropped where the spec allows. Minifier-style compaction.</li>
+        <li><strong>The layer order declaration was trimmed</strong> from six layers to four (<code>reset,tokens,base,utilities</code>). Lightning CSS knows that <code>components</code> is re-declared inline by the <code>@layer components { ... }</code> block, and <code>overrides</code> is never used in this chunk, so it elides them. The cascade semantics are preserved because <code>components</code> is implicitly added when the inline block is parsed.</li>
+        <li><strong>The masked <code>:--svelte-global(img)</code> passes through unchanged</strong> — Lightning CSS doesn't recognize the custom pseudo-class but accepts it silently. This is the load-bearing trick.</li>
+      </ul>
+
+      <h3>Step 5 · the <code>cssPostPreprocessor</code> · unmask before Svelte sees it</h3>
+
+      <div class="code"><div class="head"><span class="lang">javascript</span><span class="path">svelte.config.js · cssPostPreprocessor</span><button class="copy">copy</button></div>
+<pre><code><span class="ln"><span class="tk-kw">const</span> <span class="tk-var">cssPostPreprocessor</span> = {</span><span class="ln">  <span class="tk-prop">name</span>: <span class="tk-str">'tradeflex-css-post'</span>,</span><span class="ln">  <span class="tk-fn">style</span>({ <span class="tk-var">content</span> }) {</span><span class="ln">    <span class="tk-kw">return</span> { <span class="tk-prop">code</span>: <span class="tk-var">content</span>.<span class="tk-fn">replace</span>(<span class="tk-str">/:--svelte-global\b/g</span>, <span class="tk-str">':global'</span>) };</span><span class="ln">  }</span><span class="ln">};</span></code></pre></div>
+
+      <p>The trivial counterpart. Take the masked-and-Lightning-CSS-processed output, restore <code>:--svelte-global</code> back to <code>:global</code>. Svelte's compiler runs next and sees <code>:global(img)</code> in the form it expects.</p>
+
+      <p>Svelte's compiler then does its scoping work: every selector that <em>doesn't</em> sit inside a <code>:global()</code> gets a <code>.svelte-HASH</code> class appended to it (so <code>.card</code> becomes <code>.card.svelte-abc123</code>). Selectors inside <code>:global()</code> stay unscoped (so <code>:global(img)</code> just becomes <code>img</code>, applying to every <code>&lt;img&gt;</code> descendant of the scoped element). The mask/unmask round trip is invisible to Svelte — the compiler sees the same input it would have seen if Lightning CSS hadn't been in the pipeline at all.</p>
+
+      <h3>Why the mask works · CSS Selectors Level 4 forward-compatibility</h3>
+      <p>The mask trick depends on a specific guarantee in the CSS Selectors Level 4 spec:</p>
+
+      <div class="callout term">
+        <div class="label">Quoted from CSS Selectors Level 4 (W3C)</div>
+        <p>"Pseudo-classes with the <code>--</code> prefix are reserved for future extensions; user-defined custom pseudo-classes are not permitted. Implementations must treat unrecognized pseudo-classes with the <code>--</code> prefix as not matching anything, rather than as a syntax error."</p>
+      </div>
+
+      <p>That's the contract that makes <code>:--svelte-global(img)</code> safe. Lightning CSS sees a pseudo-class it doesn't recognize, observes the <code>--</code> prefix, and complies with the spec by accepting it silently (treating it as "matches nothing"). The selector parses successfully even though the pseudo-class is gibberish from Lightning CSS's perspective.</p>
+
+      <p>The post-preprocessor restores the real <code>:global</code> name before Svelte's compiler runs, so Svelte's compiler never sees the masked form. The masked form exists only during the ~10 milliseconds while Lightning CSS is processing the file. After that, the original syntax is restored and continues through the rest of the pipeline.</p>
+
+      <h3>The upstream bug this works around</h3>
+      <p><a href="https://github.com/sveltejs/vite-plugin-svelte/issues/1074">vite-plugin-svelte issue #1074</a> documents the underlying problem: when <code>vitePreprocess</code> routes CSS through Lightning CSS (as it does in transformer mode), Lightning CSS encounters Svelte-specific syntax (<code>:global()</code>, scoped selector hashes) that it has no knowledge of. The maintainers' acknowledged-but-unfixed plan is to integrate vite-plugin-svelte to process Svelte CSS <em>before</em> Lightning CSS sees it. Until that lands, the mask trick is the workaround.</p>
+
+      <p>The issue was opened in 2024. As of mid-2026 the cleanup is on the SvelteKit team's backlog but hasn't shipped. The mask trick is therefore expected to remain necessary for at least the lifetime of this project's current vite-plugin-svelte version. When the upstream fix ships, the entire <code>cssPostPreprocessor</code> can be deleted and the mask line removed from <code>cssPrePreprocessor</code> — a one-commit cleanup that will be obvious from the issue tracker.</p>
+
+      <h3>Verification · what the build output looks like</h3>
+      <p>The simplest proof that the pipeline works is the build-output grep. Every Svelte component's CSS chunk should:</p>
+
+      <ol>
+        <li>Start with the layer-priority declaration (or an elided form).</li>
+        <li>Contain no <code>@custom-media</code> declarations (they get elided after expansion).</li>
+        <li>Contain no <code>:global(</code> references (Svelte's compiler strips them).</li>
+        <li>Contain no <code>:--svelte-global(</code> references (the post-preprocessor restored them).</li>
+        <li>Contain expanded <code>@media (min-width: ...)</code> in place of <code>@media (--bp-...)</code>.</li>
+      </ol>
+
+      <div class="term"><div class="head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="label">terminal — verifying the build</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">pnpm build &amp;&amp; cd .svelte-kit/output/client/_app/immutable/assets</span>
+<span class="prompt">$</span> <span class="cmd">grep -l "@layer reset" *.css | wc -l</span>
+<span class="out">64</span>
+<span class="prompt">$</span> <span class="cmd">ls *.css | wc -l</span>
+<span class="out">64</span>
+<span class="prompt">$</span> <span class="cmd">grep -l "@custom-media" *.css | wc -l</span>
+<span class="out">0</span>
+<span class="prompt">$</span> <span class="cmd">grep -l ":global(" *.css | wc -l</span>
+<span class="out">0</span>
+<span class="prompt">$</span> <span class="cmd">grep -l ":--svelte-global" *.css | wc -l</span>
+<span class="out">0</span>
+<span class="prompt">$</span> <span class="cmd">grep -h "@media[^{]*--bp-" *.css | wc -l</span>
+<span class="out">0</span></pre></div>
+
+      <p>64/64 chunks have the layer declaration. 0 chunks leak <code>@custom-media</code>, <code>:global(</code>, <code>:--svelte-global</code>, or unresolved <code>--bp-</code> references. The pipeline is doing exactly what it claims.</p>
+
+      <h3>The cost · build-time overhead</h3>
+      <p>Adding three custom preprocessors to the Svelte build pipeline isn't free. The pre-preprocessor runs a regex replace + a template literal concatenation per file. The post-preprocessor runs one more regex replace. Lightning CSS runs twice (transformer + minifier) instead of once. Concrete numbers from a clean build of this project:</p>
+
+      <table>
+        <thead><tr><th>Config</th><th>Build time</th></tr></thead>
+        <tbody>
+          <tr><td>Bare minimum (no transformer, no custom preprocessors)</td><td>~6.5s</td></tr>
+          <tr><td>Transformer enabled, no custom preprocessors (breaks)</td><td>—</td></tr>
+          <tr><td>Transformer + custom preprocessors (current)</td><td>~7.0s</td></tr>
+        </tbody>
+      </table>
+
+      <p>The transformer + custom-preprocessor pipeline adds ~500ms to a full production build. For a one-time build, that's invisible. For HMR, the cost is per-file rather than per-build, and on a single component change it's ~5-10ms — well below perceptual threshold. The trade-off (single-source breakpoints + cascade ordering + Svelte syntax compatibility, in exchange for ~500ms / build) is unambiguously worth it.</p>
+
+      <h3>Where this all comes from · the failed-attempt summary</h3>
+      <p>The pipeline above is the fourth design that was attempted. The earlier three (narrated in Ch 5) were:</p>
+
+      <ol>
+        <li><strong>Configure custom-media map in <code>vite.config.ts</code></strong> — failed because Lightning CSS doesn't expose a JS-side map.</li>
+        <li><strong>Custom Vite plugin to prepend declarations to every CSS file</strong> — failed because <code>vitePreprocess</code> runs Lightning CSS before Vite's plugin transform hooks see <code>.svelte</code> files.</li>
+        <li><strong>Single Svelte preprocessor running after <code>vitePreprocess</code></strong> — failed because Lightning CSS needed to see the declarations <em>during</em> its pass, not after.</li>
+      </ol>
+
+      <p>Each failure narrowed the constraint set until the working design was the only one left: a preprocessor that runs <em>before</em> <code>vitePreprocess</code> to inject the foundation block <em>and</em> mask the Svelte syntax, plus a counterpart preprocessor that runs <em>after</em> to undo the masking.</p>
+
+      <h3>What this chapter teaches beyond the specific pipeline</h3>
+      <p>The principles transfer to any framework + CSS-tooling integration:</p>
+
+      <ol>
+        <li><strong>Tools that own a file extension wrap standard build hooks.</strong> Vite plugins targeting <code>.svelte</code> files run after vite-plugin-svelte has already done its preprocessing. The same is true for <code>.vue</code>, <code>.astro</code>, <code>.mdx</code>. If you need to modify content inside a framework-specific file, you almost always need to go through the framework's preprocessor system, not Vite's plugin system.</li>
+        <li><strong>CSS processors don't understand framework-specific syntax.</strong> Lightning CSS doesn't know <code>:global()</code>. PostCSS doesn't know Svelte's <code>:has(:focus-visible)</code> rewriting. CSS Modules don't know about Astro's scoping. Whenever you put a generic CSS processor in a framework's pipeline, the framework-specific bits become a compatibility problem.</li>
+        <li><strong>Custom pseudo-classes with the <code>:--</code> prefix are a generic escape hatch</strong> for hiding framework-specific syntax from generic CSS processors. The CSS Selectors Level 4 spec guarantees they parse silently. Any time a framework introduces a syntax extension that processors choke on, a mask/unmask pair is a workable fix.</li>
+        <li><strong>Bundler emission order is non-deterministic by default.</strong> Code-splitting bundlers (Vite, esbuild, Rolldown, webpack) all make this guarantee hard to maintain without intervention. Architecture decisions that depend on chunk-load order — including CSS cascade — need their invariants enforced in every chunk, not just the canonical one.</li>
+      </ol>
+
+      <p>The next chapter is the half-built one — performance levers (<code>content-visibility</code>, <code>contain</code>, <code>will-change</code>) that the project <em>could</em> use but currently doesn't. Like the deferred a11y queries from Ch 10, it's an honest "here's the inventory of next moves" rather than "here's what we already did."</p>
+
+      <div class="pager">
+        <a class="prev" href="#ch-10"><div class="dir">← Prev</div><div class="ttl">Accessibility through CSS</div></a>
+        <a class="next" href="#ch-12"><div class="dir">Next →</div><div class="ttl">Performance levers</div></a>
+      </div>
+    </section>
+
   </main>
 </div>
 
