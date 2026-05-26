@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, email::text AS \"email!\", name, headline, timezone, language,\n                   role, password_hash,\n                   email_verified_at, totp_enabled_at, stripe_customer_id, created_at\n            FROM users\n            WHERE email ILIKE $1\n            ORDER BY created_at DESC\n            LIMIT $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "email!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "headline",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "timezone",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "language",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "role",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "password_hash",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "email_verified_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "totp_enabled_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "stripe_customer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        },
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "b617c111dd9dd17ad62415f316b989e234f682ced30c46b04649def6fb2f4984"
+}

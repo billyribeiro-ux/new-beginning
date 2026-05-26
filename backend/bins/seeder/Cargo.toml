@@ -1,0 +1,23 @@
+[package]
+name = "seeder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "seeder"
+path = "src/main.rs"
+
+[dependencies]
+common = { workspace = true }
+observability = { workspace = true }
+storage = { workspace = true }
+sqlx = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+bigdecimal = { workspace = true }

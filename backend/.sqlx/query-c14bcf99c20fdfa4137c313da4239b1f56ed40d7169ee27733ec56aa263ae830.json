@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE orders\n            SET status = 'refunded',\n                refunded_at = now(),\n                updated_at = now()\n            WHERE stripe_payment_intent_id = $1\n              AND status = 'paid'\n            RETURNING id, user_id, total_cents, currency\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "currency",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c14bcf99c20fdfa4137c313da4239b1f56ed40d7169ee27733ec56aa263ae830"
+}

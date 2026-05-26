@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO orders (\n            id, user_id, status, subtotal_cents, tax_cents, total_cents,\n            currency, stripe_payment_intent_id, paid_at, cart_snapshot\n        ) VALUES (\n            $1, $2, 'paid', 9900, 0, 9900, 'usd', $3, now(), '[]'::jsonb\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "135fd92825b749fcd24674330c3d7fad18bd538fc6b530e9c3be1b33bfe85f7c"
+}

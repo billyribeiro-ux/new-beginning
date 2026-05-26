@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE users\n            SET stripe_customer_id = COALESCE(stripe_customer_id, $2),\n                updated_at = now()\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d6d4d72f9f901bb43a0218a485a5ff1554ba306c034007793dee48a2c141fb3a"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO subscription_plans (\n            id, slug, legacy_slug_id, name, cadence,\n            price_cents, monthly_equivalent_cents, savings_pct,\n            tagline, highlights, featured, badge, stripe_price_id\n        ) VALUES (\n            $1, $2, $3, $4, $5,\n            $6, $7, $8,\n            $9, $10, $11, $12, $13\n        )\n        ON CONFLICT (slug) DO UPDATE SET\n            legacy_slug_id           = EXCLUDED.legacy_slug_id,\n            name                     = EXCLUDED.name,\n            cadence                  = EXCLUDED.cadence,\n            price_cents              = EXCLUDED.price_cents,\n            monthly_equivalent_cents = EXCLUDED.monthly_equivalent_cents,\n            savings_pct              = EXCLUDED.savings_pct,\n            tagline                  = EXCLUDED.tagline,\n            highlights               = EXCLUDED.highlights,\n            featured                 = EXCLUDED.featured,\n            badge                    = EXCLUDED.badge,\n            stripe_price_id          = EXCLUDED.stripe_price_id,\n            updated_at               = now()\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int4",
+        "Text",
+        "TextArray",
+        "Bool",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b1a91b5bac92579b1ed5b3c8cf2aae9adf7a192d16020fddbf8a1ad3ad0e85db"
+}

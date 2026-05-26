@@ -1,0 +1,14 @@
+.svelte-kit
+build
+dist
+node_modules
+drizzle
+package-lock.json
+pnpm-lock.yaml
+*.min.*
+
+# Documentation files (hand-authored HTML, not source code)
+Frontend-Engineering-*.html
+
+# Local Claude Code settings (per-user, not project-shared)
+.claude/settings.local.json

@@ -1,0 +1,37 @@
+/* TradeFlex Trading — cascade foundation.
+ *
+ * Imported FIRST and UNLAYERED in src/app.css. Two responsibilities:
+ *   1. Declare the canonical @layer priority order so every CSS
+ *      chunk the browser parses (regardless of network order)
+ *      establishes the same cascade. Without this in every chunk,
+ *      SvelteKit's route-specific <link>s can emit before the
+ *      global stylesheet, inverting the cascade — utilities then
+ *      win against components because `utilities` gets declared
+ *      with HIGHER priority than `components`.
+ *   2. Declare the @custom-media breakpoints so they resolve
+ *      across every layer that follows.
+ *
+ * Mirrored (inline) in svelte.config.js — the Svelte preprocessor
+ * prepends the same block to every component <style> so the
+ * priority declaration ships in every CSS file, not just chunk 0.
+ *
+ * Keep three sources in sync:
+ *   • this file (global stylesheets)
+ *   • svelte.config.js (Svelte component blocks)
+ *   • the --bp-* CSS variables in tokens.css (for JS-side reads) */
+
+/* Cascade priority (lowest → highest). Any rule outside a layer
+ * wins over everything inside one; `overrides` reserves the slot
+ * conceptually but accepts no rules. */
+@layer reset, tokens, base, utilities, components, overrides;
+
+@custom-media --bp-sm (min-width: 480px);
+@custom-media --bp-md (min-width: 768px);
+@custom-media --bp-lg (min-width: 1024px);
+@custom-media --bp-xl (min-width: 1280px);
+@custom-media --bp-2xl (min-width: 1536px);
+@custom-media --bp-3xl (min-width: 1920px);
+@custom-media --bp-4xl (min-width: 2560px);
+@custom-media --bp-sm-down (max-width: 479.98px);
+@custom-media --bp-md-down (max-width: 767.98px);
+@custom-media --bp-lg-down (max-width: 1023.98px);

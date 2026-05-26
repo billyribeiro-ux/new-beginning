@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO products (\n            id, slug, kind, name, tagline, description, price_cents,\n            highlights, deliverables, requirements, media_poster_color,\n            media_accent\n        ) VALUES (\n            $1, $2, 'indicator', $3, 'tag', 'desc', 9900,\n            '{}', '{}', '{}', '#000', '#fff'\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e255bda6bc53712fef1362032cf81ff642a228e6b25a8d00bc3fb1a604f56445"
+}

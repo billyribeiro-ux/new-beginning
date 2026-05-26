@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE licenses\n            SET active = FALSE,\n                revoked_at = now()\n            WHERE source = 'purchase'\n              AND source_ref_id = $1\n              AND active = TRUE\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4f0cab08526d8ccd4e817db606f3319f956bbda39ae8a32379ddde805ffe9ffe"
+}

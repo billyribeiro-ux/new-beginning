@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            (SELECT count(*) FROM products) AS \"products!\",\n            (SELECT count(*) FROM subscription_plans) AS \"plans!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "products!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "plans!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "1926ba8543d781cd51a5a9f7665ffa5937bc40b3a1857f6fcb892a9c67ce7535"
+}

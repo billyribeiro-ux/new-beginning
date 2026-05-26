@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO enrollments (id, user_id, product_id, source, source_ref_id)\n            VALUES ($1, $2, $3, 'purchase', $4)\n            ON CONFLICT (user_id, product_id) DO NOTHING\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ad49573f1bbbc60094cd50491194559a736db0ba770540a32b2001a8c762a260"
+}

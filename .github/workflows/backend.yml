@@ -1,0 +1,146 @@
+# BACKEND.md §17.
+# PR #1 shipped fmt, clippy, test, deny.
+# PR #2 adds sqlx-prepare and a Postgres-backed test job (migrations + seed).
+# Coverage and stripe-e2e land in their respective PRs.
+
+name: backend
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
+        working-directory: backend
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    # `sqlx::query!` resolves types against the committed `.sqlx/` offline
+    # cache. We declare SQLX_OFFLINE so the cache is the source of truth even
+    # if a DB happens to be reachable on the runner.
+    env:
+      SQLX_OFFLINE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+        working-directory: backend
+
+  sqlx-prepare:
+    name: sqlx-prepare-check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tradeflex
+          POSTGRES_PASSWORD: tradeflex
+          POSTGRES_DB: tradeflex
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U tradeflex"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://tradeflex:tradeflex@127.0.0.1:5432/tradeflex
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+      - name: install sqlx-cli
+        run: cargo install sqlx-cli --no-default-features --features postgres,rustls
+      - name: run migrations
+        working-directory: backend
+        run: sqlx migrate run --source migrations
+      - name: verify .sqlx cache is up to date
+        working-directory: backend
+        run: cargo sqlx prepare --workspace --check
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tradeflex
+          POSTGRES_PASSWORD: tradeflex
+          POSTGRES_DB: tradeflex
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U tradeflex"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://tradeflex:tradeflex@127.0.0.1:5432/tradeflex
+      SQLX_OFFLINE: "true"
+      # CI-only auth secrets. PR #3 makes these required at api boot.
+      SERVICE_TOKEN: ci-service-token
+      AUTH_COOKIE_KEY: ci-cookie-key-32-bytes-of-padding-aaaa
+      AUTH_PASSWORD_PEPPER: ci-pepper-do-not-use-in-prod
+      # 32 raw bytes for XChaCha20-Poly1305 — TOTP-secret-at-rest key.
+      AUTH_TOTP_KEY: 0123456789abcdef0123456789abcdef
+      # Stripe placeholders for CI — the api binary boots, real Stripe calls
+      # would fail with 401 (handled gracefully).
+      STRIPE_SECRET_KEY: sk_test_invalid_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_dev_local_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+      - name: install sqlx-cli
+        run: cargo install sqlx-cli --no-default-features --features postgres,rustls
+      - name: run migrations
+        working-directory: backend
+        run: sqlx migrate run --source migrations
+      - name: cargo test
+        working-directory: backend
+        run: cargo test --workspace --no-fail-fast
+      - name: seeder smoke
+        working-directory: backend
+        run: cargo run -p seeder
+      - name: psql row counts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          psql "$DATABASE_URL" -c "SELECT count(*) AS products FROM products;"
+          psql "$DATABASE_URL" -c "SELECT count(*) AS plans FROM subscription_plans;"
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: backend/Cargo.toml

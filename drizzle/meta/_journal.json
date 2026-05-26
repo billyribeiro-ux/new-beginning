@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1779652994348,
+      "tag": "0000_slim_lady_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1779656914213,
+      "tag": "0001_mysterious_retro_girl",
+      "breakpoints": true
+    }
+  ]
+}

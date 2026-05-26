@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE notification_preferences\n            SET product_updates_email = COALESCE($2, product_updates_email),\n                product_updates_inapp = COALESCE($3, product_updates_inapp),\n                billing_email = COALESCE($4, billing_email),\n                billing_inapp = COALESCE($5, billing_inapp),\n                course_progress_email = COALESCE($6, course_progress_email),\n                course_progress_inapp = COALESCE($7, course_progress_inapp),\n                market_alerts_email = COALESCE($8, market_alerts_email),\n                market_alerts_inapp = COALESCE($9, market_alerts_inapp),\n                marketing_email = COALESCE($10, marketing_email),\n                marketing_inapp = COALESCE($11, marketing_inapp),\n                dnd_enabled = COALESCE($12, dnd_enabled),\n                dnd_start = CASE WHEN $13::bool THEN $14::time ELSE dnd_start END,\n                dnd_end = CASE WHEN $15::bool THEN $16::time ELSE dnd_end END,\n                timezone = COALESCE($17, timezone),\n                updated_at = now()\n            WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Time",
+        "Bool",
+        "Time",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5f561bc42c602e4cc4cb7d6dc3afe614eebdd350af511a008c71acecc46e5af2"
+}

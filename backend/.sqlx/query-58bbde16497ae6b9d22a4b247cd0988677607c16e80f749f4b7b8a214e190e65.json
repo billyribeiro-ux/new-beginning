@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE users\n            SET totp_secret_encrypted = $2,\n                totp_enabled_at = NULL,\n                twofa_backup_codes_hash = NULL,\n                updated_at = now()\n            WHERE id = $1 AND deleted_at IS NULL\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "58bbde16497ae6b9d22a4b247cd0988677607c16e80f749f4b7b8a214e190e65"
+}

@@ -1,0 +1,220 @@
+/* ============================================================
+ * TradeFlex Trading — Design Tokens
+ * Dark canvas + gold/amber luxury palette.
+ *
+ * Use `@media (--bp-md)` etc. anywhere — never hardcode pixel
+ * widths in @media queries. The canonical @custom-media
+ * declarations live at the top of src/app.css (outside any
+ * @layer so they're visible to every layer) and are also
+ * prepended to each component <style> by the preprocessor in
+ * svelte.config.js. Keep all three sources aligned.
+ * ============================================================ */
+
+:root {
+	/* === Color: surfaces (dark canvas) === */
+	--surface-0: #0a0a0b;
+	--surface-1: #111114;
+	--surface-2: #17171c;
+	--surface-3: #1f1f26;
+	--surface-4: #2a2a33;
+	--surface-elevated: #1c1c22;
+	--surface-overlay: rgba(10, 10, 11, 0.72);
+
+	/* === Color: gold/amber primary === */
+	--gold-100: #faedcc;
+	--gold-200: #f8e1a8;
+	--gold-300: #f5d08a;
+	--gold-400: #e8b660;
+	--gold-500: #d4a24c;
+	--gold-600: #b0832f;
+	--gold-700: #876320;
+	--gold-800: #5d4416;
+	--gold-900: #34270d;
+	--amber-glow: rgba(232, 182, 96, 0.18);
+	--amber-glow-strong: rgba(232, 182, 96, 0.38);
+
+	/* === Color: ink (text on dark) === */
+	--ink-100: #f8f6f1;
+	--ink-200: #d8d3c6;
+	--ink-300: #a39e8f;
+	--ink-400: #74705f;
+	--ink-500: #4f4b3f;
+	--ink-600: #2f2c25;
+
+	/* === Color: semantic === */
+	--success: #5dbb78;
+	--success-bg: rgba(93, 187, 120, 0.12);
+	--warning: #e0a93c;
+	--warning-bg: rgba(224, 169, 60, 0.12);
+	--danger: #d96868;
+	--danger-bg: rgba(217, 104, 104, 0.12);
+	--info: #6ea8d6;
+	--info-bg: rgba(110, 168, 214, 0.12);
+
+	/* === Borders & dividers === */
+	--border-subtle: rgba(248, 246, 241, 0.06);
+	--border-default: rgba(248, 246, 241, 0.1);
+	--border-strong: rgba(248, 246, 241, 0.18);
+	--border-gold: rgba(212, 162, 76, 0.32);
+
+	/* === Gradients === */
+	--gradient-gold: linear-gradient(
+		135deg,
+		var(--gold-300) 0%,
+		var(--gold-500) 55%,
+		var(--gold-700) 100%
+	);
+	--gradient-gold-soft: linear-gradient(
+		135deg,
+		rgba(245, 208, 138, 0.14),
+		rgba(176, 131, 47, 0.04)
+	);
+	--gradient-surface: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%);
+	--gradient-radial-gold: radial-gradient(
+		circle at 50% 50%,
+		var(--amber-glow-strong) 0%,
+		transparent 70%
+	);
+	--gradient-text-gold: linear-gradient(135deg, #f5d08a 0%, #e8b660 50%, #d4a24c 100%);
+
+	/* === Shadows / elevation === */
+	--shadow-elev-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.25);
+	--shadow-elev-2: 0 4px 12px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.3);
+	--shadow-elev-3: 0 12px 32px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.35);
+	--shadow-elev-4: 0 24px 64px rgba(0, 0, 0, 0.65), 0 8px 16px rgba(0, 0, 0, 0.4);
+	--glow-gold: 0 0 0 1px var(--border-gold), 0 0 32px var(--amber-glow);
+	--glow-gold-strong: 0 0 0 1px var(--gold-500), 0 0 48px var(--amber-glow-strong);
+
+	/* === Typography === */
+	--font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+	--font-body: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+	--text-2xs: clamp(0.625rem, 0.6rem + 0.1vw, 0.6875rem);
+	--text-xs: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
+	--text-sm: clamp(0.875rem, 0.84rem + 0.15vw, 0.9375rem);
+	--text-base: clamp(1rem, 0.95rem + 0.2vw, 1.0625rem);
+	--text-md: clamp(1.0625rem, 1rem + 0.25vw, 1.125rem);
+	--text-lg: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+	--text-xl: clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);
+	--text-2xl: clamp(1.5rem, 1.35rem + 0.6vw, 1.875rem);
+	--text-3xl: clamp(1.875rem, 1.6rem + 1vw, 2.5rem);
+	--text-4xl: clamp(2.25rem, 1.85rem + 1.6vw, 3.25rem);
+	--text-5xl: clamp(2.75rem, 2.1rem + 2.6vw, 4.25rem);
+	--text-6xl: clamp(3.5rem, 2.5rem + 4vw, 5.75rem);
+	--text-7xl: clamp(4rem, 2.6rem + 5.5vw, 7rem);
+
+	--leading-tight: 1.1;
+	--leading-snug: 1.25;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.65;
+	--leading-loose: 1.85;
+
+	--tracking-tighter: -0.04em;
+	--tracking-tight: -0.02em;
+	--tracking-normal: 0;
+	--tracking-wide: 0.02em;
+	--tracking-wider: 0.06em;
+	--tracking-widest: 0.18em;
+
+	--weight-light: 300;
+	--weight-regular: 400;
+	--weight-medium: 500;
+	--weight-semibold: 600;
+	--weight-bold: 700;
+
+	/* === Spacing (4px base) === */
+	--space-0: 0;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-7: 1.75rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-14: 3.5rem;
+	--space-16: 4rem;
+	--space-20: 5rem;
+	--space-24: 6rem;
+	--space-28: 7rem;
+	--space-32: 8rem;
+	--space-40: 10rem;
+	--space-48: 12rem;
+
+	/* === Radii === */
+	--radius-xs: 4px;
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 16px;
+	--radius-xl: 22px;
+	--radius-2xl: 32px;
+	--radius-full: 9999px;
+
+	/* === Motion ===
+	 * Trimmed to what the codebase actually consumes. If a new
+	 * easing or duration is needed, add it here first — never
+	 * inline raw cubic-bezier or ms values in components.
+	 * Removed (use the CSS keyword `linear` directly): --ease-linear.
+	 * Removed (unused as of audit): --ease-in, --ease-out-expo,
+	 * --ease-in-out-quart, --dur-instant, --dur-cinematic. */
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+	--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+	--dur-fast: 160ms;
+	--dur-base: 240ms;
+	--dur-slow: 420ms;
+	--dur-slower: 680ms;
+
+	/* === Breakpoints (these CSS variables remain for JS-side reads — e.g.
+	 * matchMedia(window.getComputedStyle(...)). CSS uses the parallel
+	 * @custom-media declarations below.) === */
+	--bp-sm: 480px;
+	--bp-md: 768px;
+	--bp-lg: 1024px;
+	--bp-xl: 1280px;
+	--bp-2xl: 1536px;
+	--bp-3xl: 1920px;
+	--bp-4xl: 2560px;
+
+	/* === Container === */
+	--container-gutter: clamp(1rem, 3vw, 2.5rem);
+	--container-max: 1280px;
+
+	/* === z-index === */
+	--z-base: 1;
+	--z-elevated: 10;
+	--z-sticky: 100;
+	--z-overlay: 500;
+	--z-modal: 1000;
+	--z-toast: 2000;
+	--z-tooltip: 3000;
+
+	/* === Layout === */
+	--navbar-height: 72px;
+	--announcement-height: 36px;
+	--sidebar-width: 264px;
+	--sidebar-collapsed-width: 72px;
+}
+
+@media (--bp-2xl) {
+	:root {
+		--container-max: 1440px;
+	}
+}
+
+@media (--bp-3xl) {
+	:root {
+		--container-max: 1640px;
+		--navbar-height: 84px;
+	}
+}
+
+@media (--bp-4xl) {
+	:root {
+		--container-max: 1840px;
+	}
+}

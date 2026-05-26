@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, user_id, status,\n                   subtotal_cents, tax_cents, total_cents, currency,\n                   stripe_checkout_session_id, created_at\n            FROM orders\n            WHERE stripe_checkout_session_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "subtotal_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "tax_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "total_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "currency",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "stripe_checkout_session_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "73f1069a1aff8bfa2218a09ec81a49bd5617489ff0c47790c7c83665b2f9b9d5"
+}

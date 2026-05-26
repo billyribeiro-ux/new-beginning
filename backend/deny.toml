@@ -1,0 +1,53 @@
+# cargo-deny config. BACKEND.md §17 lists this as a required CI gate.
+# We start permissive and tighten as the dependency tree settles. The aim is
+# to catch (a) yanked crates, (b) advisories, and (c) license drift before
+# they show up in production.
+
+[graph]
+# Match the host triple by default; expand as we add ARM Railway boxes.
+all-features = false
+
+[advisories]
+version = 2
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "warn"
+ignore = []
+
+[licenses]
+version = 2
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "Zlib",
+    "CC0-1.0",
+    "0BSD",
+    # webpki-roots ships the Mozilla CA bundle under this Mozilla / Linux
+    # Foundation community data license. Permissive — no copyleft.
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.8
+
+# Our workspace crates carry `publish = false` and no SPDX license. Skip
+# them in the license check; we only care about third-party licenses.
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Workspace-internal `{ path = "..." }` deps resolve to a wildcard version,
+# which the wildcard ban would otherwise flag. This option exempts them.
+allow-wildcard-paths = true
+highlight = "all"
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

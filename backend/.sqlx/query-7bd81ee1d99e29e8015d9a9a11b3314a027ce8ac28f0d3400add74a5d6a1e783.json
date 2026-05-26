@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO leads (id, email, source, ip, user_agent)\n            VALUES ($1, $2::citext, $3, $4, $5)\n            RETURNING id, email::text AS \"email!\", source, created_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "email!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "source",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        },
+        "Text",
+        "Inet",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      false
+    ]
+  },
+  "hash": "7bd81ee1d99e29e8015d9a9a11b3314a027ce8ac28f0d3400add74a5d6a1e783"
+}

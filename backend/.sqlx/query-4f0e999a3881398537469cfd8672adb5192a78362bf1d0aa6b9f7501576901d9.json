@@ -1,0 +1,93 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE users SET\n                name      = COALESCE($2, name),\n                headline  = CASE\n                              WHEN $3::boolean THEN NULL\n                              WHEN $4::text IS NOT NULL THEN $4\n                              ELSE headline\n                            END,\n                timezone  = COALESCE($5, timezone),\n                language  = COALESCE($6, language),\n                updated_at = now()\n            WHERE id = $1 AND deleted_at IS NULL\n            RETURNING id, email::text AS \"email!\", name, headline, timezone, language,\n                      role, password_hash,\n                      email_verified_at, totp_enabled_at, stripe_customer_id, created_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "email!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "headline",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "timezone",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "language",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "role",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "password_hash",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "email_verified_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "totp_enabled_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "stripe_customer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bool",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "4f0e999a3881398537469cfd8672adb5192a78362bf1d0aa6b9f7501576901d9"
+}

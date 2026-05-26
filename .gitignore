@@ -1,0 +1,16 @@
+node_modules
+.svelte-kit
+.pnpm-store
+build
+dist
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+drizzle/local.db
+drizzle/local.db-journal
+.vite
+coverage
+playwright-report
+test-results

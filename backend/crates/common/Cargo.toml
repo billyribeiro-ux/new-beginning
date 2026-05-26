@@ -1,0 +1,37 @@
+[package]
+name = "common"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+secrecy = { workspace = true }
+figment = { workspace = true }
+async-trait = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+http = "1.1"
+ipnet = { workspace = true, features = ["serde"] }
+
+# Auth primitives
+argon2 = { workspace = true }
+hmac = { workspace = true }
+sha2 = { workspace = true }
+subtle = { workspace = true }
+rand = { workspace = true }
+base64 = { workspace = true }
+totp-rs = { workspace = true }
+chacha20poly1305 = { workspace = true }
+
+[dev-dependencies]
+# `Jail` is gated behind the `test` feature in the figment crate.
+figment = { workspace = true, features = ["test", "env", "toml"] }
+tokio = { workspace = true }
