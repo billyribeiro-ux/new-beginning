@@ -689,7 +689,7 @@ hr {
   <div class="toc-row"><span class="t">3.2 &nbsp;Process, OS, Crypto, URL</span><span class="leader"></span><span class="pg">M3</span></div>
   <div class="toc-row"><span class="t">3.3 &nbsp;Buffers &amp; Binary Data</span><span class="leader"></span><span class="pg">M3</span></div>
   <div class="toc-row"><span class="t">3.4 &nbsp;Introducing TypeScript</span><span class="leader"></span><span class="pg">M3</span></div>
-  <div class="toc-row"><span class="t">3.5 &nbsp;Packages, npm &amp; Dependency Hygiene</span><span class="leader"></span><span class="pg">M3</span></div>
+  <div class="toc-row"><span class="t">3.5 &nbsp;Packages, pnpm &amp; Dependency Hygiene</span><span class="leader"></span><span class="pg">M3</span></div>
 
   <div class="toc-module">Module 4 &middot; HTTP &amp; Building APIs</div>
   <div class="toc-row"><span class="t">4.1 &nbsp;The http Module — A Server from Scratch</span><span class="leader"></span><span class="pg">M4</span></div>
@@ -878,9 +878,10 @@ hr {
         <li><strong>Confirm Node is installed.</strong> In the terminal, type
           <code>node --version</code> and press Enter. You should see something like
           <code>v22.11.0</code> or higher. If you do, Node is ready.</li>
-        <li><strong>Confirm npm is installed too.</strong> Node ships with npm — the
-          package manager you will use from Module 3 onward. Type
-          <code>npm --version</code>; you should see a version number.</li>
+        <li><strong>Confirm pnpm is available too.</strong> We use pnpm (installed via
+          <code>corepack enable &amp;&amp; corepack prepare pnpm@latest --activate</code>) as the
+          package manager from Module 3 onward. Type
+          <code>pnpm --version</code>; you should see a version number.</li>
         <li><strong>Install VS Code</strong> if you do not already have it (from
           <code>code.visualstudio.com</code>) and open it once so you have seen it.</li>
         <li><strong>Try a one-liner.</strong> In the terminal, type
@@ -898,10 +899,10 @@ hr {
       </p>
 <div class="code">
   <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
-  <pre><span class="cap">terminal — the four commands you will use every day</span><span class="t-com"># 1. check that node and npm exist</span>
+  <pre><span class="cap">terminal — the four commands you will use every day</span><span class="t-com"># 1. check that node and pnpm exist</span>
 $ node --version
 v22.11.0
-$ npm --version
+$ pnpm --version
 10.9.0
 
 <span class="t-com"># 2. run a one-liner directly</span>
@@ -1010,7 +1011,7 @@ $ node
           <li>Install Node from <code>nodejs.org</code> (LTS). Open your terminal and
             run <code>node --version</code>. Confirm you see a version starting with
             <code>v22</code> or higher.</li>
-          <li>Run <code>npm --version</code> in the same terminal. Confirm it returns a
+          <li>Run <code>pnpm --version</code> in the same terminal. Confirm it returns a
             version number.</li>
           <li>Run the one-liner
             <code>node -e "console.log('Hello from Node')"</code>. Confirm the message
@@ -1025,8 +1026,8 @@ $ node
             <li>If <code>node --version</code> prints a number, Node is installed and
               on your PATH. "Command not found" means the installation did not finish
               correctly; re-run the official installer.</li>
-            <li>If npm's version also prints, both halves of your Node installation
-              work. npm is installed with Node, so it should always be there too.</li>
+            <li>If pnpm's version also prints, both halves of your Node installation
+              work. Corepack ships with Node 16+, so pnpm is one command away on any modern Node install.</li>
             <li>"Hello from Node" appears on its own line. If you see a quoting error,
               your terminal disliked the quotes — try single quotes outside, double
               inside.</li>
@@ -1243,7 +1244,7 @@ Tools work.</span></pre>
       <ol>
         <li>In VS Code, open a folder for your work (e.g. <code>my-first-node</code>)
           with <em>File &rarr; Open Folder</em>.</li>
-        <li>In a terminal at that folder, run <code>npm init -y</code>. This creates a
+        <li>In a terminal at that folder, run <code>pnpm init</code>. This creates a
           <code>package.json</code> with sensible defaults.</li>
         <li>Open the new <code>package.json</code> and add the line
           <code>"type": "module"</code>. (The next code example shows the full file.)</li>
@@ -1365,7 +1366,7 @@ Tools work.</span></pre>
       <div class="exercise">
         <span class="xt">Practice — Your First Project</span>
         <ol>
-          <li>Create a folder. In a terminal inside it, run <code>npm init -y</code>
+          <li>Create a folder. In a terminal inside it, run <code>pnpm init</code>
             and open the resulting <code>package.json</code>. Add
             <code>"type": "module"</code>.</li>
           <li>Create the <code>greet.mjs</code> and <code>index.mjs</code> files
@@ -1381,7 +1382,7 @@ Tools work.</span></pre>
         <div class="solution">
           <span class="st">Solution &amp; What to Check</span>
           <ol>
-            <li>After <code>npm init -y</code>, <code>package.json</code> appears with
+            <li>After <code>pnpm init</code>, <code>package.json</code> appears with
               a name, version, and <code>main</code> field. Adding
               <code>"type": "module"</code> as a new key — remember to put a comma
               after the previous line — is what makes the ESM examples work.</li>
@@ -5189,7 +5190,7 @@ limited(2): [ 'item1', 'item2', 'item3', 'item4', 'item5' ]</span></pre>
     URLs, processes, streams, binary data. Knowing what is built in saves you from
     installing packages for everything. This module tours the parts you will use
     daily, introduces TypeScript as the modern way to write Node, and finishes with
-    npm and dependency hygiene — the disciplines that keep a project healthy as it
+    pnpm and dependency hygiene — the disciplines that keep a project healthy as it
     grows.
   </p>
   <div class="divider-toc">
@@ -5197,13 +5198,13 @@ limited(2): [ 'item1', 'item2', 'item3', 'item4', 'item5' ]</span></pre>
     <div><span>3.2</span>Process, OS, Crypto, URL</div>
     <div><span>3.3</span>Buffers &amp; Binary Data</div>
     <div><span>3.4</span>Introducing TypeScript</div>
-    <div><span>3.5</span>Packages, npm &amp; Dependency Hygiene</div>
+    <div><span>3.5</span>Packages, pnpm &amp; Dependency Hygiene</div>
   </div>
   <div class="divider-destination">
     <span class="dd-label">By the end of this module</span>
     You will have a working TypeScript file running under
     <code>node --experimental-strip-types</code>, a project using
-    one npm package with a committed lockfile, and small scripts
+    one pnpm-installed package with a committed lockfile, and small scripts
     that read and write files, stream a file chunk by chunk, hash
     bytes with the standard library, and parse a URL safely.
     The standard-library reflexes Modules 4 and 5 assume.
@@ -5634,7 +5635,7 @@ streamed bytes: 29</span></pre>
         Most beginner Node projects install a UUID library, a URL parser, and an
         environment-variable reader, none of which they need — Node ships all
         three. Knowing the standard library means shorter dependency lists,
-        smaller bundles, fewer security audits, and code that works without npm
+        smaller bundles, fewer security audits, and code that works without external packages
         install. The principle generalises: always check what is built in before
         installing.
       </p>
@@ -6591,9 +6592,9 @@ first string: a</span></pre>
 <!-- ============================================================ -->
 <section class="chapter">
   <div class="chapter-meta">Module 3 &middot; Chapter 3.5</div>
-  <h1>Packages, npm &amp; Dependency Hygiene</h1>
+  <h1>Packages, pnpm &amp; Dependency Hygiene</h1>
   <p class="chapter-lede">
-    The npm ecosystem is what makes Node practical for real work — a database
+    The pnpm + JavaScript package ecosystem is what makes Node practical for real work — a database
     driver, an HTTP client, a job queue all install with a single command. But
     every dependency is a trust decision. This chapter covers how packages
     work, how to manage them well, and how to keep your project from drowning
@@ -6607,20 +6608,20 @@ first string: a</span></pre>
       <h3 data-step="1">Concept Overview</h3>
       <p>
         A <strong>package</strong> is a published module — code plus a
-        <code>package.json</code> manifest — distributed via the npm registry.
+        <code>package.json</code> manifest — distributed via the public package registry.
         Your project's <code>package.json</code> lists its
         <strong>dependencies</strong> by name and version range; running
-        <code>npm install</code> resolves and downloads them into a
+        <code>pnpm install</code> resolves and downloads them into a
         <code>node_modules</code> folder. The resolved versions are pinned in
         a <strong>lock file</strong> (<code>package-lock.json</code>) so every
         developer and every deploy gets the exact same versions.
         <strong>Scripts</strong> in <code>package.json</code> are short
-        commands you run via <code>npm run name</code> — the convention for
+        commands you run via <code>pnpm name</code> — the convention for
         starting the app, running tests, building. Dependencies come in two
         flavours: <strong><code>dependencies</code></strong> (needed at
         runtime in production) and <strong><code>devDependencies</code></strong>
-        (build tools, test frameworks, types). Modern alternatives to npm —
-        <strong>pnpm</strong> and <strong>yarn</strong> — use the same
+        (build tools, test frameworks, types). <strong>pnpm</strong> and <strong>yarn</strong> — modern package managers —
+        use the same
         <code>package.json</code> with faster, more efficient installs.
       </p>
     </div>
@@ -6628,9 +6629,9 @@ first string: a</span></pre>
     <div class="part">
       <h3 data-step="2">Plain English Explanation</h3>
       <p>
-        npm is a giant public library of reusable Node code. When your
+        The package ecosystem is a giant public library of reusable Node code. When your
         project needs to talk to PostgreSQL, you do not write a PostgreSQL
-        driver from scratch — you <code>npm install pg</code> and use the one
+        driver from scratch — you <code>pnpm add pg</code> and use the one
         thousands of teams already use. The driver lives in
         <code>node_modules</code> in your project folder; your code imports
         from it like any other module.
@@ -6643,7 +6644,7 @@ first string: a</span></pre>
         installed (say 8.11.3) so everyone gets the same thing.
         <strong>Scripts</strong> in <code>package.json</code> let you write
         <code>"start": "node index.mjs"</code> and run it with
-        <code>npm start</code> — common ones are <code>start</code>,
+        <code>pnpm start</code> — common ones are <code>start</code>,
         <code>dev</code>, <code>test</code>, <code>build</code>.
       </p>
       <p>
@@ -6652,17 +6653,16 @@ first string: a</span></pre>
         packages are more trustworthy than unknowns); check the last release
         (active maintenance matters); prefer packages with few transitive
         dependencies (a tiny package with 200 dependencies is 200 trust
-        decisions, not one); and audit periodically with <code>npm
-        audit</code>. The CSS course taught "fewer dependencies, deeply
+        decisions, not one); and audit periodically with <code>pnpm audit</code>. The CSS course taught "fewer dependencies, deeply
         understood" — the same applies here, doubled.
       </p>
       <p>
-        On the tooling itself: <strong>npm</strong> ships with Node and is
-        fine. <strong>pnpm</strong> is faster, uses far less disk space (one
-        global store linked into projects), and has stricter dependency
-        resolution that catches phantom imports. <strong>yarn</strong> is
-        another modern alternative. Pick one for the team and stick with it;
-        all three read the same <code>package.json</code>.
+        On the tooling itself: <strong>pnpm</strong> is the package manager
+        this course uses end-to-end. It is fast, uses far less disk space
+        than alternatives (one global store linked into projects), and has
+        stricter dependency resolution that catches phantom imports. It
+        reads the same <code>package.json</code> every Node project ships
+        with — your existing projects work without changes.
       </p>
     </div>
 
@@ -6686,7 +6686,7 @@ first string: a</span></pre>
         dependency was republished with a breaking change over the weekend, and
         because their <code>package-lock.json</code> was not committed, every
         fresh install gets the new version. Fix: commit the lock file, use
-        <code>npm ci</code> (which respects the lock strictly) in CI, and the
+        <code>pnpm install --frozen-lockfile</code> (which respects the lock strictly) in CI, and the
         breakage stops. The lock file is not optional; it is the contract that
         makes "Mac, Linux, CI" all run the same code.
       </p>
@@ -6708,26 +6708,26 @@ first string: a</span></pre>
 
     <div class="part">
       <h3 data-step="6">Step-by-Step Breakdown</h3>
-      <p>Daily npm flow:</p>
+      <p>Daily pnpm flow:</p>
       <ol>
         <li><strong>Start a project</strong> →
-          <code>npm init -y</code> creates <code>package.json</code>.</li>
+          <code>pnpm init</code> creates <code>package.json</code>.</li>
         <li><strong>Install a runtime dependency</strong> →
-          <code>npm install nanoid</code> (adds to <code>dependencies</code>).</li>
+          <code>pnpm add nanoid</code> (adds to <code>dependencies</code>).</li>
         <li><strong>Install a dev dependency</strong> →
-          <code>npm install --save-dev typescript</code> (adds to
+          <code>pnpm add -D typescript</code> (adds to
           <code>devDependencies</code>).</li>
         <li><strong>Commit both <code>package.json</code> and
           <code>package-lock.json</code></strong> to git. The lock file is
           essential.</li>
-        <li><strong>In CI, use <code>npm ci</code></strong> (clean install) —
+        <li><strong>In CI, use <code>pnpm install --frozen-lockfile</code></strong> (clean install) —
           respects the lock strictly, fails on mismatch. Faster and more
-          reproducible than <code>npm install</code>.</li>
-        <li><strong>Run scripts</strong> with <code>npm run name</code>
-          (or just <code>npm start</code> for the conventional
+          reproducible than <code>pnpm install</code>.</li>
+        <li><strong>Run scripts</strong> with <code>pnpm name</code>
+          (or just <code>pnpm start</code> for the conventional
           <code>start</code> script).</li>
-        <li><strong>Audit regularly</strong> → <code>npm audit</code> reports
-          known vulnerabilities; <code>npm outdated</code> shows what is
+        <li><strong>Audit regularly</strong> → <code>pnpm audit</code> reports
+          known vulnerabilities; <code>pnpm outdated</code> shows what is
           behind.</li>
       </ol>
     </div>
@@ -6742,7 +6742,7 @@ first string: a</span></pre>
   <span class="t-prop">"type"</span><span class="t-punc">:</span> <span class="t-str">"module"</span><span class="t-punc">,</span>
   <span class="t-prop">"scripts"</span><span class="t-punc">:</span> <span class="t-punc">{</span>
     <span class="t-prop">"start"</span><span class="t-punc">:</span> <span class="t-str">"node index.mjs"</span><span class="t-punc">,</span>
-    <span class="t-prop">"say"</span><span class="t-punc">:</span> <span class="t-str">"node -e \"console.log('via npm script')\""</span>
+    <span class="t-prop">"say"</span><span class="t-punc">:</span> <span class="t-str">"node -e \"console.log('via pnpm script')\""</span>
   <span class="t-punc">}</span><span class="t-punc">,</span>
   <span class="t-prop">"dependencies"</span><span class="t-punc">:</span> <span class="t-punc">{</span>
     <span class="t-prop">"nanoid"</span><span class="t-punc">:</span> <span class="t-str">"^5.0.0"</span>
@@ -6752,31 +6752,31 @@ first string: a</span></pre>
 <div class="code">
   <div class="head"><span class="lang">css</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
   <pre><span class="cap">index.mjs — using an installed package</span><span class="t-kw">import</span> <span class="t-punc">{</span> nanoid <span class="t-punc">}</span> <span class="t-kw">from</span> <span class="t-str">'nanoid'</span><span class="t-punc">;</span>
-<span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'npm package loaded:'</span><span class="t-punc">,</span> <span class="t-kw">typeof</span> nanoid === <span class="t-str">'function'</span>)<span class="t-punc">;</span>
+<span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'package loaded:'</span><span class="t-punc">,</span> <span class="t-kw">typeof</span> nanoid === <span class="t-str">'function'</span>)<span class="t-punc">;</span>
 <span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'id:'</span><span class="t-punc">,</span> <span class="t-prop">nanoid</span>(<span class="t-num">10</span>))<span class="t-punc">;</span>
 <span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'id:'</span><span class="t-punc">,</span> <span class="t-prop">nanoid</span>(<span class="t-num">10</span>))<span class="t-punc">;</span></pre>
 </div>
 <div class="code">
   <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
-  <pre><span class="cap">terminal</span>$ npm install
-$ npm start
+  <pre><span class="cap">terminal</span>$ pnpm install
+$ pnpm start
 &gt; pkg-demo@1.0.0 start
 &gt; node index.mjs
 
-npm package loaded: true
+package loaded: true
 id: aeW6XbzQPl
 id: tt3rUU-Ais
 
-$ npm run say
-via npm script</pre>
+$ pnpm say
+via pnpm script</pre>
 </div>
       <p>
         Notice three things. The import <code>from 'nanoid'</code> — no
         <code>./</code> prefix — is how Node knows to look in
         <code>node_modules</code>, not relative to the current file. The
         <code>scripts</code> field lets you give long commands short names —
-        <code>npm start</code> is the convention for "run the app." And
-        <code>npm install</code> writes both
+        <code>pnpm start</code> is the convention for "run the app." And
+        <code>pnpm install</code> writes both
         <code>node_modules/</code> (the actual code) and
         <code>package-lock.json</code> (the resolved versions). Commit the
         lock, ignore <code>node_modules</code>.
@@ -6788,7 +6788,7 @@ via npm script</pre>
       <p>
         Most packages ship TypeScript types — either bundled (the package
         contains <code>.d.ts</code> declaration files) or via a separate
-        <code>@types/foo</code> package on npm. TypeScript finds them
+        <code>@types/foo</code> package on the registry. TypeScript finds them
         automatically. If a package has no types, write a tiny
         <code>declarations.d.ts</code> with
         <code>declare module 'foo';</code> as a stopgap. We will use typed
@@ -6817,7 +6817,7 @@ via npm script</pre>
         <code>devDependencies</code>.</strong> Runtime code goes in
         <code>dependencies</code>; build/test tools in
         <code>devDependencies</code>. In production
-        <code>npm install --omit=dev</code> skips dev deps — wrong
+        <code>pnpm install --prod</code> skips dev deps — wrong
         classification breaks the production install.</p>
       </div>
     </div>
@@ -6828,7 +6828,7 @@ via npm script</pre>
         <span class="ct">How Principal Engineers (L7+) Think</span>
         <p>A principal engineer treats every dependency as borrowed code that
         must be kept up to date and removed when no longer needed. They run
-        <code>npm outdated</code> and <code>npm audit</code> regularly — not
+        <code>pnpm outdated</code> and <code>pnpm audit</code> regularly — not
         as panic responses to incidents but as routine maintenance — and they
         push back on PRs that add a dependency for a trivial reason.</p>
       </div>
@@ -6836,7 +6836,7 @@ via npm script</pre>
         <span class="ct">How Principal Engineers (L7+) Think</span>
         <p>They prefer pnpm in 2026 for new projects — its strict dependency
         resolution catches "phantom imports" (importing a transitive
-        dependency you did not declare) that npm permits, and its disk
+        dependency you did not declare) that the legacy resolver permits, and its disk
         efficiency adds up across many projects on a developer's machine.
         The team chooses one tool and the lock file is committed; switching
         casually creates churn.</p>
@@ -6846,30 +6846,30 @@ via npm script</pre>
     <div class="part">
       <h3 data-step="11">Exercises &amp; Solutions</h3>
       <div class="exercise">
-        <span class="xt">Practice — Packages &amp; npm</span>
+        <span class="xt">Practice — Packages &amp; pnpm</span>
         <ol>
           <li>Create a project, install <code>nanoid</code>, write a script
             that imports it and prints two IDs. Commit
             <code>package.json</code> and <code>package-lock.json</code> but
             ignore <code>node_modules</code>.</li>
           <li>Add a <code>scripts</code> entry called <code>start</code> that
-            runs your script. Confirm <code>npm start</code> runs it.</li>
-          <li>Run <code>npm outdated</code> and <code>npm audit</code> in the
+            runs your script. Confirm <code>pnpm start</code> runs it.</li>
+          <li>Run <code>pnpm outdated</code> and <code>pnpm audit</code> in the
             project. Read what they report — these are the routine maintenance
             checks.</li>
         </ol>
         <div class="solution">
           <span class="st">Solution &amp; What to Check</span>
           <ol>
-            <li><code>npm install nanoid</code> writes <code>nanoid</code>
+            <li><code>pnpm add nanoid</code> writes <code>nanoid</code>
               under <code>dependencies</code> and creates the lock file. Your
               script imports from <code>'nanoid'</code> (no
               <code>./</code>).</li>
             <li>The <code>scripts.start</code> entry has its command as a
-              string; <code>npm start</code> finds and runs it. Output is the
+              string; <code>pnpm start</code> finds and runs it. Output is the
               two IDs.</li>
-            <li><code>npm outdated</code> lists packages with newer versions
-              available; <code>npm audit</code> reports known
+            <li><code>pnpm outdated</code> lists packages with newer versions
+              available; <code>pnpm audit</code> reports known
               vulnerabilities. Both empty is the ideal state.</li>
           </ol>
         </div>
@@ -6879,7 +6879,7 @@ via npm script</pre>
     <div class="part">
       <h3 data-step="12">Architecture Thinking</h3>
       <p>
-        The npm ecosystem is the largest source of leverage in Node and the
+        The JavaScript package ecosystem is the largest source of leverage in Node and the
         largest source of operational risk. The same package that lets you
         ship a feature in an afternoon could disappear, break, or be
         compromised. The discipline of <em>fewer dependencies, deeply
@@ -6895,11 +6895,10 @@ via npm script</pre>
       <h3 data-step="13">Debugging Tips</h3>
       <ul>
         <li><strong>"Cannot find module 'X'"</strong> — either the package is
-          not installed (<code>npm install X</code>), the name is misspelled,
+          not installed (<code>pnpm install X</code>), the name is misspelled,
           or you forgot the <code>./</code> for a local file.</li>
         <li><strong>"Different behaviour in CI"</strong> — your lock file is
-          missing, outdated, or not being respected. Use <code>npm
-          ci</code> in CI.</li>
+          missing, outdated, or not being respected. Use <code>pnpm install --frozen-lockfile</code> in CI.</li>
         <li><strong>"It worked yesterday"</strong> — somebody published a new
           version of a transitive dependency that broke compatibility. Roll
           back to a known-good lock file commit and investigate.</li>
@@ -6914,7 +6913,7 @@ via npm script</pre>
         large project. This affects install time, CI time, and container
         image size. pnpm cuts this dramatically with its content-addressed
         global store. For production containers, multi-stage builds and
-        <code>npm install --omit=dev</code> trim the image; Module 8.3
+        <code>pnpm install --prod</code> trim the image; Module 8.3
         covers deployment in detail.</p>
       </div>
     </div>
@@ -6923,8 +6922,7 @@ via npm script</pre>
       <span class="bt">Build This — Mini-Project</span>
       <div class="build-title">A Project With a Real Package</div>
       <p>
-        Create your first project that installs and uses a published npm
-        package, with a named script to run it. After this you can install
+        Create your first project that installs and uses a published pnpm package, with a named script to run it. After this you can install
         anything from the registry by the same flow.
       </p>
 <div class="code">
@@ -6944,15 +6942,15 @@ via npm script</pre>
 <div class="code">
   <div class="head"><span class="lang">css</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
   <pre><span class="cap">index.mjs</span><span class="t-kw">import</span> <span class="t-punc">{</span> nanoid <span class="t-punc">}</span> <span class="t-kw">from</span> <span class="t-str">'nanoid'</span><span class="t-punc">;</span>
-<span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'npm package loaded:'</span><span class="t-punc">,</span> <span class="t-kw">typeof</span> nanoid === <span class="t-str">'function'</span>)<span class="t-punc">;</span>
+<span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'package loaded:'</span><span class="t-punc">,</span> <span class="t-kw">typeof</span> nanoid === <span class="t-str">'function'</span>)<span class="t-punc">;</span>
 <span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'id:'</span><span class="t-punc">,</span> <span class="t-prop">nanoid</span>(<span class="t-num">10</span>))<span class="t-punc">;</span>
 <span class="t-prop">console</span>.<span class="t-prop">log</span>(<span class="t-str">'id:'</span><span class="t-punc">,</span> <span class="t-prop">nanoid</span>(<span class="t-num">10</span>))<span class="t-punc">;</span></pre>
 </div>
       <p><strong>Run:</strong></p>
       <ol>
-        <li><code>npm install</code> — downloads <code>nanoid</code> into
+        <li><code>pnpm install</code> — downloads <code>nanoid</code> into
           <code>node_modules</code>, writes <code>package-lock.json</code>.</li>
-        <li><code>npm start</code> — runs the <code>start</code> script,
+        <li><code>pnpm start</code> — runs the <code>start</code> script,
           which runs <code>node index.mjs</code>.</li>
       </ol>
       <div class="build-result">
@@ -6960,7 +6958,7 @@ via npm script</pre>
         different):
         <div class="code">
   <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
-  <pre><span class="t-com">npm package loaded: true
+  <pre><span class="t-com">package loaded: true
 id: aeW6XbzQPl
 id: tt3rUU-Ais</span></pre>
 </div>
@@ -7031,7 +7029,7 @@ id: tt3rUU-Ais</span></pre>
         <code>res.setHeader</code>, and write the body with
         <code>res.write</code> or finish with <code>res.end</code>. The server
         binds to a port with <code>server.listen(port)</code> and starts handling
-        connections. That is the entire surface; every framework on npm is a
+        connections. That is the entire surface; every framework in the ecosystem is a
         nicer API over this.
       </p>
     </div>
@@ -7609,7 +7607,7 @@ server.<span class="t-prop">listen</span>(<span class="t-num">3000</span>)<span 
       <p>
         Build the router shown above, run it, and hit it with curl: the
         health endpoint, a user with a parameter, and a missing path. You
-        will have built — by hand — the abstraction every framework on npm
+        will have built — by hand — the abstraction every framework in the ecosystem
         wraps.
       </p>
 <div class="code">
@@ -7709,7 +7707,7 @@ $ curl http://localhost:3000/nope
       <h3 data-step="4">Real-World Example</h3>
       <p>
         A team starts a new API service. With Hono: one
-        <code>npm install</code>, twenty lines of code, a working JSON server
+        <code>pnpm install</code>, twenty lines of code, a working JSON server
         with logging middleware and three endpoints. With native http: an
         afternoon of writing routing, middleware glue, body parsing.
         Frameworks let you focus on the business problem, not the HTTP
@@ -7733,7 +7731,7 @@ $ curl http://localhost:3000/nope
     <div class="part">
       <h3 data-step="6">Step-by-Step Breakdown</h3>
       <ol>
-        <li><code>npm install hono @hono/node-server</code>.</li>
+        <li><code>pnpm add hono @hono/node-server</code>.</li>
         <li><code>const app = new Hono()</code>.</li>
         <li>Add middleware first with <code>app.use('*', fn)</code>.</li>
         <li>Add routes with <code>app.get/post/put/delete(path,
@@ -7910,7 +7908,7 @@ $ curl http://localhost:3000/nope
   <pre><span class="cap">server.mjs (same as Code Example)</span>(see above)</pre>
 </div>
       <p>
-        Run <code>npm install</code> then <code>node server.mjs</code>; curl
+        Run <code>pnpm install</code> then <code>node server.mjs</code>; curl
         both endpoints.
       </p>
       <div class="build-result">
@@ -8389,7 +8387,7 @@ HTTP/1.1 404 Not Found
     <p>
       A team's onboarding doc says: "Install Docker. Clone the
       repo. Run <code>docker compose up -d</code>. Run
-      <code>npm run dev</code>." That is the modern shape. The
+      <code>pnpm dev</code>." That is the modern shape. The
       new engineer has the whole local environment in under
       five minutes. The same compose file in CI starts the
       same Postgres for the test suite. No "Postgres installer
@@ -8550,7 +8548,7 @@ HTTP/1.1 404 Not Found
       <span class="ct">How Principal Engineers (L7+) Think</span>
       <p>They also use the same compose file in CI. A GitHub
       Actions workflow that runs <code>docker compose up -d
-      postgres</code> before <code>npm test</code> gets the
+      postgres</code> before <code>pnpm test</code> gets the
       same database engine every developer has. Skipping this
       and using a different in-memory mock in tests is what
       produces the "passes in CI, fails in prod" pattern.</p>
@@ -8564,7 +8562,7 @@ HTTP/1.1 404 Not Found
           a new folder. Run <code>docker compose up -d</code>;
           confirm <code>docker compose ps</code> shows the
           container as <code>Up (healthy)</code>.</li>
-        <li>Run <code>npm install</code> and create the
+        <li>Run <code>pnpm install</code> and create the
           <code>db.mjs</code> shown. Export
           <code>DATABASE_URL=postgres://course:course@127.0.0.1:5433/course</code>
           and run <code>node db.mjs</code>.</li>
@@ -8675,7 +8673,7 @@ HTTP/1.1 404 Not Found
 <div class="code">
   <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
   <pre><span class="cap">terminal — one-time setup</span>$ docker compose up -d
-$ npm install
+$ pnpm install
 $ DATABASE_URL=postgres://course:course@127.0.0.1:5433/course node db.mjs</pre>
 </div>
       <div class="build-result">
@@ -8818,8 +8816,8 @@ REAL_POSTGRES OK</span></pre>
     <div class="part">
       <h3 data-step="6">Step-by-Step Breakdown</h3>
       <ol>
-        <li><code>npm install pg</code>; for TypeScript add
-          <code>npm install --save-dev @types/pg</code>.</li>
+        <li><code>pnpm add pg</code>; for TypeScript add
+          <code>pnpm add -D @types/pg</code>.</li>
         <li>Read <code>DATABASE_URL</code> from the environment.</li>
         <li>Create one <code>Pool</code> per service: <code>const pool = new
           Pool({ connectionString: process.env.DATABASE_URL, max: 20 })</code>.</li>
@@ -9124,7 +9122,7 @@ rowCount: 1</span></pre>
     <div class="part">
       <h3 data-step="6">Step-by-Step Breakdown</h3>
       <ol>
-        <li><code>npm install drizzle-orm</code> plus the driver
+        <li><code>pnpm add drizzle-orm</code> plus the driver
           (<code>pg</code> for Postgres, <code>better-sqlite3</code> for
           SQLite).</li>
         <li>Declare tables as TypeScript objects using
@@ -10748,7 +10746,7 @@ replay rejected: ...</span></pre>
       </p>
       <p>
         <strong>Vulnerable dependencies.</strong> Defence:
-        <code>npm audit</code> in CI; <code>renovate</code> for automated
+        <code>pnpm audit</code> in CI; <code>renovate</code> for automated
         updates; minimise transitive deps.
       </p>
       <p>
@@ -10812,7 +10810,7 @@ replay rejected: ...</span></pre>
         <li><strong>Set security headers</strong> — CSP, HSTS,
           X-Content-Type-Options, etc. Hono's <code>secure-headers</code>
           middleware does this in one line.</li>
-        <li><strong>Audit dependencies</strong> with <code>npm audit</code>
+        <li><strong>Audit dependencies</strong> with <code>pnpm audit</code>
           in CI; update regularly.</li>
       </ol>
     </div>
@@ -10961,7 +10959,7 @@ db.<span class="t-prop">exec</span>(<span class="t-str">`CREATE TABLE users (id 
     <div class="part">
       <h3 data-step="13">Debugging Tips</h3>
       <ul>
-        <li><strong>Run <code>npm audit</code> often.</strong> Most
+        <li><strong>Run <code>pnpm audit</code> often.</strong> Most
           alerts have known fixes; resolve them promptly.</li>
         <li><strong>Set up CSP early.</strong> Content Security Policy
           headers prevent most XSS classes; configure once.</li>

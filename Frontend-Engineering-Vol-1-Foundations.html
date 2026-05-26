@@ -1125,7 +1125,7 @@
 						<pre><span class="prompt">$</span> <span class="cmd">node --version</span>
 <span class="out">v20.11.1</span>
 
-<span class="prompt">$</span> <span class="cmd">npm --version</span>
+<span class="prompt">$</span> <span class="cmd">pnpm --version</span>
 <span class="out">10.2.4</span></pre>
 					</div>
 
@@ -1146,12 +1146,12 @@
 
 					<h2>2. Install pnpm</h2>
 					<p>
-						You may know <code>npm</code> already — it's the default package manager that ships with
-						Node. We will use <strong>pnpm</strong> instead. Same idea: it downloads JavaScript
-						libraries from a registry into a <code>node_modules</code> folder. But pnpm:
+						<strong>pnpm</strong> is a fast, disk-efficient package manager for Node.
+						It downloads JavaScript libraries from the public registry into a
+						<code>node_modules</code> folder. Its advantages:
 					</p>
 					<ul>
-						<li>Is roughly <strong>2× faster</strong> than npm.</li>
+						<li><strong>Fast</strong> — installs are about 2× quicker than the legacy default.</li>
 						<li>
 							Saves disk space by storing each package version <em>once</em> globally and
 							hard-linking it into each project.
@@ -1169,7 +1169,7 @@
 							<span class="dot"></span><span class="dot"></span><span class="dot"></span
 							><span class="label">terminal</span>
 						</div>
-						<pre><span class="prompt">$</span> <span class="cmd">npm install -g pnpm</span>
+						<pre><span class="prompt">$</span> <span class="cmd">corepack enable &amp;&amp; corepack prepare pnpm@latest --activate</span>
 <span class="out">added 1 package in 2s</span>
 
 <span class="prompt">$</span> <span class="cmd">pnpm --version</span>
@@ -1576,7 +1576,7 @@
 
 					<h3><code>"esModuleInterop": true</code></h3>
 					<p>
-						Smooths over CommonJS / ES Modules interop quirks. Old npm packages used
+						Smooths over CommonJS / ES Modules interop quirks. Older JavaScript packages used
 						<code>module.exports</code>; modern ones use <code>export</code>. This flag makes
 						<code>import foo from 'old-package'</code> just work either way.
 					</p>
@@ -1747,7 +1747,7 @@ svelte-check found 0 errors and 0 warnings
 					<h1>package.json — the Manifest</h1>
 					<p class="lede">
 						<code>package.json</code> is the contract that describes what our project
-						<em>is</em> and what it <em>depends on</em>. Every npm-based project on Earth has one.
+						<em>is</em> and what it <em>depends on</em>. Every JavaScript project on Earth has one.
 						We're going to replace the scaffolder's version with our own and understand every field.
 					</p>
 
@@ -1769,7 +1769,7 @@ svelte-check found 0 errors and 0 warnings
 					<h3><code>name</code>, <code>version</code>, <code>private</code></h3>
 					<p>
 						<code>name</code> is the project's identifier. <code>version</code> follows
-						<em>semver</em> (MAJOR.MINOR.PATCH). <code>private: true</code> tells npm "never publish
+						<em>semver</em> (MAJOR.MINOR.PATCH). <code>private: true</code> tells the package manager "never publish
 						this to the public registry" — important since this is an application, not a library.
 					</p>
 
@@ -1782,7 +1782,7 @@ svelte-check found 0 errors and 0 warnings
 
 					<h3><code>"packageManager": "pnpm@11.3.0"</code></h3>
 					<p>
-						Pins the exact pnpm version. If a teammate runs <code>npm install</code> instead of
+						Pins the exact pnpm version. If a teammate runs <code>pnpm install</code> instead of
 						<code>pnpm install</code>, it errors. Eliminates lockfile drift between contributors.
 					</p>
 
