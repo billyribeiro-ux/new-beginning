@@ -3,7 +3,512 @@
 <head>
 <meta charset="UTF-8">
 <title>Enterprise Python Mastery — 2026 Edition</title>
-<link rel="stylesheet" href="assets/print.css">
+<!-- vol-theme:start -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --surface-0: #0a0a0b;
+  --surface-1: #111114;
+  --surface-2: #17171c;
+  --surface-3: #1f1f26;
+  --surface-4: #2a2a33;
+  --gold-200: #f8e1a8;
+  --gold-300: #f5d08a;
+  --gold-400: #e8b660;
+  --gold-500: #d4a24c;
+  --gold-600: #b0832f;
+  --ink-100: #f8f6f1;
+  --ink-200: #d8d3c6;
+  --ink-300: #a39e8f;
+  --ink-400: #74705f;
+  --border-default: rgba(248,246,241,0.10);
+  --border-strong:  rgba(248,246,241,0.18);
+  --border-gold:    rgba(212,162,76,0.32);
+
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:  "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  --maxw: 70ch;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html {
+  background: var(--surface-0);
+  color: var(--ink-100);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+body {
+  min-height: 100dvh;
+  font-feature-settings: "kern", "liga", "calt";
+}
+img, svg, video { max-width: 100%; height: auto; display: block; }
+
+/* Selection */
+::selection { background: var(--gold-500); color: var(--surface-0); }
+
+/* Scrollbar */
+* { scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--surface-4); background-clip: padding-box; border: 2px solid transparent; }
+
+/* ============================================================ */
+/* COVER                                                        */
+/* ============================================================ */
+.cover {
+  min-height: 100dvh;
+  padding: clamp(3rem, 8vw, 6rem) var(--gutter);
+  display: flex; flex-direction: column; justify-content: center;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(212,162,76,0.12), transparent 60%),
+    linear-gradient(180deg, var(--surface-0), var(--surface-1));
+  border-bottom: 1px solid var(--border-default);
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border-default) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-default) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+.cover > * { position: relative; z-index: 1; max-width: 56rem; }
+.cover-kicker {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.18em;
+  font-weight: 600; color: var(--gold-400); margin-bottom: 1.5rem;
+}
+.cover-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink-100);
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+.cover-edition {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.4rem; color: var(--gold-300); margin-bottom: 2.5rem;
+}
+.cover-rule {
+  width: 80px; height: 2px; background: var(--gold-500);
+  margin: 2rem 0;
+}
+.cover-tagline {
+  font-size: 1.15rem; line-height: 1.7; color: var(--ink-200);
+  max-width: var(--maxw); margin-bottom: 2.5rem;
+}
+.cover-pills {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 3rem;
+}
+.cover-pill {
+  padding: 0.45rem 1rem;
+  background: rgba(212,162,76,0.08);
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: var(--gold-300);
+  font-weight: 500;
+}
+.cover-spacer { flex: 1; min-height: 2rem; }
+.cover-meta {
+  display: flex; flex-wrap: wrap; gap: 2rem;
+  padding-top: 2rem; border-top: 1px solid var(--border-default);
+  font-size: 0.85rem; color: var(--ink-300); font-style: italic;
+}
+
+/* ============================================================ */
+/* TOC                                                          */
+/* ============================================================ */
+.toc {
+  padding: clamp(3rem, 6vw, 5rem) var(--gutter);
+  max-width: 64rem; margin: 0 auto;
+}
+.toc-module {
+  margin-bottom: 2.5rem; padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-default);
+}
+.toc-module:last-child { border-bottom: none; }
+.toc-row {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: baseline; gap: 1rem;
+  padding: 0.5rem 0;
+  color: var(--ink-200); font-size: 0.95rem;
+}
+.toc-row:hover { color: var(--ink-100); }
+.num {
+  font-family: var(--font-mono); font-size: 0.82rem;
+  color: var(--gold-400); font-weight: 600;
+}
+.leader {
+  border-bottom: 1px dotted var(--border-default);
+  align-self: end; transform: translateY(-0.35em);
+}
+.pg {
+  font-family: var(--font-mono); font-size: 0.82rem;
+  color: var(--ink-300);
+}
+
+/* ============================================================ */
+/* MODULE DIVIDER                                               */
+/* ============================================================ */
+.divider {
+  min-height: 70dvh;
+  padding: clamp(3rem, 8vw, 6rem) var(--gutter);
+  display: flex; flex-direction: column; justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(212,162,76,0.08), transparent 70%),
+    var(--surface-1);
+  border-block: 1px solid var(--border-default);
+  position: relative;
+}
+.divider-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.2em;
+  font-weight: 700; color: var(--gold-400); margin-bottom: 0.5rem;
+}
+.divider-num {
+  font-family: var(--font-mono); font-size: 0.95rem;
+  color: var(--ink-300); margin-bottom: 1.5rem;
+}
+.divider-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 400; line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--ink-100); max-width: 36rem;
+  margin-bottom: 1.25rem; text-wrap: balance;
+}
+.divider-rule {
+  width: 60px; height: 2px; background: var(--gold-500);
+  margin: 1.5rem 0;
+}
+.divider-desc {
+  font-size: 1.1rem; color: var(--ink-200); max-width: var(--maxw);
+  line-height: 1.7;
+}
+.divider-toc {
+  margin-top: 3rem; padding-top: 1.5rem;
+  border-top: 1px solid var(--border-default);
+  display: flex; flex-direction: column; gap: 0.4rem;
+  max-width: 36rem;
+}
+.divider-toc .toc-row {
+  font-size: 0.9rem;
+}
+
+/* ============================================================ */
+/* CHAPTER / LESSON                                             */
+/* ============================================================ */
+.chapter, .lesson, .part {
+  padding: clamp(3rem, 6vw, 5rem) var(--gutter);
+  max-width: 64rem; margin: 0 auto;
+}
+.chapter-meta {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--gold-400); font-weight: 600;
+  margin-bottom: 1rem;
+}
+.chapter h1, .lesson h1, .part h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400; line-height: 1.15; letter-spacing: -0.015em;
+  color: var(--ink-100);
+  margin: 0 0 1.5rem; text-wrap: balance;
+}
+.chapter-lede, .lesson-title + p, .chapter h1 + p {
+  font-size: 1.2rem; line-height: 1.6;
+  color: var(--ink-200);
+  margin-bottom: 2.5rem;
+  max-width: var(--maxw);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+}
+.lesson-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 500; line-height: 1.2;
+  color: var(--ink-100);
+  margin: 3rem 0 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+/* Standard prose */
+.chapter p, .lesson p, .part p, .cover p {
+  max-width: var(--maxw);
+  margin-bottom: 1.25rem;
+  color: var(--ink-200);
+}
+.chapter h2, .lesson h2 {
+  font-family: var(--font-serif);
+  font-size: 1.65rem; font-weight: 500; line-height: 1.25;
+  color: var(--ink-100); margin: 2.75rem 0 1rem;
+}
+.chapter h3, .lesson h3 {
+  font-size: 1.25rem; font-weight: 600; line-height: 1.3;
+  color: var(--gold-300); margin: 2rem 0 0.75rem;
+  letter-spacing: -0.005em;
+}
+.chapter ul, .lesson ul, .chapter ol, .lesson ol {
+  padding-left: 1.5rem; margin-bottom: 1.5rem; max-width: var(--maxw);
+}
+.chapter li, .lesson li { margin-bottom: 0.5rem; color: var(--ink-200); }
+.chapter strong, .lesson strong, .callout strong { color: var(--ink-100); font-weight: 600; }
+.chapter em, .lesson em { color: var(--ink-100); font-style: italic; }
+
+a {
+  color: var(--gold-300); text-decoration: none;
+  border-bottom: 1px solid rgba(212,162,76,0.3);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+a:hover { color: var(--gold-200); border-bottom-color: var(--gold-400); }
+
+/* Inline code */
+code {
+  font-family: var(--font-mono); font-size: 0.88em;
+  background: var(--surface-2);
+  color: var(--gold-200);
+  padding: 0.12em 0.4em; border-radius: 4px;
+  border: 1px solid var(--border-default);
+}
+
+/* Code blocks */
+pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--gold-500);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  font-family: var(--font-mono); font-size: 0.86rem;
+  line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; color: var(--ink-100); font-size: inherit; }
+
+/* Syntax tokens (t-* classes from the original) */
+.t-kw   { color: #c792ea; }
+.t-tag  { color: #f07178; }
+.t-attr { color: var(--gold-300); }
+.t-str, .t-val { color: #c3e88d; }
+.t-num  { color: #f78c6c; }
+.t-com  { color: var(--ink-400); font-style: italic; }
+.t-prop { color: #82aaff; }
+.t-sel  { color: #ffcb6b; }
+.t-punc { color: var(--ink-300); }
+
+/* ============================================================ */
+/* CALLOUTS / NOTES / WARNINGS                                  */
+/* ============================================================ */
+.callout, .note, .warning, .perf, .senior {
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px;
+  margin: 1.75rem 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--gold-500);
+  max-width: var(--maxw);
+}
+.callout::before, .note::before, .warning::before, .perf::before, .senior::before {
+  display: block;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 700; margin-bottom: 0.5rem;
+}
+.note::before     { content: "Note"; color: var(--gold-400); }
+.callout::before  { content: "Insight"; color: var(--gold-400); }
+.warning          { border-left-color: #c2304a; }
+.warning::before  { content: "Warning"; color: #ff8a9a; }
+.perf             { border-left-color: #82aaff; }
+.perf::before     { content: "Performance"; color: #82aaff; }
+.senior           { border-left-color: #c792ea; }
+.senior::before   { content: "Principal Engineer Take"; color: #c792ea; }
+
+/* ============================================================ */
+/* EXERCISES / BUILDS / SOLUTIONS                               */
+/* ============================================================ */
+.exercise, .build, .solution {
+  padding: 1.5rem 1.75rem;
+  border-radius: 12px;
+  margin: 2rem 0;
+  background:
+    linear-gradient(180deg, rgba(212,162,76,0.04), transparent 80%),
+    var(--surface-1);
+  border: 1px solid var(--border-gold);
+  max-width: var(--maxw);
+}
+.exercise::before, .build::before, .solution::before {
+  display: block;
+  font-family: var(--font-mono); font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-weight: 700; color: var(--gold-400);
+  margin-bottom: 0.75rem;
+}
+.exercise::before { content: "Exercise"; }
+.build::before    { content: "Build"; }
+.solution::before { content: "Solution"; }
+.build-title, .build-goal, .build-result {
+  display: block; margin-bottom: 0.5rem;
+}
+.build-title { font-family: var(--font-serif); font-size: 1.25rem; color: var(--ink-100); font-weight: 500; }
+.build-goal  { font-size: 0.9rem; color: var(--ink-300); font-style: italic; }
+.build-result{ font-size: 0.9rem; color: var(--gold-300); margin-top: 0.75rem; }
+
+/* ============================================================ */
+/* CHECKLIST                                                    */
+/* ============================================================ */
+.checklist {
+  list-style: none; padding-left: 0;
+}
+.checklist li {
+  padding-left: 2rem; position: relative; margin-bottom: 0.6rem;
+}
+.checklist li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  color: var(--gold-400); font-weight: 700;
+}
+
+/* ============================================================ */
+/* PRODUCT-CARD, DEFINITION GRID, DIAGRAM                       */
+/* ============================================================ */
+.product-card, .def-grid, .diagram {
+  padding: 1.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  margin: 1.75rem 0;
+}
+.def-grid {
+  display: grid; grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+}
+.def-grid dt { font-weight: 600; color: var(--gold-300); font-family: var(--font-mono); font-size: 0.88rem; }
+.def-grid dd { color: var(--ink-200); }
+.diagram {
+  font-family: var(--font-mono); font-size: 0.82rem;
+  line-height: 1.6; white-space: pre;
+  overflow-x: auto; color: var(--ink-200);
+}
+.fig-body, .cap, .ct { color: var(--ink-300); font-size: 0.88rem; font-style: italic; margin-top: 0.5rem; }
+.kbd-term {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-family: var(--font-mono); font-size: 0.78rem;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--ink-100);
+}
+
+/* Tables (if any) */
+table {
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  width: 100%; max-width: var(--maxw);
+  font-size: 0.92rem;
+}
+th, td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+  color: var(--ink-200);
+}
+th { color: var(--gold-300); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* HR */
+hr {
+  border: none; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+  margin: 3rem auto; max-width: 24rem;
+}
+
+/* Print: collapse to a sane single-column readable form */
+@media print {
+  html { font-size: 11pt; background: white; color: black; }
+  body, .chapter, .lesson, .part { color: black; }
+  .cover, .divider { background: white; min-height: auto; }
+  pre, code { background: #f5f5f5; color: black; border-color: #ccc; }
+}
+
+/* Code-block wrapper (matches Vol 1–5 .code pattern) */
+.code {
+  background: var(--surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  margin: 1.75rem 0;
+  overflow: hidden;
+}
+.code .head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-300);
+}
+.code .head .lang {
+  color: var(--gold-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.code .head .path { color: var(--ink-300); flex: 1; }
+.code .copy {
+  background: none;
+  border: 1px solid var(--border-default);
+  color: var(--ink-300);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+.code .copy:hover {
+  background: var(--surface-3);
+  color: var(--gold-300);
+  border-color: var(--border-gold);
+}
+.code .copy.copied {
+  color: var(--gold-300);
+  border-color: var(--border-gold);
+}
+.code pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  background: var(--surface-1);
+  border: none;
+  border-radius: 0;
+  border-left: none;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.7;
+}
+.code pre code { background: none; border: none; padding: 0; color: var(--ink-100); }
+
+</style>
+<!-- vol-theme:end -->
 </head>
 <body>
 
@@ -13,7 +518,7 @@
 <section class="cover">
   <div class="cover-kicker">Backend Systems &middot; Python Engineering Curriculum</div>
   <h1 class="cover-title">Enterprise Python Mastery</h1>
-  <div class="cover-edition">2026 Edition</div>
+  <div class="cover-edition">2026 Edition · Principal Engineer (L7+) Track</div>
   <div class="cover-rule"></div>
   <p class="cover-tagline">
     From first principles to confident execution. A complete, production-grade course
@@ -32,7 +537,7 @@
   </div>
   <div class="cover-spacer"></div>
   <div class="cover-meta">
-    <span>Written as principal-engineer internal documentation</span>
+    <span>Written as principal-engineer (L7+) internal documentation</span>
     <span>Absolute Beginner &rarr; Advanced Python Engineer</span>
   </div>
 </section>
@@ -46,7 +551,7 @@
   <p class="chapter-lede">
     This is not a reference manual you skim for syntax. It is a structured
     apprenticeship in backend engineering with Python. Read it the way you would
-    shadow a working senior engineer for a quarter — slowly, in order, with your own
+    shadow a working principal engineer for a quarter — slowly, in order, with your own
     terminal open and a Python interpreter ready to run.
   </p>
 
@@ -120,7 +625,7 @@
     <dt>7. Code Example</dt><dd>Production-grade Python code — never a toy snippet.</dd>
     <dt>8. Types &amp; Runtime</dt><dd>The same code with type hints — what the checker sees vs. what the interpreter does.</dd>
     <dt>9. Common Mistakes</dt><dd>The specific ways engineers get this wrong.</dd>
-    <dt>10. Senior Notes</dt><dd>The judgment a senior engineer applies.</dd>
+    <dt>10. Principal Engineer Notes</dt><dd>The judgment a principal engineer applies.</dd>
     <dt>11. Exercises &amp; Solutions</dt><dd>Deliberate practice, with answers to check yourself.</dd>
     <dt>12. Architecture</dt><dd>How this concept fits the larger system.</dd>
     <dt>13. Debugging</dt><dd>How to diagnose it when it misbehaves.</dd>
@@ -144,7 +649,7 @@
     builds, <code>Optional[X]</code> instead of <code>X | None</code>), and where
     newer syntax matters we call it out explicitly. On Python 3.13 every example
     runs identically; on 3.9 every example also runs identically. That portability
-    is itself a senior-engineer discipline.
+    is itself a principal-level engineer discipline.
   </p>
 
   <h2>How to actually study it</h2>
@@ -164,9 +669,8 @@
   </ol>
 
   <div class="callout senior">
-    <span class="ct">How Senior Engineers Think</span>
-    <p>Junior engineers optimise for <em>making the code work today</em>. Senior
-    engineers optimise for <em>making the code stay correct and changeable after a
+    <span class="ct">How Principal Engineers (L7+) Think</span>
+    <p>Junior engineers optimise for <em>making the code work today</em>. Principal engineers optimise for <em>making the code stay correct and changeable after a
     hundred future changes by people who never met them</em>. Every chapter in this
     course is, underneath, training that second instinct. Hold that frame as you
     read.</p>
@@ -288,7 +792,7 @@
     a <strong>terminal</strong> (where Python is invoked), an
     <strong>editor</strong> (where Python is written), and the
     <strong>Python interpreter itself</strong> (which actually runs the code).
-    This chapter sets each of them up the way a senior engineer would, so you
+    This chapter sets each of them up the way a principal engineer would, so you
     spend the rest of the course thinking about engineering rather than tooling.
   </p>
 
@@ -375,7 +879,9 @@
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">terminal session</span><span class="t-com"># Confirm the interpreter</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">terminal session</span><span class="t-com"># Confirm the interpreter</span>
 $ python3 --version
 Python 3.13.0
 
@@ -393,6 +899,7 @@ Successfully installed requests-2.32.0
 <span class="t-com"># Deactivate when done</span>
 (.venv) $ deactivate
 $</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -424,9 +931,9 @@ $</pre>
         projects.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Tooling is treated as part of the project, not as personal preference.
         The version of Python is pinned (<code>.python-version</code> file). The
@@ -451,7 +958,9 @@ $</pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 0.1.1</div>
-<pre><span class="cap">terminal</span>$ mkdir scratch &amp;&amp; cd scratch
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">terminal</span>$ mkdir scratch &amp;&amp; cd scratch
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 (.venv) $ pip install requests
@@ -460,6 +969,7 @@ $ source .venv/bin/activate
 (.venv) $ deactivate
 $ python3 -c "import requests"
 ModuleNotFoundError: No module named 'requests'</pre>
+</div>
       <p>
         The error after deactivating confirms the isolation worked — the venv
         had <code>requests</code>, the global Python does not.
@@ -511,7 +1021,9 @@ ModuleNotFoundError: No module named 'requests'</pre>
         three lines below — proof your interpreter is alive and your folder is
         ready for the rest of the course.
       </p>
-<pre><span class="cap">hello.py</span><span class="t-com">"""Module 0 build: prove the interpreter, the standard library, and a
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">hello.py</span><span class="t-com">"""Module 0 build: prove the interpreter, the standard library, and a
    virtual-environment-style script execution all work end-to-end."""</span>
 <span class="t-key">import</span> sys
 <span class="t-key">import</span> platform
@@ -520,12 +1032,16 @@ print(<span class="t-str">"Python version:"</span>, sys.version.split()[<span cl
 print(<span class="t-str">"Platform:"</span>, platform.system())
 print(<span class="t-str">"Hello from Python"</span>)
 print(<span class="t-str">"CAPSTONE 0 PASS"</span>)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">Python version: 3.9.6
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">Python version: 3.9.6
 Platform: Darwin
 Hello from Python
 CAPSTONE 0 PASS</span></pre>
+</div>
         Three lines confirm three things: the interpreter ran, the standard
         library is reachable (<code>sys</code> and <code>platform</code> are
         stdlib), and <code>print()</code> writes to stdout the way Module 4
@@ -631,7 +1147,9 @@ CAPSTONE 0 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">cli.py</span><span class="t-com">"""A tiny CLI: takes a name and an optional count, greets count times."""</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">cli.py</span><span class="t-com">"""A tiny CLI: takes a name and an optional count, greets count times."""</span>
 <span class="t-key">import</span> sys
 
 
@@ -652,6 +1170,7 @@ CAPSTONE 0 PASS</span></pre>
 
 <span class="t-key">if</span> __name__ == <span class="t-str">"__main__"</span>:
     sys.exit(<span class="t-fn">main</span>(sys.argv))</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -683,9 +1202,9 @@ CAPSTONE 0 PASS</span></pre>
         pollute pipelines that capture stdout.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         A CLI script is treated as a small program with a contract: defined
         inputs, defined outputs, defined exit codes. The
@@ -710,7 +1229,9 @@ CAPSTONE 0 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 0.2.1</div>
-<pre><span class="cap">cli.py — modified main()</span><span class="t-key">def</span> <span class="t-fn">main</span>(argv: <span class="t-cls">list</span>) -&gt; <span class="t-cls">int</span>:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">cli.py — modified main()</span><span class="t-key">def</span> <span class="t-fn">main</span>(argv: <span class="t-cls">list</span>) -&gt; <span class="t-cls">int</span>:
     <span class="t-key">if</span> <span class="t-fn">len</span>(argv) &gt;= <span class="t-num">2</span> <span class="t-key">and</span> argv[<span class="t-num">1</span>] == <span class="t-str">"--help"</span>:
         print(<span class="t-str">"usage: cli.py &lt;name&gt; [count]"</span>)
         <span class="t-key">return</span> <span class="t-num">0</span>
@@ -718,6 +1239,7 @@ CAPSTONE 0 PASS</span></pre>
         print(<span class="t-str">"usage: cli.py &lt;name&gt; [count]"</span>, file=sys.stderr)
         <span class="t-key">return</span> <span class="t-num">2</span>
     <span class="t-com"># ... rest unchanged ...</span></pre>
+</div>
       <p>
         The convention is enshrined: exit 0 = success, exit 2 = misuse (Python
         itself uses 2 for argparse errors), other non-zero codes for other
@@ -767,13 +1289,19 @@ CAPSTONE 0 PASS</span></pre>
         see three greetings and a <code>DONE</code> line. Run with no args and
         confirm the exit code is 2 (<code>echo $?</code> on macOS/Linux).
       </p>
-<pre><span class="cap">cli.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">cli.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">Hello, Billy! (1/3)
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">Hello, Billy! (1/3)
 Hello, Billy! (2/3)
 Hello, Billy! (3/3)
 DONE</span></pre>
+</div>
         Exit code 0 on success. With no args, the usage line prints to stderr
         and the exit code is 2. The CLI shape is yours.
       </div>
@@ -882,7 +1410,7 @@ DONE</span></pre>
       <code>CACHE: dict[str, list[Event]] = {}</code>. Two requests both call
       <code>events = CACHE.setdefault(tenant_id, [])</code> and append to the
       list they received back. Because both got the <em>same list</em>, they
-      step on each other's data. A senior engineer copies the list before
+      step on each other's data. A principal engineer copies the list before
       handing it out, or uses an immutable structure, because they know
       assignment binds and mutation propagates.
     </p>
@@ -904,7 +1432,9 @@ DONE</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">values.py</span><span class="t-com"># Names are bindings, not boxes. Two names can refer to the same object.</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">values.py</span><span class="t-com"># Names are bindings, not boxes. Two names can refer to the same object.</span>
 a = [<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>]
 b = a
 b.append(<span class="t-num">4</span>)
@@ -920,6 +1450,7 @@ x = <span class="t-num">5</span>
 y = x
 x = x + <span class="t-num">1</span>                              <span class="t-com"># binds x to a new int</span>
 print(<span class="t-str">"x:"</span>, x, <span class="t-str">"y:"</span>, y)                <span class="t-com"># x=6 y=5</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -953,11 +1484,11 @@ print(<span class="t-str">"x:"</span>, x, <span class="t-str">"y:"</span>, y)   
         surprising.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        The senior question on every function signature is "what do I do with
+        The principal-level question on every function signature is "what do I do with
         a mutable argument?" Three sensible answers: (1) document that the
         function mutates it (most stdlib in-place methods —
         <code>list.append</code>, <code>dict.update</code>), (2) copy
@@ -981,10 +1512,13 @@ print(<span class="t-str">"x:"</span>, x, <span class="t-str">"y:"</span>, y)   
     </div>
     <div class="solution">
       <div class="sol-title">Solution 1.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">add_default</span>(items: <span class="t-cls">list</span>, default: <span class="t-cls">list</span>) -&gt; <span class="t-cls">list</span>:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">add_default</span>(items: <span class="t-cls">list</span>, default: <span class="t-cls">list</span>) -&gt; <span class="t-cls">list</span>:
     <span class="t-key">if</span> <span class="t-key">not</span> items:
         items.extend(default)
     <span class="t-key">return</span> items</pre>
+</div>
       <p>
         The bug: if the caller passes the same <code>items</code> object
         twice (or relies on a shared <code>default</code>), mutations leak.
@@ -1000,7 +1534,7 @@ print(<span class="t-str">"x:"</span>, x, <span class="t-str">"y:"</span>, y)   
       enforces it with the borrow checker, Erlang dodges it with
       immutable-by-default, functional languages avoid it by design. Python
       lets you have it, which means the discipline to <em>not</em> have it
-      becomes a code-review concern. Senior Python codebases enforce
+      becomes a code-review concern. Principal-level Python codebases enforce
       immutability at the boundaries (Pydantic models with
       <code>frozen=True</code>, tuples instead of lists for returned
       records) and mutate only locally.
@@ -1043,10 +1577,15 @@ print(<span class="t-str">"x:"</span>, x, <span class="t-str">"y:"</span>, y)   
         either name being visible through the other, identity vs equality,
         and <code>isinstance</code> behaviour for ints and booleans.
       </p>
-<pre><span class="cap">values.py (see Code Example)</span>(plus the extended demo below — see Expected result for the printed output)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">values.py (see Code Example)</span>(plus the extended demo below — see Expected result for the printed output)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">a after b.append: [1, 2, 3, 4]
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">a after b.append: [1, 2, 3, 4]
 a is b: True
 a after b = [9,9]: [1, 2, 3, 4]
 b after rebind: [9, 9]
@@ -1058,6 +1597,7 @@ type of 3.14: float
 isinstance(a, list): True
 isinstance(True, int): True
 BUILD 1.1 PASS</span></pre>
+</div>
         Eleven lines that demonstrate the entire object model.
         <code>isinstance(True, int) == True</code> is the punchline —
         Python's <code>bool</code> subclasses <code>int</code>, so
@@ -1153,7 +1693,9 @@ BUILD 1.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">functions.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Callable
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">functions.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Callable
 
 
 <span class="t-key">def</span> <span class="t-fn">make_counter</span>(start: <span class="t-cls">int</span> = <span class="t-num">0</span>) -&gt; Callable[[], <span class="t-cls">int</span>]:
@@ -1172,6 +1714,7 @@ c1 = make_counter()
 c2 = make_counter(<span class="t-num">100</span>)
 print(c1(), c1(), c1())   <span class="t-com"># 1 2 3</span>
 print(c2(), c2())          <span class="t-com"># 101 102</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -1205,14 +1748,14 @@ print(c2(), c2())          <span class="t-com"># 101 102</span></pre>
         <code>f = d(f)</code> — nothing more.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         First-class functions are a power tool. Used well, they keep
         cross-cutting concerns out of business logic and make code
         composable. Used badly, they create stacks of decorators no one
-        can debug. The senior discipline: prefer composition with named
+        can debug. The principal-level discipline: prefer composition with named
         callables over a stack of five anonymous decorators; document
         what each decorator adds; never let a decorator silently
         change the contract of the function it wraps.
@@ -1231,7 +1774,9 @@ print(c2(), c2())          <span class="t-com"># 101 102</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 1.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> time
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> time
 <span class="t-key">import</span> functools
 
 <span class="t-key">def</span> <span class="t-fn">timed</span>(fn):
@@ -1243,6 +1788,7 @@ print(c2(), c2())          <span class="t-com"># 101 102</span></pre>
         print(<span class="t-str">f"{fn.__name__}: {elapsed_ms:.2f}ms"</span>)
         <span class="t-key">return</span> result
     <span class="t-key">return</span> wrapper</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -1290,10 +1836,15 @@ print(c2(), c2())          <span class="t-com"># 101 102</span></pre>
         and a logging decorator (proves first-class functions
         compose).
       </p>
-<pre><span class="cap">functions.py</span>(see Code Example, extended with the trap demonstration and decorator)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">functions.py</span>(see Code Example, extended with the trap demonstration and decorator)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">c1: 1 2 3
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">c1: 1 2 3
 c2: 101 102
 counters are independent: True
 trap once: [1]
@@ -1303,6 +1854,7 @@ safe twice: [2]
 called add((2, 3)) -> 5
 decorated result: 5
 BUILD 1.2 PASS</span></pre>
+</div>
         Two counters with independent state; the default-arg trap
         firing on the second call; the <code>None</code>-sentinel
         fix; a decorator that logs and forwards the result. The
@@ -1324,7 +1876,7 @@ BUILD 1.2 PASS</span></pre>
     <strong>dict</strong> (key-value, insertion-ordered since 3.7,
     O(1) lookup), <strong>set</strong> (unique, O(1) membership,
     unordered), <strong>tuple</strong> (ordered, immutable, hashable).
-    Picking the right one is a senior-engineering skill that compounds
+    Picking the right one is a principal-level engineering skill that compounds
     across thousands of lines of code.
   </p>
 
@@ -1360,7 +1912,7 @@ BUILD 1.2 PASS</span></pre>
       <code>dict</code> when a class would have been clearer makes
       code that looks fine but is a string-typo away from a
       <code>KeyError</code>. The default container is rarely the right
-      one; the senior skill is to ask.
+      one; the principal-level skill is to ask.
     </p>
 
     <h3 data-step="4">Real-World Example</h3>
@@ -1397,7 +1949,9 @@ BUILD 1.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">structures.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Dict, List, Set, Tuple
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">structures.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Dict, List, Set, Tuple
 
 orders: List[<span class="t-cls">int</span>] = [<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>]
 orders.append(<span class="t-num">4</span>)
@@ -1414,6 +1968,7 @@ distances: Dict[Tuple[<span class="t-cls">int</span>, <span class="t-cls">int</s
 
 <span class="t-com"># Comprehensions are the idiomatic transform-and-filter:</span>
 even_squares = {x: x * x <span class="t-key">for</span> x <span class="t-key">in</span> <span class="t-fn">range</span>(<span class="t-num">5</span>) <span class="t-key">if</span> x % <span class="t-num">2</span> == <span class="t-num">0</span>}</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -1445,9 +2000,9 @@ even_squares = {x: x * x <span class="t-key">for</span> x <span class="t-key">in
         list with a comprehension.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The container question is "what's the access pattern?" not
         "which one is most familiar?" If the pattern is
@@ -1521,10 +2076,15 @@ even_squares = {x: x * x <span class="t-key">for</span> x <span class="t-key">in
         a set to dedupe, a tuple as a coordinate and as a dict key.
         Demonstrates the comprehension forms for each.
       </p>
-<pre><span class="cap">structures.py</span>(see Code Example — full file in Expected result output)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">structures.py</span>(see Code Example — full file in Expected result output)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">list: [0, 1, 2, 3, 4] len: 5
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">list: [0, 1, 2, 3, 4] len: 5
 dict keys preserve insertion order: ['id', 'tenant_id', 'email_count']
 dict lookup is O(1): 42
 set deduplicates: ['a', 'b']
@@ -1538,6 +2098,7 @@ max: 4
 any > 3: True
 all > 0: False
 BUILD 1.3 PASS</span></pre>
+</div>
         Note: <code>all &gt; 0</code> is <code>False</code> because
         the list has <code>0</code> in it, and <code>0</code> is
         falsy. The edge cases are the lesson; the containers are
@@ -1632,23 +2193,35 @@ BUILD 1.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">pkg/__init__.py</span><span class="t-key">from</span> .core <span class="t-key">import</span> compute_total
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">pkg/__init__.py</span><span class="t-key">from</span> .core <span class="t-key">import</span> compute_total
 <span class="t-key">from</span> .utils <span class="t-key">import</span> format_money
 
 __all__ = [<span class="t-str">"compute_total"</span>, <span class="t-str">"format_money"</span>]</pre>
-<pre><span class="cap">pkg/core.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> List
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">pkg/core.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> List
 
 <span class="t-key">def</span> <span class="t-fn">compute_total</span>(prices_cents: List[<span class="t-cls">int</span>]) -&gt; <span class="t-cls">int</span>:
     <span class="t-com">"""Sum a list of cent values; never floats."""</span>
     <span class="t-key">return</span> <span class="t-fn">sum</span>(prices_cents)</pre>
-<pre><span class="cap">pkg/utils.py</span><span class="t-key">def</span> <span class="t-fn">format_money</span>(cents: <span class="t-cls">int</span>) -&gt; <span class="t-cls">str</span>:
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">pkg/utils.py</span><span class="t-key">def</span> <span class="t-fn">format_money</span>(cents: <span class="t-cls">int</span>) -&gt; <span class="t-cls">str</span>:
     sign = <span class="t-str">"-"</span> <span class="t-key">if</span> cents &lt; <span class="t-num">0</span> <span class="t-key">else</span> <span class="t-str">""</span>
     cents = <span class="t-fn">abs</span>(cents)
     <span class="t-key">return</span> <span class="t-str">f"{sign}${cents // 100}.{cents % 100:02d}"</span></pre>
-<pre><span class="cap">app.py (the caller)</span><span class="t-key">from</span> pkg <span class="t-key">import</span> compute_total, format_money
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">app.py (the caller)</span><span class="t-key">from</span> pkg <span class="t-key">import</span> compute_total, format_money
 
 prices = [<span class="t-num">1999</span>, <span class="t-num">250</span>, <span class="t-num">5000</span>]
 print(format_money(compute_total(prices)))   <span class="t-com"># $72.49</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -1679,11 +2252,11 @@ print(format_money(compute_total(prices)))   <span class="t-com"># $72.49</span>
         proper <code>pyproject.toml</code>.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        Import structure IS architecture. A senior engineer maps
+        Import structure IS architecture. A principal engineer maps
         package boundaries to domain boundaries: auth code lives in
         <code>auth/</code>, billing in <code>billing/</code>,
         shared utilities in <code>common/</code>. Imports flow in
@@ -1766,21 +2339,27 @@ print(format_money(compute_total(prices)))   <span class="t-com"># $72.49</span>
         values, formats the result, and prints it. Cover the
         edge cases (negative, zero, under a dollar).
       </p>
-<pre><span class="cap">project layout</span>p14/
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">project layout</span>p14/
 ├── pkg/
 │   ├── __init__.py
 │   ├── core.py
 │   └── utils.py
 └── app.py</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">total cents: 7249
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">total cents: 7249
 formatted: $72.49
 direct import same function: True
 negative: -$12.50
 zero: $0.00
 under a dollar: $0.07
 BUILD 1.4 PASS</span></pre>
+</div>
         Both import paths return the same function object; the
         formatter handles every edge case; the integer-cents
         discipline (no floats for money) is intact.
@@ -1798,7 +2377,7 @@ BUILD 1.4 PASS</span></pre>
   <p class="chapter-lede">
     Exceptions are Python's primary error-signalling mechanism — they
     are part of every API, including the standard library's. A
-    senior Python engineer raises <strong>specific exception
+    principal-level Python engineer raises <strong>specific exception
     types</strong>, catches <strong>narrowly</strong>, never
     <strong>swallows</strong> errors, and uses
     <strong>try/finally</strong> to guarantee cleanup. Get this
@@ -1883,7 +2462,9 @@ BUILD 1.4 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">exceptions.py</span><span class="t-key">class</span> <span class="t-cls">InsufficientFundsError</span>(<span class="t-cls">Exception</span>):
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">exceptions.py</span><span class="t-key">class</span> <span class="t-cls">InsufficientFundsError</span>(<span class="t-cls">Exception</span>):
     <span class="t-key">def</span> <span class="t-fn">__init__</span>(self, balance_cents: <span class="t-cls">int</span>, requested_cents: <span class="t-cls">int</span>):
         self.balance = balance_cents
         self.requested = requested_cents
@@ -1904,6 +2485,7 @@ BUILD 1.4 PASS</span></pre>
     withdraw(<span class="t-num">100</span>, <span class="t-num">500</span>)
 <span class="t-key">except</span> InsufficientFundsError <span class="t-key">as</span> e:
     print(<span class="t-str">"caught:"</span>, e.balance, e.requested)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -1936,9 +2518,9 @@ BUILD 1.4 PASS</span></pre>
         to preserve the chain.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Exceptions are part of the API. Define a small domain
         exception hierarchy, document which methods raise which,
@@ -1965,7 +2547,9 @@ BUILD 1.4 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 1.5.1</div>
-<pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">parse_age</span>(s: <span class="t-cls">str</span>) -&gt; <span class="t-cls">int</span>:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">parse_age</span>(s: <span class="t-cls">str</span>) -&gt; <span class="t-cls">int</span>:
     <span class="t-key">try</span>:
         age = <span class="t-cls">int</span>(s)
     <span class="t-key">except</span> <span class="t-cls">ValueError</span> <span class="t-key">as</span> e:
@@ -1973,6 +2557,7 @@ BUILD 1.4 PASS</span></pre>
     <span class="t-key">if</span> age &lt; <span class="t-num">0</span>:
         <span class="t-key">raise</span> <span class="t-cls">ValueError</span>(<span class="t-str">f"age cannot be negative: {age}"</span>)
     <span class="t-key">return</span> age</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -2023,10 +2608,15 @@ BUILD 1.4 PASS</span></pre>
         <code>try/finally</code> for cleanup, and
         <code>raise X() from original</code> for chaining.
       </p>
-<pre><span class="cap">exceptions.py (see Code Example)</span>(see above — extended with the catch demos in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">exceptions.py (see Code Example)</span>(see above — extended with the catch demos in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">after $50 withdrawal: 5000
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">after $50 withdrawal: 5000
 caught InsufficientFundsError: 100 500
 caught ValueError: negative withdrawal: -50
 bad_swallow(0): None
@@ -2034,8 +2624,9 @@ safe_divide(0): None
 safe_divide(4): 25
 finally always runs: True
 chained: RuntimeError from ValueError</span></pre>
+</div>
         Every concept demonstrated in one runnable script. The
-        chained traceback line shows the senior idiom in action.
+        chained traceback line shows the principal-level idiom in action.
       </div>
     </div>
   </div>
@@ -2154,7 +2745,7 @@ chained: RuntimeError from ValueError</span></pre>
       article that promises "10x faster with this one trick," the
       first question is "what workload were they measuring?" An
       answer that helps an I/O-bound service may do nothing for
-      a CPU-bound one, and vice versa. Senior engineers always
+      a CPU-bound one, and vice versa. Principal engineers always
       classify the workload before they read the trick.
     </p>
 
@@ -2223,7 +2814,9 @@ chained: RuntimeError from ValueError</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">bytecode.py</span><span class="t-key">import</span> dis
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">bytecode.py</span><span class="t-key">import</span> dis
 
 <span class="t-key">def</span> <span class="t-fn">add</span>(a: <span class="t-cls">int</span>, b: <span class="t-cls">int</span>) -&gt; <span class="t-cls">int</span>:
     <span class="t-key">return</span> a + b
@@ -2235,6 +2828,7 @@ dis.dis(add)
 #   4 BINARY_ADD
 #   6 RETURN_VALUE
 # Four opcodes; the interpreter walks them while holding the GIL.</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -2264,9 +2858,9 @@ dis.dis(add)
         faster.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Performance work in Python begins with "is this I/O-bound
         or CPU-bound?" because the right tool changes completely.
@@ -2277,11 +2871,11 @@ dis.dis(add)
         (<code>multiprocessing</code>, or just multiple worker
         containers). Reaching for threads on CPU work is a junior
         instinct; reaching for the right tool for the workload is
-        a senior one.
+        a principal one.
       </p>
     </div>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         They also do not pre-optimise around the GIL. The instinct
         "let's avoid the GIL just in case" leads to multiprocessing
@@ -2364,10 +2958,15 @@ dis.dis(add)
         two loads, one add, one return — are the entire shape of
         a Python expression.
       </p>
-<pre><span class="cap">bytecode.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">bytecode.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">--- bytecode of add() ---
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">--- bytecode of add() ---
   9           0 LOAD_FAST                0 (a)
               2 LOAD_FAST                1 (b)
               4 BINARY_ADD
@@ -2376,6 +2975,7 @@ dis.dis(add)
 Python version: 3 9
 interpreter: cpython
 BUILD 2.1 PASS</span></pre>
+</div>
         Four opcodes. The interpreter holds the GIL while
         executing each. On Python 3.11+ the opcode names changed
         slightly (<code>BINARY_OP</code> replaces
@@ -2479,7 +3079,9 @@ BUILD 2.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">gc_demo.py</span><span class="t-key">import</span> gc
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">gc_demo.py</span><span class="t-key">import</span> gc
 
 <span class="t-key">class</span> <span class="t-cls">Node</span>:
     <span class="t-key">def</span> <span class="t-fn">__init__</span>(self, name: <span class="t-cls">str</span>):
@@ -2500,6 +3102,7 @@ c.other = b
 b = c = <span class="t-key">None</span>
 freed = gc.collect()  <span class="t-com"># cyclic GC reclaims B and C</span>
 print(<span class="t-str">"reclaimed:"</span>, freed)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -2532,9 +3135,9 @@ print(<span class="t-str">"reclaimed:"</span>, freed)</pre>
         allocations.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Resource cleanup is treated as part of the design, not a
         side-effect of GC. Files, sockets, DB connections always
@@ -2618,10 +3221,15 @@ print(<span class="t-str">"reclaimed:"</span>, freed)</pre>
         <code>gc.collect()</code>. The two memory paths in one
         script.
       </p>
-<pre><span class="cap">gc_demo.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">gc_demo.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">--- refcount path ---
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">--- refcount path ---
 created A; alive
 refcount of A: 1
 freed: A
@@ -2633,6 +3241,7 @@ freed: B
 freed: C
 gc.collect() reclaimed cycle objects: True
 BUILD 2.2 PASS</span></pre>
+</div>
         A is freed before "dropped A" prints (refcount fires
         immediately). B and C are not freed until
         <code>gc.collect()</code> runs — proof that cyclic GC
@@ -2734,7 +3343,9 @@ BUILD 2.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">iterators.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Iterator
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">iterators.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> Iterator
 
 <span class="t-key">def</span> <span class="t-fn">count_up</span>(start: <span class="t-cls">int</span>, stop: <span class="t-cls">int</span>) -&gt; Iterator[<span class="t-cls">int</span>]:
     current = start
@@ -2747,6 +3358,7 @@ print(<span class="t-fn">list</span>(count_up(<span class="t-num">1</span>, <spa
 <span class="t-com"># Lazy: never builds a list of 1M squares.</span>
 total = <span class="t-fn">sum</span>(x * x <span class="t-key">for</span> x <span class="t-key">in</span> <span class="t-fn">range</span>(<span class="t-num">1_000_000</span>))
 print(total)   <span class="t-com"># 333_332_833_333_500_000</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -2777,9 +3389,9 @@ print(total)   <span class="t-com"># 333_332_833_333_500_000</span></pre>
         <code>None</code>.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The default in pipeline code is lazy. Functions take an
         <code>Iterable</code>, return an <code>Iterator</code>,
@@ -2804,7 +3416,9 @@ print(total)   <span class="t-com"># 333_332_833_333_500_000</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 2.3.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> typing <span class="t-key">import</span> Iterable, Iterator, List, TypeVar
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> typing <span class="t-key">import</span> Iterable, Iterator, List, TypeVar
 
 T = TypeVar(<span class="t-str">"T"</span>)
 
@@ -2817,6 +3431,7 @@ T = TypeVar(<span class="t-str">"T"</span>)
             batch = []
     <span class="t-key">if</span> batch:
         <span class="t-key">yield</span> batch</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -2865,10 +3480,15 @@ T = TypeVar(<span class="t-str">"T"</span>)
         generator to compute the sum of one million squares
         without materialising the intermediate list.
       </p>
-<pre><span class="cap">iterators.py (see Code Example)</span>(see above — full demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">iterators.py (see Code Example)</span>(see above — full demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">handwritten iterator: [1, 2, 3, 4]
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">handwritten iterator: [1, 2, 3, 4]
 generator: [1, 2, 3, 4]
 first three naturals: [1, 2, 3]
 eager type: list
@@ -2876,6 +3496,7 @@ lazy type: generator
 eager size > lazy size: True
 sum of 1M squares: 333332833333500000
 BUILD 2.3 PASS</span></pre>
+</div>
         The 1M-squares sum is an exact integer (Python's ints
         are arbitrary precision — no overflow) computed without
         ever building a list of 1,000,000 numbers.
@@ -3015,7 +3636,9 @@ BUILD 2.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">async_demo.py</span><span class="t-key">import</span> asyncio
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">async_demo.py</span><span class="t-key">import</span> asyncio
 
 <span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">fetch</span>(name: <span class="t-cls">str</span>, delay: <span class="t-cls">float</span>) -&gt; <span class="t-cls">str</span>:
     <span class="t-key">await</span> asyncio.sleep(delay)
@@ -3029,6 +3652,7 @@ BUILD 2.3 PASS</span></pre>
     )
 
 results = asyncio.run(concurrent())   <span class="t-com"># ~100ms, not 300ms</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -3061,21 +3685,21 @@ results = asyncio.run(concurrent())   <span class="t-com"># ~100ms, not 300ms</s
         instead.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Asyncio is the right tool when your bottleneck is I/O
         and you need many concurrent waits per process. It is
         the wrong tool for CPU work (still GIL-bound) and the
         wrong tool when only a handful of concurrent calls
-        exist (threads are simpler). The senior question is
+        exist (threads are simpler). The principal-level question is
         "what concurrency model fits this workload?" — and
         asyncio is one of three answers, not the only one.
       </p>
     </div>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         They also draw a hard line at the event-loop boundary.
         Inside an async handler, every I/O call is async; if a
@@ -3159,15 +3783,21 @@ results = asyncio.run(concurrent())   <span class="t-com"># ~100ms, not 300ms</s
         (controlled parallelism). Each form prints its timing so
         the speed-up is visible.
       </p>
-<pre><span class="cap">async_demo.py (see Code Example)</span>(see above — full demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">async_demo.py (see Code Example)</span>(see above — full demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">sequential: ['A done', 'B done', 'C done'] (304ms)
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">sequential: ['A done', 'B done', 'C done'] (304ms)
 concurrent: ['A done', 'B done', 'C done'] (101ms)
 concurrent faster: True
 limited results: [0, 1, 2, 3, 4, 5] (152ms)
 limited within bounds: True
 BUILD 2.4 PASS</span></pre>
+</div>
         Three sequential 100ms calls take 304ms; the same three
         with <code>gather</code> take 101ms (one wave). Six
         calls capped at two concurrent take 152ms (three waves
@@ -3308,7 +3938,9 @@ BUILD 2.4 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">paths.py</span><span class="t-key">from</span> pathlib <span class="t-key">import</span> Path
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">paths.py</span><span class="t-key">from</span> pathlib <span class="t-key">import</span> Path
 
 root = Path(<span class="t-str">"/tmp/demo"</span>)
 (root / <span class="t-str">"data"</span>).mkdir(parents=<span class="t-key">True</span>, exist_ok=<span class="t-key">True</span>)
@@ -3320,6 +3952,7 @@ tmp.replace(target)   <span class="t-com"># atomic rename — crash here = no ha
 
 <span class="t-key">for</span> p <span class="t-key">in</span> root.rglob(<span class="t-str">"*.txt"</span>):
     print(p.name, p.stat().st_size)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -3352,14 +3985,13 @@ tmp.replace(target)   <span class="t-com"># atomic rename — crash here = no ha
         expect. Glob from a directory; the pattern is relative.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         File I/O is a category of bugs that always shows up in
         incidents — disk full, permission denied, crash mid-
-        write, file path with a space in it. The senior
-        discipline: every read is wrapped in a clear error path
+        write, file path with a space in it. The principal-level discipline: every read is wrapped in a clear error path
         (the file might not exist), every write is atomic, every
         path is a <code>Path</code> object, every temp file
         lives in <code>tempfile.TemporaryDirectory()</code> with
@@ -3383,12 +4015,15 @@ tmp.replace(target)   <span class="t-com"># atomic rename — crash here = no ha
     </div>
     <div class="solution">
       <div class="sol-title">Solution 3.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> pathlib <span class="t-key">import</span> Path
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> pathlib <span class="t-key">import</span> Path
 
 <span class="t-key">def</span> <span class="t-fn">atomic_write</span>(path: Path, content: <span class="t-cls">str</span>) -&gt; <span class="t-key">None</span>:
     tmp = path.with_suffix(path.suffix + <span class="t-str">".tmp"</span>)
     tmp.write_text(content)
     tmp.replace(path)</pre>
+</div>
       <p>
         If the process dies between the <code>write_text</code>
         and the <code>replace</code>, the original
@@ -3445,16 +4080,22 @@ tmp.replace(target)   <span class="t-com"># atomic rename — crash here = no ha
         perform an atomic write, and check metadata. The whole
         pathlib toolkit in one script.
       </p>
-<pre><span class="cap">paths.py (see Code Example for the core; full demo in Expected result)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">paths.py (see Code Example for the core; full demo in Expected result)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">config first line: name = 'demo'
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">config first line: name = 'demo'
 user count: 3
 txt files: ['users.txt']
 after atomic write: ['dave', 'eve', 'frank']
 README size: 7
 created nested: True
 BUILD 3.1 PASS</span></pre>
+</div>
         Every pathlib operation is a one-line call. The
         atomic rename guarantees data integrity on crash; the
         recursive glob finds files anywhere in the tree.
@@ -3551,7 +4192,9 @@ BUILD 3.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">stdlib.py</span><span class="t-key">import</span> subprocess, os, hashlib
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">stdlib.py</span><span class="t-key">import</span> subprocess, os, hashlib
 <span class="t-key">from</span> urllib.parse <span class="t-key">import</span> urlencode, urlparse
 
 <span class="t-com"># subprocess: list of args, no shell, checked, timeout</span>
@@ -3568,6 +4211,7 @@ digest = hashlib.sha256(<span class="t-str">b"hello world"</span>).hexdigest()
 <span class="t-com"># URL parsing + building</span>
 parsed = urlparse(<span class="t-str">"https://api.example.com/v1?id=42"</span>)
 qs = urlencode({<span class="t-str">"name"</span>: <span class="t-str">"Billy"</span>, <span class="t-str">"tags"</span>: <span class="t-str">"py,backend"</span>})</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -3596,13 +4240,12 @@ qs = urlencode({<span class="t-str">"name"</span>: <span class="t-str">"Billy"</
         bug waiting to happen. Use <code>urlencode</code>.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Each of these modules has a single right idiom and a
-        long history of vulnerabilities from misuse. Senior
-        engineers know the right idiom by heart and reach for
+        long history of vulnerabilities from misuse. Principal engineers know the right idiom by heart and reach for
         it without thinking. The wrong idioms are the
         signature of a junior engineer or a hurried fix —
         they appear in code review and get sent back. The
@@ -3624,7 +4267,9 @@ qs = urlencode({<span class="t-str">"name"</span>: <span class="t-str">"Billy"</
     </div>
     <div class="solution">
       <div class="sol-title">Solution 3.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> subprocess
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> subprocess
 <span class="t-key">from</span> typing <span class="t-key">import</span> Tuple, List
 
 <span class="t-key">def</span> <span class="t-fn">safe_run</span>(args: List[<span class="t-cls">str</span>], timeout_s: <span class="t-cls">float</span>) -&gt; Tuple[<span class="t-cls">int</span>, <span class="t-cls">str</span>, <span class="t-cls">str</span>]:
@@ -3634,14 +4279,14 @@ qs = urlencode({<span class="t-str">"name"</span>: <span class="t-str">"Billy"</
         <span class="t-key">return</span> r.returncode, r.stdout, r.stderr
     <span class="t-key">except</span> subprocess.TimeoutExpired:
         <span class="t-key">return</span> -<span class="t-num">1</span>, <span class="t-str">""</span>, <span class="t-str">"timeout"</span></pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
     <p>
       The boundary between Python and "anything else" — shell
       commands, environment, hashes, URLs — is where most
-      security bugs and integration glitches live. A senior
-      Python team has helper wrappers
+      security bugs and integration glitches live. A principal-level Python team has helper wrappers
       (<code>common.subprocess.run_safe</code>,
       <code>common.urls.build</code>,
       <code>common.hashes.content_address</code>) that enshrine
@@ -3686,10 +4331,15 @@ qs = urlencode({<span class="t-str">"name"</span>: <span class="t-str">"Billy"</
         byte string. Parse and rebuild a URL. The standard
         toolkit, demonstrated end-to-end.
       </p>
-<pre><span class="cap">stdlib.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">stdlib.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">subprocess stdout: hello from subprocess
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">subprocess stdout: hello from subprocess
 subprocess returncode: 0
 env var: configured
 missing fallback: default
@@ -3702,6 +4352,7 @@ path: /v1/users
 query: id=42&amp;active=true
 encoded query: name=Billy+Ribeiro&amp;tags=py%2Cbackend
 BUILD 3.2 PASS</span></pre>
+</div>
         Subprocess invoked safely with <code>check=True</code>
         and timeout; env var read with a fallback; SHA-256 is
         always 64 hex chars; URL roundtrip preserves
@@ -3799,7 +4450,9 @@ BUILD 3.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">binary.py</span><span class="t-key">import</span> base64, struct
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">binary.py</span><span class="t-key">import</span> base64, struct
 
 text = <span class="t-str">"héllo"</span>                       <span class="t-com"># str — 5 chars</span>
 encoded = text.encode(<span class="t-str">"utf-8"</span>)         <span class="t-com"># bytes — 6 octets (é = 2 bytes)</span>
@@ -3813,6 +4466,7 @@ b64 = base64.b64encode(encoded).decode(<span class="t-str">"ascii"</span>)
 <span class="t-com"># Fixed binary layout</span>
 packet = struct.pack(<span class="t-str">"&gt;IHH"</span>, <span class="t-num">0xCAFEBABE</span>, <span class="t-num">100</span>, <span class="t-num">200</span>)
 magic, x, y = struct.unpack(<span class="t-str">"&gt;IHH"</span>, packet)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -3845,13 +4499,13 @@ magic, x, y = struct.unpack(<span class="t-str">"&gt;IHH"</span>, packet)</pre>
         <code>bytearray</code>.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The str/bytes split is a design feature: it forces the
         engineer to be explicit about the encoding at the
-        boundary. Senior code does the encoding once, near the
+        boundary. Principal-level code does the encoding once, near the
         I/O boundary, and keeps the rest of the application in
         the right type — strings for logic, bytes only where
         actually transmitted. Spreading
@@ -3872,10 +4526,13 @@ magic, x, y = struct.unpack(<span class="t-str">"&gt;IHH"</span>, packet)</pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 3.3.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> hashlib
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> hashlib
 
 <span class="t-key">def</span> <span class="t-fn">fingerprint</span>(s: <span class="t-cls">str</span>) -&gt; <span class="t-cls">str</span>:
     <span class="t-key">return</span> hashlib.sha256(s.encode(<span class="t-str">"utf-8"</span>)).hexdigest()[:<span class="t-num">16</span>]</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -3925,10 +4582,15 @@ magic, x, y = struct.unpack(<span class="t-str">"&gt;IHH"</span>, packet)</pre>
         length), hex and base64 round-trips, a struct-packed
         packet round-trip, and a memoryview slice.
       </p>
-<pre><span class="cap">binary.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">binary.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">text: héllo type: str
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">text: héllo type: str
 bytes: b'h\xc3\xa9llo' type: bytes
 byte length differs from char length: 5 vs 6
 round-trip: True
@@ -3941,6 +4603,7 @@ unpacked: magic=0xCAFEBABE x=100 y=200
 view of buf[10:14]: [10, 11, 12, 13]
 view does not copy: True
 BUILD 3.3 PASS</span></pre>
+</div>
         "héllo" is 5 characters and 6 bytes — the canonical
         UTF-8 demonstration. The struct round-trip recovers
         the magic <code>0xCAFEBABE</code> byte-perfect.
@@ -4040,7 +4703,9 @@ BUILD 3.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">typed.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> List, Optional
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">typed.py</span><span class="t-key">from</span> typing <span class="t-key">import</span> List, Optional
 <span class="t-key">from</span> pydantic <span class="t-key">import</span> BaseModel, Field, ValidationError
 
 <span class="t-key">class</span> <span class="t-cls">User</span>(BaseModel):
@@ -4058,6 +4723,7 @@ u = User(id=<span class="t-num">1</span>, email=<span class="t-str">"a@x.com"</s
 <span class="t-key">except</span> ValidationError <span class="t-key">as</span> e:
     <span class="t-key">for</span> err <span class="t-key">in</span> e.errors():
         print(err[<span class="t-str">"loc"</span>], err[<span class="t-str">"msg"</span>])</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -4088,11 +4754,11 @@ u = User(id=<span class="t-num">1</span>, email=<span class="t-str">"a@x.com"</s
         in place.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        The senior pattern: validate at the boundary (request,
+        The principal-level pattern: validate at the boundary (request,
         file load, queue message), pass typed objects
         everywhere else, serialise at the outbound boundary
         (response, DB insert, queue publish). The boundary
@@ -4116,7 +4782,9 @@ u = User(id=<span class="t-num">1</span>, email=<span class="t-str">"a@x.com"</s
     </div>
     <div class="solution">
       <div class="sol-title">Solution 3.4.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> pydantic <span class="t-key">import</span> BaseModel, Field, computed_field
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> pydantic <span class="t-key">import</span> BaseModel, Field, computed_field
 <span class="t-key">from</span> typing <span class="t-key">import</span> List
 
 <span class="t-key">class</span> <span class="t-cls">Order</span>(BaseModel):
@@ -4128,6 +4796,7 @@ u = User(id=<span class="t-num">1</span>, email=<span class="t-str">"a@x.com"</s
     <span class="t-prop">@property</span>
     <span class="t-key">def</span> <span class="t-fn">total_cents</span>(self) -&gt; <span class="t-cls">int</span>:
         <span class="t-key">return</span> <span class="t-fn">sum</span>(self.items_cents)</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -4177,11 +4846,19 @@ u = User(id=<span class="t-num">1</span>, email=<span class="t-str">"a@x.com"</s
         range failure, dict round-trip, JSON round-trip — the
         whole runtime story.
       </p>
-<pre><span class="cap">requirements.txt</span>pydantic&gt;=<span class="t-num">2.0</span></pre>
-<pre><span class="cap">typed.py (see Code Example)</span>(see above — extended assertions in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>pydantic&gt;=<span class="t-num">2.0</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">typed.py (see Code Example)</span>(see above — extended assertions in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">user id: 1 email: a@x.com
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">user id: 1 email: a@x.com
 tags: ['vip']
 default referrer is None: True
 email validation error count: 1
@@ -4193,6 +4870,7 @@ age error msg includes 'greater': True
 serialized keys sorted: ['age', 'email', 'id', 'referrer', 'tags']
 json round-trip id: 1
 BUILD 3.4 PASS</span></pre>
+</div>
         Email validation rejects "not an email"; type coercion
         turns "42" into 42; range constraints reject negative
         age; the serialised form is JSON-ready. One model, six
@@ -4292,7 +4970,9 @@ BUILD 3.4 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">pyproject.toml</span><span class="t-punc">[</span>project<span class="t-punc">]</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">pyproject.toml</span><span class="t-punc">[</span>project<span class="t-punc">]</span>
 name <span class="t-punc">=</span> <span class="t-str">"demo"</span>
 version <span class="t-punc">=</span> <span class="t-str">"0.1.0"</span>
 requires-python <span class="t-punc">=</span> <span class="t-str">"&gt;=3.11"</span>
@@ -4307,6 +4987,7 @@ dev <span class="t-punc">= [</span>
     <span class="t-str">"ruff &gt;=0.6"</span><span class="t-punc">,</span>
     <span class="t-str">"mypy &gt;=1.10"</span><span class="t-punc">,</span>
 <span class="t-punc">]</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -4337,13 +5018,13 @@ dev <span class="t-punc">= [</span>
         a venv.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Dependencies are technical debt: each one adds
         maintenance burden, security exposure, and binary size.
-        The senior question is "do we actually need this?" not
+        The principal-level question is "do we actually need this?" not
         "is there a library that does this?" Many "libraries"
         in Python are 10-line snippets; pulling a 50MB package
         for one feature is a cost. The discipline:
@@ -4365,10 +5046,13 @@ dev <span class="t-punc">= [</span>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 3.5.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> importlib.metadata <span class="t-key">as</span> md
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> importlib.metadata <span class="t-key">as</span> md
 <span class="t-key">for</span> d <span class="t-key">in</span> <span class="t-fn">sorted</span>(md.distributions(),
                 key=<span class="t-key">lambda</span> x: x.metadata[<span class="t-str">"Name"</span>].lower()):
     print(d.metadata[<span class="t-str">"Name"</span>], d.version)</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -4415,16 +5099,22 @@ dev <span class="t-punc">= [</span>
         list what's actually installed in the current
         interpreter. The full declare-then-introspect loop.
       </p>
-<pre><span class="cap">deps.py (see Code Example)</span>(see above)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">deps.py (see Code Example)</span>(see above)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">total installed packages: 36
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">total installed packages: 36
 pip version: 21.2.4
 pip declares 0 dependencies
 wrote pyproject.toml: 220 bytes
 project name: demo
 requirements pinning matters: True
 BUILD 3.5 PASS</span></pre>
+</div>
         The actual package count depends on your interpreter.
         The pyproject.toml is real; reading it back proves the
         declarative shape; the discipline is the lockfile,
@@ -4561,7 +5251,9 @@ BUILD 3.5 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">server.py</span><span class="t-key">import</span> json
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">server.py</span><span class="t-key">import</span> json
 <span class="t-key">from</span> http.server <span class="t-key">import</span> BaseHTTPRequestHandler, ThreadingHTTPServer
 
 <span class="t-key">class</span> <span class="t-cls">TinyHandler</span>(BaseHTTPRequestHandler):
@@ -4586,6 +5278,7 @@ BUILD 3.5 PASS</span></pre>
         self.wfile.write(body)
 
 ThreadingHTTPServer((<span class="t-str">"127.0.0.1"</span>, <span class="t-num">8080</span>), TinyHandler).serve_forever()</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -4616,9 +5309,9 @@ ThreadingHTTPServer((<span class="t-str">"127.0.0.1"</span>, <span class="t-num"
         tool only.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Every framework decision is rooted in HTTP. "Why does
         FastAPI return 422 on bad input?" — because Pydantic
@@ -4644,7 +5337,9 @@ ThreadingHTTPServer((<span class="t-str">"127.0.0.1"</span>, <span class="t-num"
     </div>
     <div class="solution">
       <div class="sol-title">Solution 4.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> re
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> re
 
 <span class="t-key">def</span> <span class="t-fn">do_DELETE</span>(self):
     m = re.fullmatch(<span class="t-str">r"/users/(\d+)"</span>, self.path)
@@ -4654,6 +5349,7 @@ ThreadingHTTPServer((<span class="t-str">"127.0.0.1"</span>, <span class="t-num"
     <span class="t-com"># delete user_id from store...</span>
     self.send_response(<span class="t-num">204</span>)
     self.end_headers()</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -4704,15 +5400,21 @@ ThreadingHTTPServer((<span class="t-str">"127.0.0.1"</span>, <span class="t-num"
         — proves the shape end-to-end without any external
         dependencies.
       </p>
-<pre><span class="cap">server.py (see Code Example for the handler structure)</span>(full file in Expected result section)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">server.py (see Code Example for the handler structure)</span>(full file in Expected result section)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">GET /health -> 200 {'ok': True}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">GET /health -> 200 {'ok': True}
 GET /echo/hello -> 200 method=GET
 GET /unknown -> 404 error=not found
 POST /users (valid) -> 201 id=1
 POST /users (missing email) -> 422 error=email required
 BUILD 4.1 PASS</span></pre>
+</div>
         Five requests, five different status codes, all from
         a single handler class. The raw protocol works exactly
         the way every framework documentation describes it.
@@ -4804,7 +5506,9 @@ BUILD 4.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">client.py</span><span class="t-key">import</span> asyncio
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">client.py</span><span class="t-key">import</span> asyncio
 <span class="t-key">import</span> httpx
 
 <span class="t-com"># One-shot sync</span>
@@ -4825,6 +5529,7 @@ r = httpx.get(<span class="t-str">"https://api.example/v1/health"</span>, timeou
         )
 
 results = asyncio.run(fanout())</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -4854,9 +5559,9 @@ results = asyncio.run(fanout())</pre>
         success.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Every outbound HTTP call needs three things: a timeout,
         a retry policy with backoff, and a circuit breaker. The
@@ -4883,7 +5588,9 @@ results = asyncio.run(fanout())</pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 4.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> asyncio, httpx
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> asyncio, httpx
 
 <span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">fetch_all</span>(urls):
     <span class="t-key">async</span> <span class="t-key">with</span> httpx.AsyncClient(timeout=<span class="t-num">5.0</span>) <span class="t-key">as</span> client:
@@ -4893,6 +5600,7 @@ results = asyncio.run(fanout())</pre>
         )
     <span class="t-key">return</span> [r.json() <span class="t-key">if</span> <span class="t-key">not</span> <span class="t-fn">isinstance</span>(r, <span class="t-cls">Exception</span>) <span class="t-key">else</span> {<span class="t-str">"error"</span>: <span class="t-fn">str</span>(r)}
             <span class="t-key">for</span> r <span class="t-key">in</span> results]</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -4942,11 +5650,19 @@ results = asyncio.run(fanout())</pre>
         gather of three calls. The same library, three
         access patterns.
       </p>
-<pre><span class="cap">requirements.txt</span>httpx&gt;=<span class="t-num">0.27</span></pre>
-<pre><span class="cap">client.py (see Code Example for the structure)</span>(full demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>httpx&gt;=<span class="t-num">0.27</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">client.py (see Code Example for the structure)</span>(full demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">sync GET status: 200
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">sync GET status: 200
 sync GET json: {'path': '/hello'}
 sync POST status: 200
 sync POST echo: {"email":"a@x.com"}
@@ -4955,6 +5671,7 @@ pooled paths: ['/r0', '/r1', '/r2']
 async concurrent paths: ['/a', '/b', '/c']
 async block ran: OK
 BUILD 4.2 PASS</span></pre>
+</div>
         Sync, pooled, async — same library, same shape. The
         async block fires three concurrent requests against
         the same in-process server.
@@ -5050,7 +5767,9 @@ BUILD 4.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">fastapi_app.py</span><span class="t-key">from</span> fastapi <span class="t-key">import</span> FastAPI, HTTPException, status
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">fastapi_app.py</span><span class="t-key">from</span> fastapi <span class="t-key">import</span> FastAPI, HTTPException, status
 <span class="t-key">from</span> pydantic <span class="t-key">import</span> BaseModel, Field
 
 <span class="t-key">class</span> <span class="t-cls">UserCreate</span>(BaseModel):
@@ -5079,6 +5798,7 @@ next_id = <span class="t-num">1</span>
     <span class="t-key">if</span> user_id <span class="t-key">not</span> <span class="t-key">in</span> db:
         <span class="t-key">raise</span> HTTPException(status_code=<span class="t-num">404</span>, detail=<span class="t-str">"user not found"</span>)
     <span class="t-key">return</span> db[user_id]</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -5111,9 +5831,9 @@ next_id = <span class="t-num">1</span>
         <code>uvicorn --workers N</code> or gunicorn.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         FastAPI is the easy choice for new services in 2026.
         The discipline lives in the Pydantic models: keep them
@@ -5140,7 +5860,9 @@ next_id = <span class="t-num">1</span>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 4.3.1</div>
-<pre><span class="cap">solution</span><span class="t-key">class</span> <span class="t-cls">UserPatch</span>(BaseModel):
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">class</span> <span class="t-cls">UserPatch</span>(BaseModel):
     email: Optional[<span class="t-cls">str</span>] = <span class="t-key">None</span>
     age: Optional[<span class="t-cls">int</span>] = Field(<span class="t-key">None</span>, ge=<span class="t-num">0</span>, le=<span class="t-num">150</span>)
 
@@ -5152,6 +5874,7 @@ next_id = <span class="t-num">1</span>
     <span class="t-key">for</span> field, value <span class="t-key">in</span> payload.model_dump(exclude_unset=<span class="t-key">True</span>).items():
         <span class="t-fn">setattr</span>(user, field, value)
     <span class="t-key">return</span> user</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -5204,12 +5927,20 @@ next_id = <span class="t-num">1</span>
         <code>TestClient</code> — no port binding, fully
         deterministic, exactly the right pattern for CI.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 httpx&gt;=<span class="t-num">0.27</span></pre>
-<pre><span class="cap">fastapi_app.py (see Code Example for routes)</span>(full demo + TestClient exercise in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">fastapi_app.py (see Code Example for routes)</span>(full demo + TestClient exercise in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">GET /health -> 200 {'ok': True}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">GET /health -> 200 {'ok': True}
 POST /users valid -> 201 id=1
 POST /users invalid email -> 422
 POST /users invalid age -> 422
@@ -5219,6 +5950,7 @@ GET /users?min_age=25 -> count=1
 OpenAPI spec status: 200
 OpenAPI spec has /users path: True
 BUILD 4.3 PASS</span></pre>
+</div>
         Eight assertions, all green. The OpenAPI spec is
         generated automatically — you wrote no documentation
         and got it anyway.
@@ -5325,7 +6057,9 @@ BUILD 4.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">rest.py (boundary mappings)</span><span class="t-key">class</span> <span class="t-cls">DomainError</span>(<span class="t-cls">Exception</span>):
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">rest.py (boundary mappings)</span><span class="t-key">class</span> <span class="t-cls">DomainError</span>(<span class="t-cls">Exception</span>):
     status_code = <span class="t-num">500</span>
 
 <span class="t-key">class</span> <span class="t-cls">NotFoundError</span>(DomainError):
@@ -5344,6 +6078,7 @@ BUILD 4.3 PASS</span></pre>
     project = Project(id=project_id, **body.model_dump())
     store[project_id] = project
     <span class="t-key">return</span> project</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -5372,14 +6107,14 @@ BUILD 4.3 PASS</span></pre>
         alerts. Bad input is 4xx; "server broke" is 5xx.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The API contract is a public commitment. Every
         endpoint matches the same shape; every error
         carries the same fields; every verb means what HTTP
-        says it means. Senior engineers refuse the "let's
+        says it means. Principal engineers refuse the "let's
         just return 200 with an error field" shortcut
         because they have seen the downstream cost — every
         client wraps every call in
@@ -5459,10 +6194,15 @@ BUILD 4.3 PASS</span></pre>
         every status code with TestClient — proves the
         contract is consistent.
       </p>
-<pre><span class="cap">rest.py (see Code Example for the handler structure)</span>(full app + TestClient exercise in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">rest.py (see Code Example for the handler structure)</span>(full app + TestClient exercise in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">missing -> 404 error=NotFoundError
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">missing -> 404 error=NotFoundError
 put new -> 201 id=p1
 put again -> 201 id=p1
 empty name -> 422 error=ValidationError
@@ -5473,6 +6213,7 @@ delete existing -> 204
 delete missing -> 204
 list after deletes -> count=0
 BUILD 4.4 PASS</span></pre>
+</div>
         Ten assertions across every status code and verb in
         the verb-status matrix. The error shape is consistent
         across <code>NotFoundError</code> and
@@ -5663,7 +6404,9 @@ BUILD 4.4 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">docker-compose.yml</span>services:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">docker-compose.yml</span>services:
   postgres:
     image: <span class="t-str">postgres:17-alpine</span>
     container_name: real-course-postgres
@@ -5678,7 +6421,10 @@ BUILD 4.4 PASS</span></pre>
       interval: <span class="t-num">1s</span>
       timeout: <span class="t-num">1s</span>
       retries: <span class="t-num">10</span></pre>
-<pre><span class="cap">db.py — connect, query, prove it is real Postgres</span><span class="t-key">import</span> os
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">db.py — connect, query, prove it is real Postgres</span><span class="t-key">import</span> os
 <span class="t-key">import</span> psycopg
 <span class="t-key">from</span> psycopg.rows <span class="t-key">import</span> dict_row
 
@@ -5711,6 +6457,7 @@ dsn = os.environ.get(<span class="t-str">"DATABASE_URL"</span>,
         print(<span class="t-str">"engine:"</span>, cur.fetchone()[<span class="t-str">"version"</span>][:<span class="t-num">25</span>] + <span class="t-str">"..."</span>)
     conn.commit()
 print(<span class="t-str">"REAL_POSTGRES OK"</span>)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -5759,9 +6506,9 @@ print(<span class="t-str">"REAL_POSTGRES OK"</span>)</pre>
       easiest experience.</p>
     </div>
 
-    <h3 data-step="10">Senior Engineer Notes</h3>
+    <h3 data-step="10">Principal Engineer Notes</h3>
     <div class="callout senior">
-      <span class="ct">How Senior Engineers Think</span>
+      <span class="ct">How Principal Engineers (L7+) Think</span>
       <p>The compose file lives in version control. Local
       Postgres versions match production within a major
       version. The team agrees on one image tag
@@ -5771,7 +6518,7 @@ print(<span class="t-str">"REAL_POSTGRES OK"</span>)</pre>
       "the upgrade broke local dev" tickets are born.</p>
     </div>
     <div class="callout senior">
-      <span class="ct">How Senior Engineers Think</span>
+      <span class="ct">How Principal Engineers (L7+) Think</span>
       <p>They also use the same compose file in CI. A GitHub
       Actions workflow that runs <code>docker compose up -d
       postgres</code> before <code>pytest</code> gets the
@@ -5903,16 +6650,22 @@ print(<span class="t-str">"REAL_POSTGRES OK"</span>)</pre>
         lines, including a <code>PostgreSQL 17...</code>
         engine line.
       </div>
-<pre><span class="cap">terminal — one-time setup</span>$ docker compose up -d
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">terminal — one-time setup</span>$ docker compose up -d
 $ python3 -m venv .venv &amp;&amp; source .venv/bin/activate
 $ pip install <span class="t-str">"psycopg[binary]"</span>
 $ DATABASE_URL=postgresql://course:course@127.0.0.1:5433/course python3 db.py</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">inserted: {'id': 1, 'email': 'billy@example.com'}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">inserted: {'id': 1, 'email': 'billy@example.com'}
 upserted (same id): {'id': 1, 'email': 'billy@example.com'}
 engine: PostgreSQL 17.x on x...
 REAL_POSTGRES OK</span></pre>
+</div>
         The engine line is the proof: this is real Postgres,
         not SQLite. Every later chapter in Module 5 can be
         re-run against this same database by pointing
@@ -6024,7 +6777,9 @@ REAL_POSTGRES OK</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">db.py</span><span class="t-key">import</span> sqlite3
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">db.py</span><span class="t-key">import</span> sqlite3
 
 conn = sqlite3.connect(<span class="t-str">"demo.db"</span>)
 conn.row_factory = sqlite3.Row
@@ -6051,6 +6806,7 @@ row = conn.execute(
     <span class="t-str">"SELECT id, email FROM users WHERE email = ?"</span>, (<span class="t-str">"a@x.com"</span>,)
 ).fetchone()
 print(<span class="t-fn">dict</span>(row))</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -6083,12 +6839,12 @@ print(<span class="t-fn">dict</span>(row))</pre>
         what you're doing.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The DB driver layer is invisible infrastructure that
-        must be perfect. Senior engineers never see raw
+        must be perfect. Principal engineers never see raw
         cursors in business logic — they live behind a
         repository or ORM layer where the query is one
         line and the parameterization is enforced. Manual SQL
@@ -6113,13 +6869,16 @@ print(<span class="t-fn">dict</span>(row))</pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 5.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">get_user_by_email</span>(conn, email: <span class="t-cls">str</span>):
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">get_user_by_email</span>(conn, email: <span class="t-cls">str</span>):
     <span class="t-com">"""Parameterized lookup — NEVER format SQL with user input."""</span>
     row = conn.execute(
         <span class="t-str">"SELECT id, email, age FROM users WHERE email = ?"</span>,
         (email,),
     ).fetchone()
     <span class="t-key">return</span> <span class="t-fn">dict</span>(row) <span class="t-key">if</span> row <span class="t-key">else</span> <span class="t-key">None</span></pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -6169,15 +6928,21 @@ print(<span class="t-fn">dict</span>(row))</pre>
         constraint and observe <code>IntegrityError</code>,
         then count the survivors.
       </p>
-<pre><span class="cap">db.py (see Code Example for structure)</span>(full demo + queries in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">db.py (see Code Example for structure)</span>(full demo + queries in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">found by email: {'id': 1, 'email': 'a@x.com', 'age': 30}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">found by email: {'id': 1, 'email': 'a@x.com', 'age': 30}
 tenant-a emails sorted by age: ['b@x.com', 'a@x.com']
 dup email -> IntegrityError: True
 safe parameterized lookup: 1
 total users: 3
 BUILD 5.1 PASS</span></pre>
+</div>
         Every query parameterized; the UNIQUE constraint
         rejects the duplicate at the database level; the
         ordering proves the index works.
@@ -6272,7 +7037,9 @@ BUILD 5.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">orm.py</span><span class="t-key">from</span> sqlalchemy <span class="t-key">import</span> String, Integer, ForeignKey, select, create_engine
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">orm.py</span><span class="t-key">from</span> sqlalchemy <span class="t-key">import</span> String, Integer, ForeignKey, select, create_engine
 <span class="t-key">from</span> sqlalchemy.orm <span class="t-key">import</span> DeclarativeBase, Mapped, mapped_column, relationship, Session
 
 <span class="t-key">class</span> <span class="t-cls">Base</span>(DeclarativeBase): <span class="t-key">pass</span>
@@ -6307,6 +7074,7 @@ Base.metadata.create_all(engine)
         select(User).where(User.email == <span class="t-str">"alice@acme.com"</span>)
     ).first()
     print(alice.email, alice.tenant.name)   <span class="t-com"># alice@acme.com Acme</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -6341,12 +7109,12 @@ Base.metadata.create_all(engine)
         re-fetches.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         SQLAlchemy is a power tool; it makes simple things easy
-        and complex things possible. The senior discipline:
+        and complex things possible. The principal-level discipline:
         thin handlers, services that operate on session +
         models, repositories that wrap the most common queries.
         Avoid clever ORM magic — eager-load explicitly, use
@@ -6370,7 +7138,9 @@ Base.metadata.create_all(engine)
     </div>
     <div class="solution">
       <div class="sol-title">Solution 5.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> sqlalchemy <span class="t-key">import</span> func, select
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> sqlalchemy <span class="t-key">import</span> func, select
 
 stmt = (
     select(User.email, func.coalesce(func.sum(Order.cents), <span class="t-num">0</span>).label(<span class="t-str">"total"</span>))
@@ -6379,6 +7149,7 @@ stmt = (
 )
 <span class="t-key">for</span> email, total <span class="t-key">in</span> session.execute(stmt):
     print(email, total)</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -6429,17 +7200,26 @@ stmt = (
         join, aggregate count. Update an attribute. Delete
         a tenant and watch its users cascade.
       </p>
-<pre><span class="cap">requirements.txt</span>sqlalchemy&gt;=<span class="t-num">2.0</span></pre>
-<pre><span class="cap">orm.py (see Code Example for the models)</span>(full demo + queries in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>sqlalchemy&gt;=<span class="t-num">2.0</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">orm.py (see Code Example for the models)</span>(full demo + queries in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">found: alice@acme.com age: 30
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">found: alice@acme.com age: 30
 alice's tenant: Acme
 acme by age: [('bob@acme.com', 25), ('alice@acme.com', 30)]
 total users: 3
 alice referrer: google
 after tenant delete cascaded: 2
 BUILD 5.2 PASS</span></pre>
+</div>
         Typed query found Alice; her tenant relationship
         resolved; sorting by age works; cascade delete
         removed Initech's user automatically.
@@ -6540,7 +7320,9 @@ BUILD 5.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">migrate.py — a minimal migration runner</span>MIGRATIONS = [
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">migrate.py — a minimal migration runner</span>MIGRATIONS = [
     (<span class="t-str">"001_create_users"</span>, <span class="t-str">"""
         CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -6568,6 +7350,7 @@ BUILD 5.2 PASS</span></pre>
         conn.execute(<span class="t-str">"INSERT INTO schema_migrations (version) VALUES (?)"</span>,
                      (version,))
         conn.commit()</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -6600,12 +7383,11 @@ BUILD 5.2 PASS</span></pre>
         version.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        Migrations are the schema's commit log. The senior
-        discipline: every schema change is a migration; every
+        Migrations are the schema's commit log. The principal-level discipline: every schema change is a migration; every
         migration is forward-compatible with the previous
         code version (so rolling deploys do not break); every
         migration is reversible if reasonable (downgrade
@@ -6628,9 +7410,12 @@ BUILD 5.2 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 5.3.1</div>
-<pre><span class="cap">solution</span>MIGRATIONS.append((<span class="t-str">"004_add_user_referrer"</span>, <span class="t-str">"""
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span>MIGRATIONS.append((<span class="t-str">"004_add_user_referrer"</span>, <span class="t-str">"""
     ALTER TABLE users ADD COLUMN referrer TEXT;
 """</span>))</pre>
+</div>
       <p>
         Running the runner once: applies 004. Running again:
         sees 004 in <code>schema_migrations</code> and
@@ -6689,10 +7474,15 @@ BUILD 5.2 PASS</span></pre>
         schema actually has the new columns and tables by
         inserting and selecting against it.
       </p>
-<pre><span class="cap">migrate.py (see Code Example for runner)</span>(full demo + asserts in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">migrate.py (see Code Example for runner)</span>(full demo + asserts in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">--- first run ---
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">--- first run ---
 applied 001_create_users
 applied 002_add_user_age
 applied 003_create_projects
@@ -6707,6 +7497,7 @@ user columns: ['id', 'email', 'age']
 applied versions: ['001_create_users', '002_add_user_age', '003_create_projects']
 inserted+selected: ('a@x.com', 30)
 BUILD 5.3 PASS</span></pre>
+</div>
         First run applies three migrations; second run
         applies nothing (idempotency). The schema now has
         users with id/email/age and projects with the
@@ -6853,7 +7644,9 @@ BUILD 5.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">perf.py — index + EXPLAIN</span>conn.execute(<span class="t-str">"CREATE INDEX idx_users_email ON users(email)"</span>)
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">perf.py — index + EXPLAIN</span>conn.execute(<span class="t-str">"CREATE INDEX idx_users_email ON users(email)"</span>)
 
 plan = conn.execute(
     <span class="t-str">"EXPLAIN QUERY PLAN SELECT id FROM users WHERE email = ?"</span>,
@@ -6861,11 +7654,15 @@ plan = conn.execute(
 ).fetchall()
 <span class="t-key">for</span> row <span class="t-key">in</span> plan:
     print(row[<span class="t-num">3</span>])     <span class="t-com"># SEARCH users USING COVERING INDEX idx_users_email</span></pre>
-<pre><span class="cap">perf.py — bulk insert</span>conn.executemany(
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">perf.py — bulk insert</span>conn.executemany(
     <span class="t-str">"INSERT INTO users (tenant_id, email, created_at) VALUES (?, ?, ?)"</span>,
     rows,    <span class="t-com"># list of tuples — one round-trip's worth of SQL parsing</span>
 )
 conn.commit()</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -6896,13 +7693,13 @@ conn.commit()</pre>
         close, open, query, close. Pool the connections.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The database is the part of the system most likely to
         be the bottleneck and most expensive to scale. The
-        senior discipline: every query reviewed for index
+        principal-level discipline: every query reviewed for index
         coverage; every transaction reviewed for atomicity;
         every bulk operation reviewed for batching;
         connection pools sized to actual concurrency. The
@@ -6987,10 +7784,15 @@ conn.commit()</pre>
         transaction and rolls back on error. Real captured
         timings in the result.
       </p>
-<pre><span class="cap">perf.py (see Code Example for query plan)</span>(full benchmark in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">perf.py (see Code Example for query plan)</span>(full benchmark in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">slow loop: 4.2ms
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">slow loop: 4.2ms
 executemany: 2.2ms
 executemany is faster: True
 100 lookups WITHOUT index: 13.2ms
@@ -7002,6 +7804,7 @@ after good txn, orders: 2
 txn rolled back on error
 after rolled-back txn, orders unchanged: True
 BUILD 5.4 PASS</span></pre>
+</div>
         Real numbers from running the script: bulk insert
         ~2× faster; index lookup ~22× faster; EXPLAIN
         confirms "USING COVERING INDEX"; failed transaction
@@ -7172,7 +7975,9 @@ BUILD 5.4 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">auth.py</span><span class="t-key">import</span> bcrypt, jwt
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">auth.py</span><span class="t-key">import</span> bcrypt, jwt
 <span class="t-key">from</span> datetime <span class="t-key">import</span> datetime, timedelta, timezone
 
 SECRET = <span class="t-str">"32-byte-or-longer-please-rotate"</span>
@@ -7193,6 +7998,7 @@ SECRET = <span class="t-str">"32-byte-or-longer-please-rotate"</span>
 
 <span class="t-key">def</span> <span class="t-fn">verify_token</span>(token: <span class="t-cls">str</span>) -&gt; <span class="t-cls">dict</span>:
     <span class="t-key">return</span> jwt.decode(token, SECRET, algorithms=[<span class="t-str">"HS256"</span>])</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -7224,12 +8030,12 @@ SECRET = <span class="t-str">"32-byte-or-longer-please-rotate"</span>
         decode the payload.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Authentication is a security domain — the cost of a
-        wrong choice is total. Senior engineers do not roll
+        wrong choice is total. Principal engineers do not roll
         their own crypto; they use bcrypt or argon2, JWT
         libraries, well-known auth flows. They rotate
         secrets quarterly; they have a "token leaked" runbook;
@@ -7252,11 +8058,14 @@ SECRET = <span class="t-str">"32-byte-or-longer-please-rotate"</span>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 6.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">require_tenant</span>(token: <span class="t-cls">str</span>, expected: <span class="t-cls">str</span>) -&gt; <span class="t-cls">dict</span>:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">def</span> <span class="t-fn">require_tenant</span>(token: <span class="t-cls">str</span>, expected: <span class="t-cls">str</span>) -&gt; <span class="t-cls">dict</span>:
     claims = jwt.decode(token, SECRET, algorithms=[<span class="t-str">"HS256"</span>])
     <span class="t-key">if</span> claims.get(<span class="t-str">"tenant"</span>) != expected:
         <span class="t-key">raise</span> PermissionError(<span class="t-str">"wrong tenant"</span>)
     <span class="t-key">return</span> claims</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -7310,12 +8119,20 @@ SECRET = <span class="t-str">"32-byte-or-longer-please-rotate"</span>
         rejected. Issue an expired token — rejected. Use
         the wrong secret — rejected.
       </p>
-<pre><span class="cap">requirements.txt</span>bcrypt&gt;=<span class="t-num">4.0</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>bcrypt&gt;=<span class="t-num">4.0</span>
 pyjwt&gt;=<span class="t-num">2.8</span></pre>
-<pre><span class="cap">auth.py (see Code Example for primitives)</span>(full demo + tamper/expire/wrong-secret tests in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">auth.py (see Code Example for primitives)</span>(full demo + tamper/expire/wrong-secret tests in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">hash time: 188ms
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">hash time: 188ms
 hash starts with $2b$ marker: True
 right password verifies: True
 wrong password rejected: True
@@ -7327,6 +8144,7 @@ tampered token rejected: True
 expired token rejected: True
 wrong secret rejected: True
 BUILD 6.1 PASS</span></pre>
+</div>
         bcrypt takes the deliberate ~100ms; same password →
         two different hashes (different salts); JWT signature
         check rejects every tamper.
@@ -7431,7 +8249,9 @@ BUILD 6.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">oauth.py — the PKCE primitives</span><span class="t-key">import</span> base64, hashlib, secrets
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">oauth.py — the PKCE primitives</span><span class="t-key">import</span> base64, hashlib, secrets
 
 <span class="t-key">def</span> <span class="t-fn">make_code_verifier</span>() -&gt; <span class="t-cls">str</span>:
     <span class="t-com">"""43-128 char cryptographic random string."""</span>
@@ -7446,6 +8266,7 @@ BUILD 6.1 PASS</span></pre>
 
 <span class="t-com"># Auth server stores challenge with the code; later compares</span>
 <span class="t-com"># SHA256(verifier) to the stored challenge.</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -7477,11 +8298,11 @@ BUILD 6.1 PASS</span></pre>
         replays.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        OAuth has a lot of corners. The senior discipline:
+        OAuth has a lot of corners. The principal-level discipline:
         use a battle-tested library, never roll your own;
         configure short-lived access tokens
         (15 min) with long-lived refresh tokens; rotate
@@ -7506,12 +8327,15 @@ BUILD 6.1 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 6.2.1</div>
-<pre><span class="cap">solution</span>pairs = [(make_code_verifier(), <span class="t-key">None</span>) <span class="t-key">for</span> _ <span class="t-key">in</span> <span class="t-fn">range</span>(<span class="t-num">10</span>)]
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span>pairs = [(make_code_verifier(), <span class="t-key">None</span>) <span class="t-key">for</span> _ <span class="t-key">in</span> <span class="t-fn">range</span>(<span class="t-num">10</span>)]
 pairs = [(v, make_code_challenge(v)) <span class="t-key">for</span> v, _ <span class="t-key">in</span> pairs]
 <span class="t-key">assert</span> <span class="t-fn">len</span>({v <span class="t-key">for</span> v, _ <span class="t-key">in</span> pairs}) == <span class="t-num">10</span>
 <span class="t-key">assert</span> <span class="t-fn">len</span>({c <span class="t-key">for</span> _, c <span class="t-key">in</span> pairs}) == <span class="t-num">10</span>
 <span class="t-key">for</span> v, c <span class="t-key">in</span> pairs:
     <span class="t-key">assert</span> make_code_challenge(v) == c</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -7564,10 +8388,15 @@ pairs = [(v, make_code_challenge(v)) <span class="t-key">for</span> v, _ <span c
         intercepted code with a different verifier
         (rejected).
       </p>
-<pre><span class="cap">oauth.py (see Code Example for primitives)</span>(full handshake demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">oauth.py (see Code Example for primitives)</span>(full handshake demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">verifier length: 43
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">verifier length: 43
 challenge length: 43
 challenge is different from verifier: True
 got authorization code: AUTH-00001
@@ -7576,6 +8405,7 @@ token mentions user: True
 replay rejected: code already used (replay)
 interception rejected: PKCE verifier does not match
 BUILD 6.2 PASS</span></pre>
+</div>
         PKCE defeats both the replay attack (used codes
         cannot be redeemed twice) and the interception
         attack (a stolen code is useless without the
@@ -7684,7 +8514,9 @@ BUILD 6.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">owasp.py — four defences in one screen</span><span class="t-key">import</span> hmac, html, sqlite3
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">owasp.py — four defences in one screen</span><span class="t-key">import</span> hmac, html, sqlite3
 <span class="t-key">from</span> pydantic <span class="t-key">import</span> BaseModel
 
 <span class="t-com"># 1) SQL: parameter binding, always</span>
@@ -7701,6 +8533,7 @@ safe = html.escape(dangerous_input)   <span class="t-com"># &lt;script&gt; becom
 <span class="t-com"># 4) Constant-time compare for any secret</span>
 <span class="t-key">if</span> <span class="t-key">not</span> hmac.compare_digest(stored_token, supplied_token):
     <span class="t-key">raise</span> PermissionError(<span class="t-str">"bad token"</span>)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -7733,13 +8566,13 @@ safe = html.escape(dangerous_input)   <span class="t-com"># &lt;script&gt; becom
         <code>hmac.compare_digest</code>.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Security is layered. No single defence is enough;
         every defence makes the next bug less likely to
-        ship. The senior discipline: secure defaults
+        ship. The principal-level discipline: secure defaults
         everywhere (autoescape on, parameter binding only,
         Pydantic models for all input, env-var secrets);
         scan the codebase with <code>bandit</code> and
@@ -7764,11 +8597,14 @@ safe = html.escape(dangerous_input)   <span class="t-com"># &lt;script&gt; becom
     </div>
     <div class="solution">
       <div class="sol-title">Solution 6.3.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> html
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> html
 
 <span class="t-key">def</span> <span class="t-fn">render_user_page</span>(name: <span class="t-cls">str</span>) -&gt; <span class="t-cls">str</span>:
     safe = html.escape(name)
     <span class="t-key">return</span> <span class="t-str">f"&lt;h1&gt;Hello, {safe}&lt;/h1&gt;"</span></pre>
+</div>
       <p>
         Better: use a templating engine
         (<code>jinja2</code>) with
@@ -7828,11 +8664,19 @@ safe = html.escape(dangerous_input)   <span class="t-com"># &lt;script&gt; becom
         comparison that returns the right boolean for
         matches and mismatches.
       </p>
-<pre><span class="cap">requirements.txt</span>pydantic&gt;=<span class="t-num">2.0</span></pre>
-<pre><span class="cap">owasp.py (see Code Example)</span>(full four-defence demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>pydantic&gt;=<span class="t-num">2.0</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">owasp.py (see Code Example)</span>(full four-defence demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">safe SQL: returns None for fake email: True
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">safe SQL: returns None for fake email: True
 table survived injection attempt: True
 escaped HTML contains no raw &lt;script&gt;: True
 escaped HTML preserves content: True
@@ -7842,6 +8686,7 @@ constant-time mismatch 1: True
 constant-time mismatch 2: True
 constant-time match: True
 BUILD 6.3 PASS</span></pre>
+</div>
         Nine assertions, four defences. The injection
         attempt is parsed as a single literal email value;
         XSS is neutralised on output; mass assignment is
@@ -7979,7 +8824,9 @@ BUILD 6.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">sse.py</span><span class="t-key">from</span> fastapi <span class="t-key">import</span> FastAPI
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">sse.py</span><span class="t-key">from</span> fastapi <span class="t-key">import</span> FastAPI
 <span class="t-key">from</span> fastapi.responses <span class="t-key">import</span> StreamingResponse
 <span class="t-key">import</span> asyncio, json
 
@@ -8009,6 +8856,7 @@ subscribers: <span class="t-cls">list</span>[asyncio.Queue] = []
     q = asyncio.Queue()
     subscribers.append(q)
     <span class="t-key">return</span> StreamingResponse(event_generator(q), media_type=<span class="t-str">"text/event-stream"</span>)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -8037,9 +8885,9 @@ subscribers: <span class="t-cls">list</span>[asyncio.Queue] = []
         WebSockets.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Real-time is constraint-driven: how many viewers,
         what latency, how much state per stream? For a few
@@ -8120,18 +8968,27 @@ subscribers: <span class="t-cls">list</span>[asyncio.Queue] = []
         assert the subscriber received the snapshot and
         all three messages.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 uvicorn&gt;=<span class="t-num">0.30</span>
 httpx&gt;=<span class="t-num">0.27</span></pre>
-<pre><span class="cap">sse.py (see Code Example for handlers)</span>(full demo + driver in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">sse.py (see Code Example for handlers)</span>(full demo + driver in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">no subscribers: {'delivered': 0}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">no subscribers: {'delivered': 0}
 snapshot events: 1
 message events: 3
 saw event-0: True
 saw event-2: True
 BUILD 7.1 PASS</span></pre>
+</div>
         Real captured output. The subscriber connects,
         receives the initial snapshot, then three live
         messages — exactly the shape a dashboard browser
@@ -8230,7 +9087,9 @@ BUILD 7.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">jobs.py — the worker loop</span><span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">_worker</span>(self):
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">jobs.py — the worker loop</span><span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">_worker</span>(self):
     <span class="t-key">while</span> <span class="t-key">True</span>:
         job = <span class="t-key">await</span> self.queue.get()
         <span class="t-key">try</span>:
@@ -8249,6 +9108,7 @@ BUILD 7.1 PASS</span></pre>
                 <span class="t-key">await</span> self.queue.put(job)
         <span class="t-key">finally</span>:
             self.queue.task_done()</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -8278,12 +9138,12 @@ BUILD 7.1 PASS</span></pre>
         concurrency.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Queues are operational infrastructure with SLOs,
-        dashboards, and runbooks. The senior questions:
+        dashboards, and runbooks. The principal-level questions:
         "How deep can the queue get before we alert?" "What
         is the median attempt count for this job type and
         is it climbing?" "What goes in the DLQ?" The
@@ -8365,15 +9225,21 @@ BUILD 7.1 PASS</span></pre>
         Verify 3 completed (2 emails + 1 webhook), 1 dead
         (payment).
       </p>
-<pre><span class="cap">jobs.py (see Code Example for the worker loop)</span>(full JobQueue + handlers + assertions in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">jobs.py (see Code Example for the worker loop)</span>(full JobQueue + handlers + assertions in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">completed count: 3
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">completed count: 3
 dead count: 1
 emails completed: 2
 webhook retried succeeded after attempts: 3
 payment in DLQ: payment.charge attempts: 3
 BUILD 7.2 PASS</span></pre>
+</div>
         Three successes (two emails, one webhook after 3
         attempts), one dead-letter (the always-failing
         payment after 3 attempts). The mechanics are the
@@ -8511,7 +9377,9 @@ BUILD 7.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">idem.py — atomic counter</span><span class="t-key">def</span> <span class="t-fn">reserve_atomic</span>(conn, sku: <span class="t-cls">str</span>) -&gt; <span class="t-cls">bool</span>:
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">idem.py — atomic counter</span><span class="t-key">def</span> <span class="t-fn">reserve_atomic</span>(conn, sku: <span class="t-cls">str</span>) -&gt; <span class="t-cls">bool</span>:
     <span class="t-com">"""Atomic: only succeeds if qty &gt; 0. Returns True on success."""</span>
     cur = conn.execute(
         <span class="t-str">"UPDATE inventory SET qty = qty - 1 WHERE sku = ? AND qty &gt; 0"</span>,
@@ -8521,7 +9389,10 @@ BUILD 7.2 PASS</span></pre>
     <span class="t-key">return</span> cur.rowcount == <span class="t-num">1</span>
 
 <span class="t-com"># Race 10 reservations against an inventory of 5: exactly 5 succeed.</span></pre>
-<pre><span class="cap">idem.py — backoff with jitter</span><span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">retry_with_backoff</span>(fn, *, max_attempts=<span class="t-num">4</span>, base=<span class="t-num">0.02</span>):
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">idem.py — backoff with jitter</span><span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">retry_with_backoff</span>(fn, *, max_attempts=<span class="t-num">4</span>, base=<span class="t-num">0.02</span>):
     last_err = <span class="t-key">None</span>
     <span class="t-key">for</span> attempt <span class="t-key">in</span> <span class="t-fn">range</span>(<span class="t-num">1</span>, max_attempts + <span class="t-num">1</span>):
         <span class="t-key">try</span>:
@@ -8532,6 +9403,7 @@ BUILD 7.2 PASS</span></pre>
             delay = base * (<span class="t-num">2</span> ** (attempt - <span class="t-num">1</span>)) + random.uniform(<span class="t-num">0</span>, base)
             <span class="t-key">await</span> asyncio.sleep(delay)
     <span class="t-key">raise</span> last_err</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -8558,12 +9430,12 @@ BUILD 7.2 PASS</span></pre>
         delete old entries with a periodic job.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         These three primitives are the foundation of
-        "service that survives chaos." Senior engineers
+        "service that survives chaos." Principal engineers
         apply them from day one: idempotency on every
         mutating endpoint, retry with backoff on every
         outbound call, atomic updates on every counter.
@@ -8645,10 +9517,15 @@ BUILD 7.2 PASS</span></pre>
         against qty=5 produce exactly 5 successes and 0
         over-reservations.
       </p>
-<pre><span class="cap">idem.py (see Code Example for the primitives)</span>(full demo + race in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">idem.py (see Code Example for the primitives)</span>(full demo + race in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">first lookup empty: True
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">first lookup empty: True
 after dup put, cached is first: True
 tenant isolated: True
 retry succeeded after 3 attempts (41ms)
@@ -8658,6 +9535,7 @@ reservations succeeded: 5, failed: 5
 final qty: 0
 no over-reservation: True
 BUILD 7.3 PASS</span></pre>
+</div>
         Real captured numbers: idempotency replay returns
         the first response (not the second); retry takes
         41ms across three attempts (exponential delays);
@@ -8782,7 +9660,9 @@ BUILD 7.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">test_demo.py</span><span class="t-key">import</span> pytest
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">test_demo.py</span><span class="t-key">import</span> pytest
 
 <span class="t-key">def</span> <span class="t-fn">total_cents</span>(prices):
     <span class="t-key">if</span> <span class="t-key">not</span> prices:
@@ -8811,6 +9691,7 @@ BUILD 7.3 PASS</span></pre>
 
 <span class="t-key">def</span> <span class="t-fn">test_with_fixture</span>(sample_prices):
     <span class="t-key">assert</span> total_cents(sample_prices) == <span class="t-num">5449</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -8841,13 +9722,13 @@ BUILD 7.3 PASS</span></pre>
         them when possible.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Tests are documentation that runs. Every change
         ships with a test that fails without the change
-        and passes with it. The senior discipline:
+        and passes with it. The principal-level discipline:
         property-based testing (<code>hypothesis</code>)
         for value sweeps; integration tests against a real
         DB (in a container); contract tests for upstream
@@ -8869,7 +9750,9 @@ BUILD 7.3 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 8.1.1</div>
-<pre><span class="cap">solution</span><span class="t-key">import</span> shutil, tempfile
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">import</span> shutil, tempfile
 <span class="t-key">from</span> pathlib <span class="t-key">import</span> Path
 <span class="t-key">import</span> pytest
 
@@ -8878,6 +9761,7 @@ BUILD 7.3 PASS</span></pre>
     d = tempfile.mkdtemp()
     <span class="t-key">yield</span> Path(d)
     shutil.rmtree(d)</pre>
+</div>
       <p>
         Or simply use the built-in <code>tmp_path</code>
         fixture pytest provides — it handles cleanup
@@ -8931,11 +9815,19 @@ BUILD 7.3 PASS</span></pre>
         fixture-backed test, and an integer-discipline
         check. Run the full suite. All ten pass.
       </p>
-<pre><span class="cap">requirements.txt</span>pytest&gt;=<span class="t-num">8.0</span></pre>
-<pre><span class="cap">test_demo.py (see Code Example for tests)</span>(full suite in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>pytest&gt;=<span class="t-num">8.0</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">test_demo.py (see Code Example for tests)</span>(full suite in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">test_demo.py::test_total_one_item PASSED                                 [ 10%]
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">test_demo.py::test_total_one_item PASSED                                 [ 10%]
 test_demo.py::test_total_multiple PASSED                                 [ 20%]
 test_demo.py::test_format_money[0-$0.00] PASSED                          [ 30%]
 test_demo.py::test_format_money[7-$0.07] PASSED                          [ 40%]
@@ -8947,6 +9839,7 @@ test_demo.py::test_with_fixture PASSED                                   [ 90%]
 test_demo.py::test_no_float_in_chain PASSED                              [100%]
 
 ============================== 10 passed in 0.01s ==============================</span></pre>
+</div>
         Ten tests, all green, in 10 milliseconds. The
         parametrize expansion shows up as five tests in
         the report; the fixture is reused; the
@@ -9048,7 +9941,9 @@ test_demo.py::test_no_float_in_chain PASSED                              [100%]
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">logs.py</span><span class="t-key">import</span> structlog, logging
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">logs.py</span><span class="t-key">import</span> structlog, logging
 
 structlog.configure(
     processors=[
@@ -9065,6 +9960,7 @@ log.info(<span class="t-str">"server starting"</span>, port=<span class="t-num">
 req_log = log.bind(request_id=<span class="t-str">"abc-123"</span>, user_id=<span class="t-num">42</span>)
 req_log.info(<span class="t-str">"request received"</span>, path=<span class="t-str">"/orders"</span>)
 req_log.error(<span class="t-str">"payment failed"</span>, reason=<span class="t-str">"card_declined"</span>)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -9096,12 +9992,12 @@ req_log.error(<span class="t-str">"payment failed"</span>, reason=<span class="t
         Generate at the edge; propagate through.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Observability is a feature, not an afterthought.
-        Senior services emit structured logs from day one;
+        Principal-level services emit structured logs from day one;
         metrics for every meaningful operation; traces for
         every request. The discipline pays in every
         incident — the team with observability is debugging
@@ -9124,13 +10020,16 @@ req_log.error(<span class="t-str">"payment failed"</span>, reason=<span class="t
     </div>
     <div class="solution">
       <div class="sol-title">Solution 8.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> prometheus_client <span class="t-key">import</span> Counter, start_http_server
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> prometheus_client <span class="t-key">import</span> Counter, start_http_server
 
 orders_total = Counter(<span class="t-str">"orders_created_total"</span>, <span class="t-str">"orders"</span>, [<span class="t-str">"tenant_id"</span>])
 
 <span class="t-key">def</span> <span class="t-fn">create_order</span>(tenant_id, ...):
     ...
     orders_total.labels(tenant_id=tenant_id).inc()</pre>
+</div>
       <p>
         Caveat: never label with unbounded values
         (request_id, user_id). Cardinality explosion kills
@@ -9182,11 +10081,19 @@ orders_total = Counter(<span class="t-str">"orders_created_total"</span>, <span 
         payment failed, exception. Each is one JSON line
         with all the bound fields.
       </p>
-<pre><span class="cap">requirements.txt</span>structlog&gt;=<span class="t-num">24.0</span></pre>
-<pre><span class="cap">logs.py (see Code Example)</span>(full demo in Expected result — every log is JSON)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>structlog&gt;=<span class="t-num">24.0</span></pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">logs.py (see Code Example)</span>(full demo in Expected result — every log is JSON)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">{"service": "orders-api", "env": "prod", "port": 8080, "event": "server starting", "level": "info", "timestamp": "..."}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">{"service": "orders-api", "env": "prod", "port": 8080, "event": "server starting", "level": "info", "timestamp": "..."}
 {"service": "orders-api", "env": "prod", "request_id": "abc-123", "user_id": 42, "path": "/orders", "method": "POST", "event": "request received", "level": "info", "timestamp": "..."}
 {"service": "orders-api", "env": "prod", "request_id": "abc-123", "user_id": 42, "event": "validation passed", "level": "info", "timestamp": "..."}
 {"service": "orders-api", "env": "prod", "request_id": "abc-123", "user_id": 42, "upstream": "stripe", "latency_ms": 812, "event": "upstream slow", "level": "warning", "timestamp": "..."}
@@ -9194,6 +10101,7 @@ orders_total = Counter(<span class="t-str">"orders_created_total"</span>, <span 
 {"service": "orders-api", "env": "prod", "request_id": "abc-123", "user_id": 42, "exc_info": true, "event": "payment exception", "level": "error", "timestamp": "..."}
 {"service": "orders-api", "env": "prod", "status": 200, "duration_ms": 145, "event": "request complete", "level": "info", "timestamp": "..."}
 BUILD 8.2 PASS</span></pre>
+</div>
         Seven JSON log lines. Every line has the bound
         context (<code>service</code>,
         <code>request_id</code>, <code>user_id</code>);
@@ -9295,7 +10203,9 @@ BUILD 8.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">shutdown.py</span><span class="t-key">from</span> contextlib <span class="t-key">import</span> asynccontextmanager
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">shutdown.py</span><span class="t-key">from</span> contextlib <span class="t-key">import</span> asynccontextmanager
 <span class="t-key">import</span> asyncio
 <span class="t-key">from</span> fastapi <span class="t-key">import</span> FastAPI
 
@@ -9322,6 +10232,7 @@ app = FastAPI(lifespan=lifespan)
         <span class="t-key">return</span> {<span class="t-str">"done"</span>: <span class="t-key">True</span>}
     <span class="t-key">finally</span>:
         in_flight -= <span class="t-num">1</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -9352,9 +10263,9 @@ app = FastAPI(lifespan=lifespan)
         containers behind a load balancer.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Production-readiness is a checklist. Twelve-
         factor configs; secrets out of code; health and
@@ -9381,7 +10292,9 @@ app = FastAPI(lifespan=lifespan)
     </div>
     <div class="solution">
       <div class="sol-title">Solution 8.3.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> functools <span class="t-key">import</span> lru_cache
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> functools <span class="t-key">import</span> lru_cache
 <span class="t-key">from</span> pydantic_settings <span class="t-key">import</span> BaseSettings
 
 <span class="t-key">class</span> <span class="t-cls">Settings</span>(BaseSettings):
@@ -9392,6 +10305,7 @@ app = FastAPI(lifespan=lifespan)
 <span class="t-prop">@lru_cache</span>
 <span class="t-key">def</span> <span class="t-fn">settings</span>() -&gt; Settings:
     <span class="t-key">return</span> Settings()</pre>
+</div>
       <p>
         Missing env vars raise <code>ValidationError</code>
         at startup with the field names listed — fail
@@ -9447,13 +10361,21 @@ app = FastAPI(lifespan=lifespan)
         completes BEFORE the shutdown log line. The deploy
         does not drop the request.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 uvicorn&gt;=<span class="t-num">0.30</span>
 httpx&gt;=<span class="t-num">0.27</span></pre>
-<pre><span class="cap">shutdown.py (see Code Example for lifespan)</span>(full demo + driver in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">shutdown.py (see Code Example for lifespan)</span>(full demo + driver in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">started
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">started
 health: {'ok': True, 'shutting_down': False}
 SIGTERM received
 health during shutdown: {'ok': True, 'shutting_down': True}
@@ -9462,6 +10384,7 @@ refusing new connections
 shutdown complete
 graceful shutdown sequence verified
 BUILD 8.3 PASS</span></pre>
+</div>
         The order matters: "slow request completed"
         appears BEFORE "shutdown complete". The deploy
         drained the in-flight request before terminating.
@@ -9483,7 +10406,7 @@ BUILD 8.3 PASS</span></pre>
     A working service is the floor. A service that stays
     fast under load, recovers from upstream failure, and
     grows without becoming a tangle is the bar. Three
-    senior disciplines: <strong>profile before optimising</strong>
+    principal-level disciplines: <strong>profile before optimising</strong>
     (cProfile + tracemalloc), <strong>parallelism</strong>
     (threads for I/O, multiprocessing for CPU because of
     the GIL), and <strong>scalable architecture</strong>
@@ -9595,7 +10518,9 @@ BUILD 8.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">prof_demo.py</span><span class="t-key">import</span> cProfile, pstats, io
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">prof_demo.py</span><span class="t-key">import</span> cProfile, pstats, io
 
 <span class="t-key">def</span> <span class="t-fn">slow</span>(n):
     total = <span class="t-num">0</span>
@@ -9611,6 +10536,7 @@ pr.disable()
 buf = io.StringIO()
 pstats.Stats(pr, stream=buf).sort_stats(<span class="t-str">"cumulative"</span>).print_stats(<span class="t-num">10</span>)
 print(buf.getvalue())   <span class="t-com"># top of the report shows slow() owns the time</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -9640,14 +10566,13 @@ print(buf.getvalue())   <span class="t-com"># top of the report shows slow() own
         compare two.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         "Performance complaint" arrives. Junior engineers
-        guess and rewrite. Senior engineers profile.
-        Same with leaks: junior asks "what changed?";
-        senior diffs heap snapshots. The discipline:
+        guess and rewrite. Principal engineers profile.
+        Same with leaks: junior asks "what changed?"; principal diffs heap snapshots. The discipline:
         never optimise without a number; verify the fix
         with a number. Profilers are part of normal
         development, not just emergencies.
@@ -9666,9 +10591,12 @@ print(buf.getvalue())   <span class="t-com"># top of the report shows slow() own
     </div>
     <div class="solution">
       <div class="sol-title">Solution 9.1.1</div>
-<pre><span class="cap">solution</span>$ pip install py-spy
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span>$ pip install py-spy
 $ py-spy record -o flame.svg --duration <span class="t-num">30</span> --pid &lt;PID&gt;
 <span class="t-com"># Open flame.svg in a browser; wider bars = more time.</span></pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -9713,10 +10641,15 @@ $ py-spy record -o flame.svg --duration <span class="t-num">30</span> --pid &lt;
         bounded cache and confirm the leaky one allocates
         ~50× more.
       </p>
-<pre><span class="cap">prof_demo.py (see Code Example for cProfile)</span>(full demo + diff in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">prof_demo.py (see Code Example for cProfile)</span>(full demo + diff in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">results equal: True
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">results equal: True
 profile mentions slow_function: True
 profile mentions fast_function: True
 leaky added: ~21878 KB
@@ -9724,6 +10657,7 @@ bounded added (after leaky already big): ~460 KB
 leaky > bounded: True
 alive sizes: 50000 1000
 BUILD 9.1 PASS</span></pre>
+</div>
         Leaky cache allocated ~22MB across 50,000 entries;
         bounded cache only ~460KB on top (the 1,000 live
         entries). A ~47× difference, captured by
@@ -9817,7 +10751,7 @@ BUILD 9.1 PASS</span></pre>
       that calls into NumPy parallelises on threads just fine,
       because the loop is brief and the heavy lifting happens
       below the GIL. Multiprocessing should be the fallback,
-      not the default; the senior question on a CPU-bound
+      not the default; the principal-level question on a CPU-bound
       problem is always "is there a library that already
       releases the GIL for this?"
     </p>
@@ -9850,7 +10784,9 @@ BUILD 9.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">parallel.py</span><span class="t-key">from</span> concurrent.futures <span class="t-key">import</span> ProcessPoolExecutor, ThreadPoolExecutor
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">parallel.py</span><span class="t-key">from</span> concurrent.futures <span class="t-key">import</span> ProcessPoolExecutor, ThreadPoolExecutor
 
 <span class="t-key">def</span> <span class="t-fn">cpu_bound</span>(n):
     total = <span class="t-num">0</span>
@@ -9866,6 +10802,7 @@ BUILD 9.1 PASS</span></pre>
     <span class="t-com"># Processes on CPU: ~4x speedup on 4 cores</span>
     <span class="t-key">with</span> ProcessPoolExecutor(max_workers=<span class="t-num">4</span>) <span class="t-key">as</span> pool:
         <span class="t-fn">list</span>(pool.map(cpu_bound, [<span class="t-num">8_000_000</span>] * <span class="t-num">4</span>))</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -9893,12 +10830,11 @@ BUILD 9.1 PASS</span></pre>
         yourself.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        The right tool depends on the workload — and
-        seniors profile first to know what the workload
+        The right tool depends on the workload — and principals profile first to know what the workload
         is. Threads for I/O concurrency; multiprocessing
         for CPU parallelism; asyncio for many concurrent
         I/O calls per process. For "this Python loop is
@@ -9921,12 +10857,15 @@ BUILD 9.1 PASS</span></pre>
     </div>
     <div class="solution">
       <div class="sol-title">Solution 9.2.1</div>
-<pre><span class="cap">solution</span><span class="t-key">from</span> concurrent.futures <span class="t-key">import</span> ThreadPoolExecutor, ProcessPoolExecutor
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">solution</span><span class="t-key">from</span> concurrent.futures <span class="t-key">import</span> ThreadPoolExecutor, ProcessPoolExecutor
 
 <span class="t-key">def</span> <span class="t-fn">parallel_map</span>(fn, items, *, workers=<span class="t-num">4</span>, kind=<span class="t-str">"io"</span>):
     Pool = ThreadPoolExecutor <span class="t-key">if</span> kind == <span class="t-str">"io"</span> <span class="t-key">else</span> ProcessPoolExecutor
     <span class="t-key">with</span> Pool(max_workers=workers) <span class="t-key">as</span> pool:
         <span class="t-key">return</span> <span class="t-fn">list</span>(pool.map(fn, items))</pre>
+</div>
     </div>
 
     <h3 data-step="12">Architecture Thinking</h3>
@@ -9976,10 +10915,15 @@ BUILD 9.1 PASS</span></pre>
         sequential and ThreadPool (4× speedup). Real
         numbers prove which tool fits which workload.
       </p>
-<pre><span class="cap">parallel.py (see Code Example for structure)</span>(full benchmark in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">parallel.py (see Code Example for structure)</span>(full benchmark in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">CPU sequential: 1199ms
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">CPU sequential: 1199ms
 CPU threads (4 workers): 1159ms
 CPU processes (4 workers): 346ms
 all results equal: True
@@ -9989,6 +10933,7 @@ I/O sequential: 412ms
 I/O threads: 105ms
 threads help for I/O: True
 BUILD 9.2 PASS</span></pre>
+</div>
         Threads on CPU work: 1199ms → 1159ms (no
         speedup, GIL). Processes: 346ms (3.5× speedup,
         true parallelism). I/O with threads: 412ms →
@@ -10089,7 +11034,9 @@ BUILD 9.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">breaker.py</span><span class="t-key">import</span> time
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">breaker.py</span><span class="t-key">import</span> time
 <span class="t-key">from</span> typing <span class="t-key">import</span> Callable, TypeVar
 
 T = TypeVar(<span class="t-str">"T"</span>)
@@ -10119,6 +11066,7 @@ T = TypeVar(<span class="t-str">"T"</span>)
                 self.state = <span class="t-str">"OPEN"</span>
                 self.opened_at = time.perf_counter()
             <span class="t-key">raise</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -10147,11 +11095,11 @@ T = TypeVar(<span class="t-str">"T"</span>)
         observability.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
-        The senior question is "how does this fail, and
+        The principal-level question is "how does this fail, and
         what blast radius?" Every external dependency is
         assumed to be down or slow at some point. Every
         retry is assumed to amplify across all callers.
@@ -10229,15 +11177,21 @@ T = TypeVar(<span class="t-str">"T"</span>)
         call again → closes. Every state transition
         printed.
       </p>
-<pre><span class="cap">breaker.py (see Code Example)</span>(full state-machine demo in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">breaker.py (see Code Example)</span>(full state-machine demo in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">after 3 failures, state = OPEN
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">after 3 failures, state = OPEN
 log: try1=upstream 503/CLOSED | try2=upstream 503/CLOSED | try3=upstream 503/OPEN | short-circuit=circuit open/OPEN | recovery=OK/CLOSED
 breaker opened after threshold: True
 short-circuit returned circuit open: True
 breaker closed on recovery: True
 BUILD 9.3 PASS</span></pre>
+</div>
         Five calls. Three failures take the breaker
         CLOSED → OPEN. The fourth call short-circuits
         fast. The fifth (after cooldown + flag flip)
@@ -10386,7 +11340,9 @@ BUILD 9.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">saas.py — the create_project endpoint</span><span class="t-prop">@app.post</span>(<span class="t-str">"/api/projects"</span>, status_code=<span class="t-num">201</span>)
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">saas.py — the create_project endpoint</span><span class="t-prop">@app.post</span>(<span class="t-str">"/api/projects"</span>, status_code=<span class="t-num">201</span>)
 <span class="t-key">def</span> <span class="t-fn">create_project</span>(
     body: ProjectCreate,
     sess: <span class="t-cls">dict</span> = Depends(current_session),
@@ -10406,6 +11362,7 @@ BUILD 9.3 PASS</span></pre>
     <span class="t-key">if</span> idempotency_key:
         db[<span class="t-str">"idempotency"</span>][(tenant_id, idempotency_key)] = project
     <span class="t-key">return</span> project</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -10432,9 +11389,9 @@ BUILD 9.3 PASS</span></pre>
         it. Write audit after commit, best-effort.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Tenant isolation is treated as a hard invariant.
         Every query filters by <code>tenant_id</code>;
@@ -10512,13 +11469,21 @@ BUILD 9.3 PASS</span></pre>
         Prove cross-tenant lookups return 404. Dump the
         audit log.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 httpx&gt;=<span class="t-num">0.27</span>
 pydantic&gt;=<span class="t-num">2.0</span></pre>
-<pre><span class="cap">saas.py (see Code Example for endpoints)</span>(full app + TestClient exercise in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">saas.py (see Code Example for endpoints)</span>(full app + TestClient exercise in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">health: {'ok': True}
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">health: {'ok': True}
 signup A: 201 has tenant_id: True
 login A token len 64: True
 create project A: 201 name=AcmeProject
@@ -10529,6 +11494,7 @@ no-token returns 401: True
 cross-tenant fetch is 404: True
 audit event types: project.created,user.login,user.signup
 CAPSTONE 10.1 PASS</span></pre>
+</div>
         Eleven assertions, all green. The same shape
         carries every commercial SaaS backend on this
         stack.
@@ -10619,7 +11585,9 @@ CAPSTONE 10.1 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">dashboard.py — publish + stream</span><span class="t-prop">@app.post</span>(<span class="t-str">"/api/events"</span>)
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">dashboard.py — publish + stream</span><span class="t-prop">@app.post</span>(<span class="t-str">"/api/events"</span>)
 <span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">post_event</span>(payload: <span class="t-cls">dict</span>):
     cur = rollup.setdefault(payload[<span class="t-str">"metric"</span>], {<span class="t-str">"count"</span>: <span class="t-num">0</span>, <span class="t-str">"sum"</span>: <span class="t-num">0.0</span>})
     cur[<span class="t-str">"count"</span>] += <span class="t-num">1</span>
@@ -10634,6 +11602,7 @@ CAPSTONE 10.1 PASS</span></pre>
     q = asyncio.Queue()
     subscribers.append(q)
     <span class="t-key">return</span> StreamingResponse(event_generator(q), media_type=<span class="t-str">"text/event-stream"</span>)</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -10657,12 +11626,12 @@ CAPSTONE 10.1 PASS</span></pre>
         tenant and filter on the stream.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Real-time backends are easy to start, easy to
-        break under load. The senior questions:
+        break under load. The principal-level questions:
         "10,000 clients connected?" "100,000 events/sec?"
         "One slow client?" For a few hundred viewers,
         the capstone is the whole solution. For
@@ -10726,18 +11695,27 @@ CAPSTONE 10.1 PASS</span></pre>
         snapshot received and three messages
         delivered.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 uvicorn&gt;=<span class="t-num">0.30</span>
 httpx&gt;=<span class="t-num">0.27</span></pre>
-<pre><span class="cap">dashboard.py (see Code Example for handlers)</span>(full demo + driver in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">dashboard.py (see Code Example for handlers)</span>(full demo + driver in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">initial snapshot delivered: True
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">initial snapshot delivered: True
 metric events received: 3
 snapshot logins.count: 2
 snapshot errors.count: 1
 snapshot logins.mean: 1.0
 CAPSTONE 10.2 PASS</span></pre>
+</div>
         Subscriber gets the initial snapshot, then three
         live events. REST snapshot reflects the same
         totals. The shape that drives every live-data
@@ -10828,13 +11806,16 @@ CAPSTONE 10.2 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">jobs.py — handler registration</span><span class="t-prop">@q.handler</span>(<span class="t-str">"email.send"</span>, concurrency=<span class="t-num">10</span>)
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">jobs.py — handler registration</span><span class="t-prop">@q.handler</span>(<span class="t-str">"email.send"</span>, concurrency=<span class="t-num">10</span>)
 <span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">send_email</span>(payload):
     <span class="t-key">return</span> {<span class="t-str">"sent"</span>: payload[<span class="t-str">"to"</span>]}
 
 <span class="t-prop">@q.handler</span>(<span class="t-str">"payment.charge"</span>, concurrency=<span class="t-num">2</span>)
 <span class="t-key">async</span> <span class="t-key">def</span> <span class="t-fn">charge</span>(_):
     <span class="t-key">raise</span> RuntimeError(<span class="t-str">"card declined"</span>)   <span class="t-com"># DLQ-bound</span></pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -10859,9 +11840,9 @@ CAPSTONE 10.2 PASS</span></pre>
         (Module 7.3).</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         Job runners are operational infrastructure. The
         DLQ is a leading indicator; a non-empty DLQ
@@ -10933,10 +11914,15 @@ CAPSTONE 10.2 PASS</span></pre>
         completed, 1 in DLQ, with the right per-type
         counts.
       </p>
-<pre><span class="cap">jobs.py (see Code Example for handler decorator)</span>(full JobQueue + handlers in Expected result)</pre>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">jobs.py (see Code Example for handler decorator)</span>(full JobQueue + handlers in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">completed total: 7
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">completed total: 7
 dead total: 1
 emails completed: 3
 reports completed: 2
@@ -10945,6 +11931,7 @@ webhook attempts: 3
 payment in DLQ: payment.charge attempts: 3
 metrics: 7 completed, 1 dead
 CAPSTONE 10.3 PASS</span></pre>
+</div>
         Seven jobs succeed (some after retries), one
         dies after max attempts. Per-name metrics
         confirm the mix. Same shape every production
@@ -11035,7 +12022,9 @@ CAPSTONE 10.3 PASS</span></pre>
     </ol>
 
     <h3 data-step="7">Code Example</h3>
-<pre><span class="cap">integration.py</span><span class="t-key">from</span> fastapi.middleware.cors <span class="t-key">import</span> CORSMiddleware
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">integration.py</span><span class="t-key">from</span> fastapi.middleware.cors <span class="t-key">import</span> CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
@@ -11044,6 +12033,7 @@ app.add_middleware(
     allow_headers=[<span class="t-str">"Content-Type"</span>],
     max_age=<span class="t-num">86400</span>,
 )</pre>
+</div>
 
     <h3 data-step="8">Types &amp; Runtime</h3>
     <p>
@@ -11068,13 +12058,12 @@ app.add_middleware(
         diff.</p>
     </div>
 
-    <h3 data-step="10">How Senior Engineers Think About It</h3>
+    <h3 data-step="10">How Principal Engineers (L7+) Think About It</h3>
     <div class="callout">
-      <div><span class="ct">Senior Mindset</span></div>
+      <div><span class="ct">Principal Engineer Mindset</span></div>
       <p>
         The frontend/backend contract is the most
-        expensive thing to change once deployed. Senior
-        engineers treat it as a versioned API:
+        expensive thing to change once deployed. Principal engineers treat it as a versioned API:
         deprecated rather than deleted; OpenAPI as
         single source of truth; generated SDKs on both
         sides; CORS reviewed for every new origin.
@@ -11148,13 +12137,21 @@ app.add_middleware(
         GET again and find it; check that the OpenAPI
         spec exposes the widgets path.
       </p>
-<pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">requirements.txt</span>fastapi&gt;=<span class="t-num">0.115</span>
 httpx&gt;=<span class="t-num">0.27</span>
 pydantic&gt;=<span class="t-num">2.0</span></pre>
-<pre><span class="cap">integration.py (see Code Example for middleware)</span>(full app + TestClient in Expected result)</pre>
+</div>
+<div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="cap">integration.py (see Code Example for middleware)</span>(full app + TestClient in Expected result)</pre>
+</div>
       <div class="build-result">
         <b>Expected result:</b>
-        <pre><span class="t-com">preflight status: 200
+        <div class="code">
+  <div class="head"><span class="lang">code</span><span class="path"></span><button class="copy" data-copy>copy</button></div>
+  <pre><span class="t-com">preflight status: 200
 CORS allow-origin matches frontend: True
 CORS allow-methods includes POST: True
 unknown origin not echoed: True
@@ -11166,6 +12163,7 @@ OpenAPI spec status: 200
 OpenAPI spec has /api/widgets: True
 OpenAPI spec has Widget schema: True
 CAPSTONE 10.4 PASS</span></pre>
+</div>
         The CSS course's dashboard can fetch from this
         backend; unknown origins cannot; the JSON shape
         both sides agreed on is what the API returns;
@@ -11207,7 +12205,7 @@ CAPSTONE 10.4 PASS</span></pre>
   <p>
     Both the Node course and the Python course are now
     complete. The same shape, two languages — the same
-    senior-engineer disciplines, expressed in the
+    principal-level engineer disciplines, expressed in the
     idioms each ecosystem favours.
   </p>
 </section>
@@ -11226,12 +12224,12 @@ CAPSTONE 10.4 PASS</span></pre>
     follows is the honest set of next destinations — the
     books, communities, deeper subjects, and side projects
     that take you from "I finished this course" to "I am
-    genuinely senior."
+    genuinely principal-level."
   </p>
 
   <h2>The five books</h2>
   <p>
-    These are the books that show up on every senior backend
+    These are the books that show up on every principal backend
     engineer's shelf. Read them in this order; expect each
     to take a month.
   </p>
@@ -11255,7 +12253,7 @@ CAPSTONE 10.4 PASS</span></pre>
       from Module 10's capstones.</li>
     <li><strong>"High Performance Python"</strong> —
       Gorelick &amp; Ozsvald. After Module 9's profiling
-      foundation, this is how senior Python engineers think
+      foundation, this is how principal-level Python engineers think
       about performance at the bytecode, NumPy, and Cython
       levels.</li>
     <li><strong>"Release It!"</strong> — Michael Nygard
@@ -11304,7 +12302,7 @@ CAPSTONE 10.4 PASS</span></pre>
       612, 695, 703 (free-threaded).</li>
     <li><strong>The FastAPI / Starlette / Pydantic GitHub
       issues.</strong> The arguments in closed discussions
-      are the senior-engineer education on async Python
+      are the principal-level engineer education on async Python
       design choices.</li>
     <li><strong>Real Python (realpython.com)</strong> —
       tutorials at the depth this course assumes. The
@@ -11345,7 +12343,7 @@ CAPSTONE 10.4 PASS</span></pre>
     <li><strong>Contribute to one open-source Python
       project</strong> — a small library you already use.
       Reading professional Python at scale is the fastest
-      way to senior. Start with the type-stubs project
+      way to principal. Start with the type-stubs project
       (<code>typeshed</code>) — small PRs, high
       learning.</li>
   </ol>
@@ -11355,9 +12353,9 @@ CAPSTONE 10.4 PASS</span></pre>
     <span class="ct">A final note from the author</span>
     <p>This course produces a credibly mid-level backend
     engineer with the vocabulary and reasoning patterns
-    of a senior one. "Principal" — the level that involves
+    of a principal one. "Principal" — the level that involves
     setting technical direction for an organisation,
-    mentoring other seniors, owning long-running
+    mentoring other principals, owning long-running
     cross-cutting decisions — is a function of years on
     call, of having been wrong publicly, of having shipped
     things that broke and fixed them in production. No
@@ -11456,5 +12454,34 @@ CAPSTONE 10.4 PASS</span></pre>
   </div>
 </nav>
 <!-- vol-nav:end -->
+<!-- vol-copy:start -->
+<script>
+  (function () {
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-copy]');
+      if (!btn) return;
+      const wrap = btn.closest('.code');
+      const code = wrap && wrap.querySelector('pre');
+      if (!code) return;
+      const text = code.innerText;
+      navigator.clipboard.writeText(text).then(
+        function () {
+          const original = btn.textContent;
+          btn.textContent = 'copied';
+          btn.classList.add('copied');
+          setTimeout(function () {
+            btn.textContent = original || 'copy';
+            btn.classList.remove('copied');
+          }, 1500);
+        },
+        function () {
+          btn.textContent = 'error';
+          setTimeout(function () { btn.textContent = 'copy'; }, 1500);
+        }
+      );
+    });
+  })();
+</script>
+<!-- vol-copy:end -->
 </body>
 </html>
