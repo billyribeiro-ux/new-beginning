@@ -92,7 +92,7 @@ Files / paths to delete in order:
 3. `drizzle/local.db` and `drizzle/` migration dir.
 4. `drizzle.config.ts`.
 5. Remove `drizzle-orm`, `drizzle-kit`, `@libsql/client` from
-   `package.json`. Run `npm install` to refresh the lockfile.
+   `package.json`. Run `pnpm install` to refresh the lockfile.
 6. Remove the `DATABASE_URL` env entry pointing at `file:./` — the
    only DATABASE_URL after deletion belongs to the Rust api binary.
 

@@ -76,6 +76,18 @@ run:
     STRIPE_WEBHOOK_SECRET={{STRIPE_WEBHOOK_SECRET}} \
     cargo run -p api
 
+# Worker binary (PR #11). Drives reconcile_stripe_events + fetch_invoice_pdfs
+# on a 5-min cron. Same dev-secret defaults as the api.
+dev-worker:
+    DATABASE_URL={{DATABASE_URL}} \
+    SERVICE_TOKEN={{SERVICE_TOKEN}} \
+    AUTH_COOKIE_KEY={{AUTH_COOKIE_KEY}} \
+    AUTH_PASSWORD_PEPPER={{AUTH_PASSWORD_PEPPER}} \
+    AUTH_TOTP_KEY={{AUTH_TOTP_KEY}} \
+    STRIPE_SECRET_KEY={{STRIPE_SECRET_KEY}} \
+    STRIPE_WEBHOOK_SECRET={{STRIPE_WEBHOOK_SECRET}} \
+    cargo run -p worker
+
 # Hard gates — must be green before any commit.
 fmt:
     cargo fmt --all
