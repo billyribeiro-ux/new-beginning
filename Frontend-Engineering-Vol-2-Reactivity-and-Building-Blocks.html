@@ -1349,5 +1349,89 @@ dd{margin-left:0;color:var(--ink-200);font-size:14px;line-height:1.65}
   });
 })();
 </script>
+<!-- vol-nav:start -->
+<style>
+.vn-wrap{
+  margin: 4rem auto 2rem;
+  max-width: min(1100px, 92vw);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+.vn-row{display:flex;gap:1rem;flex-wrap:wrap;}
+.vn-btn{
+  flex:1 1 320px;
+  display:flex;align-items:center;gap:.85rem;
+  padding:1rem 1.25rem;
+  border-radius:14px;
+  background:linear-gradient(180deg,#1e293b,#0f172a);
+  color:#e2e8f0;text-decoration:none;
+  border:1px solid #334155;
+  transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  min-height:74px;
+  box-sizing:border-box;
+}
+.vn-btn:hover{transform:translateY(-2px);border-color:#64748b;background:linear-gradient(180deg,#243149,#131c2f);color:#fff;}
+.vn-prev{justify-content:flex-start;}
+.vn-next{justify-content:flex-end;text-align:right;}
+.vn-disabled{
+  opacity:.45;cursor:not-allowed;background:#0f172a;border-color:#1e293b;
+}
+.vn-arrow{font-size:1.5rem;line-height:1;color:#94a3b8;}
+.vn-label{display:flex;flex-direction:column;gap:.15rem;min-width:0;}
+.vn-kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:600;}
+.vn-title{font-weight:600;color:#f1f5f9;font-size:.95rem;}
+.vn-toc{
+  margin-top:1.5rem;
+  padding:1.25rem;
+  background:#0a1220;border:1px solid #1e293b;border-radius:14px;
+  display:flex;flex-direction:column;gap:1.25rem;
+}
+.vn-toc-group{display:flex;flex-direction:column;gap:.6rem;}
+.vn-toc-grouphead{
+  font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#64748b;padding-left:.25rem;
+}
+.vn-toc-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:.5rem;
+}
+.vn-toc-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.65rem .85rem;border-radius:8px;
+  background:transparent;color:#cbd5e1;text-decoration:none;
+  border:1px solid transparent;
+  font-size:.875rem;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.vn-toc-item:hover{background:#1e293b;color:#f8fafc;}
+.vn-toc-active{
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+  color:#fff;border-color:#60a5fa;
+}
+.vn-toc-active .vn-toc-num,.vn-toc-active .vn-toc-name{color:#fff;}
+.vn-toc-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.6rem;height:1.6rem;border-radius:50%;
+  background:#1e293b;color:#94a3b8;font-weight:700;font-size:.78rem;
+  flex-shrink:0;
+}
+.vn-toc-active .vn-toc-num{background:rgba(255,255,255,.18);}
+.vn-toc-name{flex:1;}
+@media (max-width:640px){
+  .vn-btn{flex:1 1 100%;}
+  .vn-toc-grid{grid-template-columns:1fr;}
+}
+</style>
+<nav class="vn-wrap" aria-label="Lesson navigation">
+  <div class="vn-row">
+    <a class="vn-btn vn-prev" href="Frontend-Engineering-Vol-1-Foundations.html" rel="prev"><span class="vn-arrow">←</span><span class="vn-label"><span class="vn-kicker">Previous</span><span class="vn-title">Vol 1 — Foundations</span></span></a>
+    <a class="vn-btn vn-next" href="Frontend-Engineering-Vol-3-Components-and-Composition.html" rel="next"><span class="vn-label"><span class="vn-kicker">Next</span><span class="vn-title">Vol 3 — Components & Composition</span></span><span class="vn-arrow">→</span></a>
+  </div>
+  <div class="vn-toc">
+    <div class="vn-toc-group"><div class="vn-toc-grouphead">Frontend Engineering</div><div class="vn-toc-grid"><a class="vn-toc-item" href="Frontend-Engineering-Vol-1-Foundations.html"><span class="vn-toc-num">1</span><span class="vn-toc-name">Foundations</span></a><a class="vn-toc-item vn-toc-active" href="Frontend-Engineering-Vol-2-Reactivity-and-Building-Blocks.html" aria-current="page"><span class="vn-toc-num">2</span><span class="vn-toc-name">Reactivity & Building Blocks</span></a><a class="vn-toc-item" href="Frontend-Engineering-Vol-3-Components-and-Composition.html"><span class="vn-toc-num">3</span><span class="vn-toc-name">Components & Composition</span></a><a class="vn-toc-item" href="Frontend-Engineering-Vol-4-Routes-Data-and-Production.html"><span class="vn-toc-num">4</span><span class="vn-toc-name">Routes, Data & Production</span></a><a class="vn-toc-item" href="Frontend-Engineering-Vol-5-CSS-Architecture-and-Visual-Engineering.html"><span class="vn-toc-num">5</span><span class="vn-toc-name">CSS Architecture & Visual Engineering</span></a></div></div><div class="vn-toc-group"><div class="vn-toc-grouphead">Enterprise Mastery</div><div class="vn-toc-grid"><a class="vn-toc-item" href="Enterprise-CSS-Architecture-and-Responsive-Systems-Mastery.html"><span class="vn-toc-num">6</span><span class="vn-toc-name">Enterprise CSS Architecture & Responsive Systems</span></a><a class="vn-toc-item" href="Enterprise-Nodejs-Mastery.html"><span class="vn-toc-num">7</span><span class="vn-toc-name">Enterprise Node.js Mastery</span></a><a class="vn-toc-item" href="Enterprise-Python-Mastery.html"><span class="vn-toc-num">8</span><span class="vn-toc-name">Enterprise Python Mastery</span></a></div></div>
+  </div>
+</nav>
+<!-- vol-nav:end -->
 </body>
 </html>
