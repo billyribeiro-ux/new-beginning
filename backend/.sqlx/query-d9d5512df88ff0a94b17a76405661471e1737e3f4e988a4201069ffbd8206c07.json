@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE enrollments\n            SET active = FALSE,\n                completed_at = COALESCE(completed_at, now())\n            WHERE user_id = $1\n              AND source = 'subscription'\n              AND active = TRUE\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d9d5512df88ff0a94b17a76405661471e1737e3f4e988a4201069ffbd8206c07"
+}

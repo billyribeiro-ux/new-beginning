@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COUNT(*) AS \"count!\",\n                   COALESCE(SUM(total_cents), 0)::bigint AS \"sum_cents!\"\n            FROM orders\n            WHERE status = 'paid' AND created_at >= $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "sum_cents!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "47d446c04ce9b9db3a8366c0f36949219b22815480ad6d50c7f95c0696a852e5"
+}

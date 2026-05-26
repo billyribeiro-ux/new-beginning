@@ -3,6 +3,10 @@ import type { Actions } from './$types';
 import { db, schema } from '$lib/server/db/client.js';
 import { contactSchema } from '$lib/utils/validators.js';
 import { checkRateLimit, getClientKey } from '$lib/server/rateLimit';
+import { callRust, isRustError, useRustBackend } from '$lib/server/rust/client';
+
+// PR #6: when `USE_RUST_BACKEND=true`, the contact form POSTs to
+// `/v1/public/contact` instead of writing through Drizzle.
 
 export const actions: Actions = {
 	default: async (event) => {
@@ -34,14 +38,31 @@ export const actions: Actions = {
 		if (parsed.data.website) return fail(400, { error: 'Submission rejected' });
 
 		try {
-			await db.insert(schema.contactMessages).values({
-				id: `msg_${crypto.randomUUID()}`,
-				name: parsed.data.name,
-				email: parsed.data.email.toLowerCase(),
-				subject: parsed.data.subject,
-				body: parsed.data.body
-			});
+			if (useRustBackend()) {
+				await callRust('/v1/public/contact', {
+					event,
+					body: {
+						name: parsed.data.name,
+						email: parsed.data.email,
+						subject: parsed.data.subject,
+						body: parsed.data.body
+					}
+				});
+			} else {
+				await db.insert(schema.contactMessages).values({
+					id: `msg_${crypto.randomUUID()}`,
+					name: parsed.data.name,
+					email: parsed.data.email.toLowerCase(),
+					subject: parsed.data.subject,
+					body: parsed.data.body
+				});
+			}
 		} catch (e) {
+			if (isRustError(e) && e.status === 429) {
+				return fail(429, {
+					error: `Too many requests. Try again in ${e.retry_after_secs ?? 30}s.`
+				});
+			}
 			console.error('contact insert failed', e);
 			return fail(500, { error: 'Could not send your message. Please try again.' });
 		}

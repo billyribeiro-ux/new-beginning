@@ -1,0 +1,56 @@
+[package]
+name = "tradeflex-http"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+common = { workspace = true }
+storage = { workspace = true }
+stripe-client = { workspace = true }
+r2-client = { workspace = true }
+sqlx = { workspace = true }
+sha2 = { workspace = true }
+base64 = { workspace = true }
+axum = { workspace = true }
+axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+hyper = { workspace = true }
+http = "1.1"
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+uuid = { workspace = true }
+time = { workspace = true }
+metrics = { workspace = true }
+secrecy = { workspace = true }
+ipnet = { workspace = true }
+governor = { workspace = true }
+dashmap = { workspace = true }
+subtle = { workspace = true }
+validator = { workspace = true }
+reqwest = { workspace = true }
+bytes = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+http-body-util = "0.1"
+tower = { workspace = true, features = ["util"] }
+figment = { workspace = true, features = ["test", "env", "toml"] }
+sqlx = { workspace = true }
+secrecy = { workspace = true }
+storage = { workspace = true }
+r2-client = { workspace = true }
+stripe-client = { workspace = true }
+bytes = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }

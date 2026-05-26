@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO order_items (\n                    id, order_id, product_id, plan_id,\n                    quantity, unit_price_cents, line_total_cents,\n                    name_snapshot, slug_snapshot\n                ) VALUES (\n                    $1, $2, $3, $4,\n                    $5, $6, $7,\n                    $8, $9\n                )\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Int4",
+        "Int8",
+        "Int8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0e2a05e4bc64f7c305fee735865a7d3475fc49c21974c90cc72eb494d742a287"
+}

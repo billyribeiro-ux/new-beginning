@@ -1,0 +1,106 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, slug, legacy_slug_id, name, cadence, price_cents,\n                   monthly_equivalent_cents, savings_pct, tagline, highlights,\n                   featured, badge, stripe_price_id, created_at, updated_at\n            FROM subscription_plans\n            WHERE slug = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "slug",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "legacy_slug_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "cadence",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "price_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "monthly_equivalent_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "savings_pct",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "tagline",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "highlights",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 10,
+        "name": "featured",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "badge",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "stripe_price_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "42f8f727720016967f0d08a6ae3001445ace359d614200d3bdc9895ecd070110"
+}

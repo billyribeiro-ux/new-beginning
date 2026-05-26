@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO notification_preferences (user_id)\n            VALUES ($1)\n            ON CONFLICT (user_id) DO NOTHING\n            RETURNING user_id, product_updates_email, product_updates_inapp,\n                      billing_email, billing_inapp,\n                      course_progress_email, course_progress_inapp,\n                      market_alerts_email, market_alerts_inapp,\n                      marketing_email, marketing_inapp,\n                      dnd_enabled, dnd_start, dnd_end, timezone, updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "product_updates_email",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 2,
+        "name": "product_updates_inapp",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 3,
+        "name": "billing_email",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "billing_inapp",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "course_progress_email",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "course_progress_inapp",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "market_alerts_email",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "market_alerts_inapp",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 9,
+        "name": "marketing_email",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "marketing_inapp",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "dnd_enabled",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 12,
+        "name": "dnd_start",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 13,
+        "name": "dnd_end",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 14,
+        "name": "timezone",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "a305240baf86e498b1addde0af0c22e61142a3ea1e4928d1cff507e63aa89aee"
+}

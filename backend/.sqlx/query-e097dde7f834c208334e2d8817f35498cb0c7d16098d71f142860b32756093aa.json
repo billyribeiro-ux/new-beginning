@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT progress_pct, last_lesson_id\n        FROM enrollments\n        WHERE id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "progress_pct",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "last_lesson_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "e097dde7f834c208334e2d8817f35498cb0c7d16098d71f142860b32756093aa"
+}

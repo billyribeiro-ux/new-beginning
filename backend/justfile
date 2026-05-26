@@ -1,0 +1,119 @@
+# TradeFlex backend — local dev commands.
+# BACKEND.md §18.
+
+set shell := ["bash", "-cu"]
+
+# Default DB URL points at the local docker-compose Postgres (host port 5435,
+# avoiding collisions with system Postgres or other dev containers).
+DATABASE_URL := env_var_or_default("DATABASE_URL", "postgres://tradeflex:tradeflex@127.0.0.1:5435/tradeflex")
+
+# Dev secrets. Real values live in `.env` (gitignored). These defaults exist
+# so `just dev` works out of the box — they are NOT acceptable in any non-dev
+# environment.
+SERVICE_TOKEN := env_var_or_default("SERVICE_TOKEN", "dev-service-token")
+AUTH_COOKIE_KEY := env_var_or_default("AUTH_COOKIE_KEY", "dev-cookie-key-32-bytes-of-padding")
+AUTH_PASSWORD_PEPPER := env_var_or_default("AUTH_PASSWORD_PEPPER", "dev-pepper-do-not-use-in-prod")
+# 32 raw bytes for XChaCha20-Poly1305 — see common::auth::totp_secret_at_rest.
+AUTH_TOTP_KEY := env_var_or_default("AUTH_TOTP_KEY", "0123456789abcdef0123456789abcdef")
+# Stripe test placeholders — REAL test keys go in `.env` (gitignored).
+# `sk_test_invalid` lets the binary boot but any actual Stripe call fails
+# with a 401 (intentional — proves the call path).
+STRIPE_SECRET_KEY := env_var_or_default("STRIPE_SECRET_KEY", "sk_test_invalid_placeholder")
+STRIPE_WEBHOOK_SECRET := env_var_or_default("STRIPE_WEBHOOK_SECRET", "whsec_dev_local_only")
+
+default:
+    @just --list
+
+# Boot the local stack (Postgres on host port 5435, LocalStack S3 on 4566).
+up:
+    PG_HOST_PORT=${PG_HOST_PORT:-5435} docker compose -f docker-compose.dev.yml up -d
+    @echo "Postgres: ${DATABASE_URL}"
+    @echo "S3 (LocalStack): http://127.0.0.1:4566"
+
+down:
+    docker compose -f docker-compose.dev.yml down
+
+nuke:
+    docker compose -f docker-compose.dev.yml down -v
+
+migrate:
+    DATABASE_URL={{DATABASE_URL}} sqlx migrate run --source migrations
+
+dump-catalog:
+    cd .. && pnpm run dump-catalog
+
+seed: dump-catalog
+    DATABASE_URL={{DATABASE_URL}} cargo run -p seeder
+
+sqlx-prepare:
+    DATABASE_URL={{DATABASE_URL}} cargo sqlx prepare --workspace
+
+sqlx-prepare-check:
+    DATABASE_URL={{DATABASE_URL}} cargo sqlx prepare --workspace --check
+
+build:
+    cargo build --workspace
+
+# Run the api binary against the dev stack. Inherits dev secrets from the
+# `just`-level env_var_or_default above.
+dev:
+    DATABASE_URL={{DATABASE_URL}} \
+    SERVICE_TOKEN={{SERVICE_TOKEN}} \
+    AUTH_COOKIE_KEY={{AUTH_COOKIE_KEY}} \
+    AUTH_PASSWORD_PEPPER={{AUTH_PASSWORD_PEPPER}} \
+    AUTH_TOTP_KEY={{AUTH_TOTP_KEY}} \
+    STRIPE_SECRET_KEY={{STRIPE_SECRET_KEY}} \
+    STRIPE_WEBHOOK_SECRET={{STRIPE_WEBHOOK_SECRET}} \
+    cargo watch -x 'run -p api'
+
+run:
+    DATABASE_URL={{DATABASE_URL}} \
+    SERVICE_TOKEN={{SERVICE_TOKEN}} \
+    AUTH_COOKIE_KEY={{AUTH_COOKIE_KEY}} \
+    AUTH_PASSWORD_PEPPER={{AUTH_PASSWORD_PEPPER}} \
+    AUTH_TOTP_KEY={{AUTH_TOTP_KEY}} \
+    STRIPE_SECRET_KEY={{STRIPE_SECRET_KEY}} \
+    STRIPE_WEBHOOK_SECRET={{STRIPE_WEBHOOK_SECRET}} \
+    cargo run -p api
+
+# Hard gates — must be green before any commit.
+fmt:
+    cargo fmt --all
+
+fmt-check:
+    cargo fmt --all -- --check
+
+clippy:
+    cargo clippy --workspace --all-targets -- -D warnings
+
+test:
+    DATABASE_URL={{DATABASE_URL}} cargo test --workspace --no-fail-fast
+
+check: fmt-check clippy test sqlx-prepare-check
+    @echo "all PR gates green"
+
+# Smoke: boot the api with dev secrets, curl /healthz + /readyz + /v1/auth/signup,
+# kill. Useful for verifying environment setup.
+smoke:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PORT="${BIND_ADDR:-127.0.0.1:8082}"
+    METRICS_PORT="${METRICS_BIND:-127.0.0.1:9092}"
+    DATABASE_URL={{DATABASE_URL}} \
+    SERVICE_TOKEN={{SERVICE_TOKEN}} \
+    AUTH_COOKIE_KEY={{AUTH_COOKIE_KEY}} \
+    AUTH_PASSWORD_PEPPER={{AUTH_PASSWORD_PEPPER}} \
+    AUTH_TOTP_KEY={{AUTH_TOTP_KEY}} \
+    STRIPE_SECRET_KEY={{STRIPE_SECRET_KEY}} \
+    STRIPE_WEBHOOK_SECRET={{STRIPE_WEBHOOK_SECRET}} \
+    BIND_ADDR="$PORT" METRICS_BIND="$METRICS_PORT" \
+    cargo run -p api &
+    pid=$!
+    trap 'kill -TERM $pid 2>/dev/null || true' EXIT
+    until curl -fsS -H "x-service-token: {{SERVICE_TOKEN}}" "http://$PORT/healthz" >/dev/null 2>&1; do sleep 0.2; done
+    echo "/healthz:"
+    curl -s -H "x-service-token: {{SERVICE_TOKEN}}" "http://$PORT/healthz"; echo
+    echo "/readyz:"
+    curl -s -H "x-service-token: {{SERVICE_TOKEN}}" "http://$PORT/readyz"; echo
+    echo "/healthz without token (must be 401):"
+    curl -s -o /dev/null -w "  HTTP %{http_code}\n" "http://$PORT/healthz"

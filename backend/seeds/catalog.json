@@ -1,0 +1,186 @@
+{
+  "indicators": [
+    {
+      "legacy_slug_id": "prod_revolution_ranger",
+      "slug": "revolution-ranger",
+      "kind": "indicator",
+      "name": "Revolution Ranger",
+      "tagline": "Adaptive multi-timeframe range detection — engineered for serious day traders.",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Revolution Ranger combines volatility-weighted range mapping with intraday liquidity scoring to surface high-probability inflection zones before they crystallize on the tape. Built for NinjaTrader, TradingView, and ThinkOrSwim — install in under three minutes.",
+      "price_cents": 99700,
+      "original_price_cents": 129700,
+      "active": true,
+      "badge": "Best Seller",
+      "rating_value": 4.9,
+      "rating_count": 1284,
+      "highlights": [
+        "Detects compression-to-expansion regime shifts in real time",
+        "Auto-calibrates to ES, NQ, CL, GC, and 40+ instruments",
+        "Layered confluence with volume profile + market structure",
+        "Lifetime updates, free indicator family access"
+      ],
+      "specs_json": [
+        {
+          "title": "Adaptive Range Engine",
+          "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. The proprietary engine adapts band width to realized volatility every tick — no manual tuning, ever."
+        },
+        {
+          "title": "Sub-millisecond Signals",
+          "description": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Optimized DOM hooks deliver alerts faster than the next candle prints."
+        },
+        {
+          "title": "Trade-Validated Logic",
+          "description": "Ut enim ad minim veniam, quis nostrud exercitation. Built and refined across six market regimes by a desk that trades it live."
+        },
+        {
+          "title": "Confluence Layers",
+          "description": "Duis aute irure dolor in reprehenderit. Compose Revolution Ranger with liquidity sweeps, order flow, and your favorite tools."
+        },
+        {
+          "title": "Full Customization",
+          "description": "Excepteur sint occaecat cupidatat non proident. Every threshold, color, alert, and zone is yours to shape."
+        },
+        {
+          "title": "Lifetime Updates",
+          "description": "Sunt in culpa qui officia deserunt. New regime detectors, instrument presets, and platform exports — forever."
+        }
+      ],
+      "deliverables": [
+        "Encrypted indicator package (NT8 .zip, TradingView Pine script v6, TOS study)",
+        "30-page strategy playbook (PDF)",
+        "Onboarding session (45 min, 1:1)",
+        "Private Discord channel"
+      ],
+      "requirements": [
+        "NinjaTrader 8.1+ / TradingView Pro+ / ThinkOrSwim",
+        "A funded or sim account",
+        "Curiosity, patience, and a willingness to backtest"
+      ],
+      "media_poster_color": "linear-gradient(135deg, #2a1f0f, #0a0a0b)",
+      "media_accent": "#E8B660"
+    }
+  ],
+  "courses": [
+    {
+      "legacy_slug_id": "prod_options_101",
+      "slug": "options-101",
+      "kind": "course",
+      "name": "Options 101",
+      "tagline": "From greeks to verticals — a structured foundation for the modern options trader.",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Options 101 is a twelve-module masterclass that walks you from contract mechanics through delta-neutral hedging using interactive payoff visualizations, live-market case studies, and a 40-question certification exam. Designed for traders who want to stop guessing and start engineering positions.",
+      "price_cents": 99700,
+      "original_price_cents": null,
+      "active": true,
+      "badge": "Cohort Open",
+      "rating_value": 4.8,
+      "rating_count": 612,
+      "highlights": [
+        "12 modules · 48 lessons · 12 hours of HD video",
+        "Interactive payoff & greeks playgrounds",
+        "8 live case studies on ES, SPY, AAPL, NVDA, TLT",
+        "Certificate of completion + alumni Discord"
+      ],
+      "specs_json": [
+        {
+          "title": "Foundations First",
+          "description": "Lorem ipsum dolor sit amet. Mechanics, settlement, assignment, multipliers — built bottom-up so nothing is hand-waved."
+        },
+        {
+          "title": "Greeks Without the Calculus",
+          "description": "Consectetur adipiscing elit. Visual-first treatment of delta, gamma, theta, vega, rho — with playable scenarios."
+        },
+        {
+          "title": "Strategy Construction",
+          "description": "Sed do eiusmod. From long calls to broken-wing butterflies — when, why, and how each structure earns its keep."
+        },
+        {
+          "title": "Position Sizing",
+          "description": "Ut labore et dolore. A repeatable framework for sizing with respect to portfolio vol and assignment risk."
+        },
+        {
+          "title": "Certification Exam",
+          "description": "Magna aliqua. Pass the 40-question final to earn a signed certificate and access alumni-only content."
+        },
+        {
+          "title": "Cohort Community",
+          "description": "Quis nostrud exercitation. Weekly office hours plus a focused Discord — built for traders who push each other."
+        }
+      ],
+      "deliverables": [
+        "Lifetime access to all video lessons and updates",
+        "Interactive playgrounds (greeks, payoff diagrams, scenarios)",
+        "40-question certification exam",
+        "Alumni Discord + monthly live Q&A"
+      ],
+      "requirements": [
+        "A brokerage account that supports options (paper account is fine)",
+        "Basic familiarity with stock-market mechanics",
+        "4–6 hours per week for two to three weeks"
+      ],
+      "media_poster_color": "linear-gradient(135deg, #1a2233, #0a0a0b)",
+      "media_accent": "#F5D08A"
+    }
+  ],
+  "plans": [
+    {
+      "legacy_slug_id": "plan_dt_monthly",
+      "slug": "day-trading-monthly",
+      "name": "Monthly",
+      "cadence": "monthly",
+      "price_cents": 24700,
+      "monthly_equivalent_cents": 24700,
+      "savings_pct": 0,
+      "tagline": "Maximum flexibility. Cancel anytime.",
+      "highlights": [
+        "Daily pre-market briefings (Mon–Fri)",
+        "Live trading room access · 9:30am–12:00pm ET",
+        "Real-time alerts on ES, NQ, CL, GC",
+        "Member-only weekly review session",
+        "Cancel anytime — no contracts"
+      ],
+      "featured": false,
+      "badge": null,
+      "stripe_price_id": null
+    },
+    {
+      "legacy_slug_id": "plan_dt_quarterly",
+      "slug": "day-trading-quarterly",
+      "name": "Quarterly",
+      "cadence": "quarterly",
+      "price_cents": 69700,
+      "monthly_equivalent_cents": 23234,
+      "savings_pct": 6,
+      "tagline": "Most popular. Lock in a quarter at a discount.",
+      "highlights": [
+        "Everything in Monthly, plus:",
+        "Quarterly 1:1 strategy review (45 min)",
+        "Member-only macro deep-dive call",
+        "Early access to new indicators in beta",
+        "Lifetime price-lock on this tier"
+      ],
+      "featured": true,
+      "badge": "Most Popular",
+      "stripe_price_id": null
+    },
+    {
+      "legacy_slug_id": "plan_dt_annual",
+      "slug": "day-trading-annual",
+      "name": "Annual",
+      "cadence": "annual",
+      "price_cents": 199700,
+      "monthly_equivalent_cents": 16642,
+      "savings_pct": 33,
+      "tagline": "Best value. Two months free, plus exclusive perks.",
+      "highlights": [
+        "Everything in Quarterly, plus:",
+        "Revolution Ranger indicator included ($997 value)",
+        "Options 101 course included ($997 value)",
+        "Two 1:1 strategy reviews per year",
+        "Founders Circle Discord access"
+      ],
+      "featured": false,
+      "badge": "Best Value",
+      "stripe_price_id": null
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+# Local dev stack — Postgres 16 + LocalStack S3 (for R2 development in later PRs).
+#
+# Used by `just up` / `just down`. PR #2 needs only Postgres; LocalStack is
+# included now so `just up` is the one command developers ever run.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tradeflex-postgres-dev
+    environment:
+      POSTGRES_USER: tradeflex
+      POSTGRES_PASSWORD: tradeflex
+      POSTGRES_DB: tradeflex
+    ports:
+      # Bind to 5434 on the host to avoid collisions with a host Postgres or
+      # other dev-stack containers using 5432. Override with PG_HOST_PORT.
+      - "${PG_HOST_PORT:-5434}:5432"
+    volumes:
+      - tradeflex-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradeflex -d tradeflex"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  localstack:
+    image: localstack/localstack:3
+    container_name: tradeflex-localstack-dev
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "4566:4566"
+    volumes:
+      - tradeflex-localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  tradeflex-pg-data:
+  tradeflex-localstack-data:

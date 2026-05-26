@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE invoices\n            SET pdf_r2_key = $2\n            WHERE stripe_invoice_id = $1\n              AND (pdf_r2_key IS NULL OR pdf_r2_key = $2)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e5a6d3bbe9a46541eb504a11f70b8717b59336b97b2dd1a0fbf78761f61ef40e"
+}

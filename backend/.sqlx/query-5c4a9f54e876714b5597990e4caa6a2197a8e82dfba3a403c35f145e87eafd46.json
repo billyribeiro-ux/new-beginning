@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE stripe_events\n            SET attempts = attempts + 1, processing_error = $2\n            WHERE event_id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5c4a9f54e876714b5597990e4caa6a2197a8e82dfba3a403c35f145e87eafd46"
+}

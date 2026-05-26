@@ -1,0 +1,148 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, slug, legacy_slug_id, kind, name, tagline, description,\n                   price_cents, original_price_cents, active, badge,\n                   rating_value, rating_count, highlights,\n                   specs_json AS \"specs_json: Json\",\n                   deliverables, requirements, media_poster_color, media_accent,\n                   stripe_price_id,\n                   created_at, updated_at\n            FROM products\n            WHERE slug = $1 AND active = TRUE\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "slug",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "legacy_slug_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "kind",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "tagline",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "price_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "original_price_cents",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "badge",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "rating_value",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 12,
+        "name": "rating_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 13,
+        "name": "highlights",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 14,
+        "name": "specs_json: Json",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 15,
+        "name": "deliverables",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 16,
+        "name": "requirements",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 17,
+        "name": "media_poster_color",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 18,
+        "name": "media_accent",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 19,
+        "name": "stripe_price_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 20,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 21,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "6dbd561e74a81818fd6df0c3e05d825f3ff87d96d5522ac45c4e36efa8a10de1"
+}

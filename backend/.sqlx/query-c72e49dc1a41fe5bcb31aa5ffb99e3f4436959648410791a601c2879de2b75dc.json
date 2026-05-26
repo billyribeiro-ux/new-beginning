@@ -1,0 +1,33 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO products (\n            id, slug, legacy_slug_id, kind, name, tagline, description,\n            price_cents, original_price_cents, active, badge,\n            rating_value, rating_count, highlights, specs_json,\n            deliverables, requirements, media_poster_color, media_accent,\n            stripe_price_id\n        ) VALUES (\n            $1, $2, $3, $4, $5, $6, $7,\n            $8, $9, $10, $11,\n            $12, $13, $14, $15,\n            $16, $17, $18, $19,\n            $20\n        )\n        ON CONFLICT (slug) DO UPDATE SET\n            legacy_slug_id       = EXCLUDED.legacy_slug_id,\n            kind                 = EXCLUDED.kind,\n            name                 = EXCLUDED.name,\n            tagline              = EXCLUDED.tagline,\n            description          = EXCLUDED.description,\n            price_cents          = EXCLUDED.price_cents,\n            original_price_cents = EXCLUDED.original_price_cents,\n            active               = EXCLUDED.active,\n            badge                = EXCLUDED.badge,\n            rating_value         = EXCLUDED.rating_value,\n            rating_count         = EXCLUDED.rating_count,\n            highlights           = EXCLUDED.highlights,\n            specs_json           = EXCLUDED.specs_json,\n            deliverables         = EXCLUDED.deliverables,\n            requirements         = EXCLUDED.requirements,\n            media_poster_color   = EXCLUDED.media_poster_color,\n            media_accent         = EXCLUDED.media_accent,\n            stripe_price_id      = COALESCE(products.stripe_price_id, EXCLUDED.stripe_price_id),\n            updated_at           = now()\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8",
+        "Bool",
+        "Text",
+        "Numeric",
+        "Int4",
+        "TextArray",
+        "Jsonb",
+        "TextArray",
+        "TextArray",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c72e49dc1a41fe5bcb31aa5ffb99e3f4436959648410791a601c2879de2b75dc"
+}

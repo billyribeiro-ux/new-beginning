@@ -3,12 +3,28 @@ import type { Actions } from './$types';
 import { db, schema } from '$lib/server/db/client.js';
 import { leadCaptureSchema } from '$lib/utils/validators.js';
 import { checkRateLimit, getClientKey } from '$lib/server/rateLimit';
+import { callRust, isRustError, useRustBackend } from '$lib/server/rust/client';
 
-async function persist(email: string, source: string) {
+// PR #6 of the BACKEND.md rollout: when `USE_RUST_BACKEND=true`, both
+// actions POST to the Rust api at `/v1/public/leads`. The Drizzle path is
+// kept alongside for a controlled cutover; PR #17 deletes it.
+
+async function persistDrizzle(email: string, source: string) {
 	await db.insert(schema.leads).values({
 		id: `lead_${crypto.randomUUID()}`,
 		email: email.toLowerCase(),
 		source
+	});
+}
+
+async function persistRust(
+	event: Parameters<Actions[keyof Actions]>[0],
+	email: string,
+	source: string
+) {
+	await callRust('/v1/public/leads', {
+		event,
+		body: { email, source }
 	});
 }
 
@@ -37,8 +53,17 @@ export const actions: Actions = {
 		if (parsed.data.website) return fail(400, { error: 'Submission rejected' });
 
 		try {
-			await persist(parsed.data.email, parsed.data.source ?? 'free-guide');
+			if (useRustBackend()) {
+				await persistRust(event, parsed.data.email, parsed.data.source ?? 'free-guide');
+			} else {
+				await persistDrizzle(parsed.data.email, parsed.data.source ?? 'free-guide');
+			}
 		} catch (e) {
+			if (isRustError(e) && e.status === 429) {
+				return fail(429, {
+					error: `Too many requests. Try again in ${e.retry_after_secs ?? 30}s.`
+				});
+			}
 			console.error('lead insert failed', e);
 			return fail(500, { error: 'Could not save your request. Please try again.' });
 		}
@@ -66,8 +91,17 @@ export const actions: Actions = {
 		if (parsed.data.website) return fail(400, { error: 'Submission rejected' });
 
 		try {
-			await persist(parsed.data.email, parsed.data.source ?? 'newsletter');
+			if (useRustBackend()) {
+				await persistRust(event, parsed.data.email, parsed.data.source ?? 'newsletter');
+			} else {
+				await persistDrizzle(parsed.data.email, parsed.data.source ?? 'newsletter');
+			}
 		} catch (e) {
+			if (isRustError(e) && e.status === 429) {
+				return fail(429, {
+					error: `Too many requests. Try again in ${e.retry_after_secs ?? 30}s.`
+				});
+			}
 			console.error('subscribe insert failed', e);
 			return fail(500, { error: 'Could not subscribe. Please try again.' });
 		}
